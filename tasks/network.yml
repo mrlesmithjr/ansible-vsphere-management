@@ -1,0 +1,71 @@
+---
+- name: network | Managing vSwitches
+  vmware_vswitch:
+    hostname: "{{ hostvars[item[0]]['ansible_host'] }}"
+    username: "{{ vsphere_user_info['username'] }}"
+    password: "{{ vsphere_user_info['password'] }}"
+    switch_name: "{{ item[1]['name'] }}"
+    nic_name: "{{ item[1]['nics'] }}"
+    validate_certs: false
+  delegate_to: localhost
+  with_nested:
+    - '{{ groups[vsphere_management_hosts_group] }}'
+    - '{{ vsphere_vswitches }}'
+
+- name: network | Removing Default VM Network
+  win_shell: |
+    $vmHost="{{ vsphere_management_host_ip }}"
+    Connect-VIServer -Server $vmHost
+    $PortGroups=@($(Get-VirtualPortGroup -Server $vmHost | Select-Object -ExpandProperty Name))
+    if ($PortGroups -contains 'VM Network') {
+      $VMNetwork=$(Get-VirtualPortGroup -Server $vmHost -Name 'VM Network')
+      Remove-VirtualPortGroup -Server $vmHost -VirtualPortGroup $VMNetwork -Confirm:$false
+    }
+    Disconnect-VIServer * -Confirm:$false
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: vsphere_remove_default_vm_network
+
+- name: network | Managing vSwitch Portgroups
+  win_shell: |
+    $vmHost="{{ vsphere_management_host_ip }}"
+    Connect-VIServer -Server $vmHost
+    {% for vswitch in vsphere_vswitches %}
+    $PortGroups=@($(Get-VirtualSwitch -Server $vmHost -Name {{ vswitch['name'] }} | Get-VirtualPortGroup | Select-Object -ExpandProperty Name))
+    {%   for portgroup in vswitch['portgroups'] %}
+    if ($PortGroups -notcontains '{{ portgroup['name'] }}'){
+      New-VirtualPortGroup -Server $vmHost -VirtualSwitch {{ vswitch['name'] }} -Name {{ portgroup['name'] }}{% if portgroup['vlan_id'] is defined %} -VLanId {{ portgroup['vlan_id'] }}{% endif %} -Confirm:$false
+    }
+    {%   endfor %}
+    {% endfor %}
+    Disconnect-VIServer * -Confirm:$false
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: vsphere_vswitches is defined
+
+- name: network | Managing vSwitch Interfaces
+  win_shell: |
+    $vmHost="{{ vsphere_management_host_ip }}"
+    Connect-VIServer -Server $vmHost
+    {% for vswitch in vsphere_vswitches %}
+    $CurrentNics=@($(Get-VirtualSwitch -Server $vmHost -Name {{ vswitch['name'] }} | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name))
+    $NewNics=@($("{{ vswitch['nics']|join('", "') }}"))
+    Foreach ($i in $NewNics){
+      if ($CurrentNics -notcontains $i){
+        $NewNic=$(Get-VMHostNetworkAdapter -Server $vmHost -Physical -Name $i)
+        Get-VirtualSwitch -Server $vmHost -Name {{ vswitch['name'] }} | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $NewNic -Confirm:$false
+      }
+    }
+    Foreach ($i in $CurrentNics){
+      if ($NewNics -notcontains $i){
+        Get-VMHost -Server $vmHost | Get-VMHostNetworkAdapter -Physical -Name $i | Remove-VirtualSwitchPhysicalNetworkAdapter -Confirm:$false
+      }
+    }
+    $ActiveNics=$(Get-VirtualSwitch -Server $vmHost -Name {{ vswitch['name'] }} | Get-NicTeamingPolicy | Select-Object -ExpandProperty ActiveNic)
+    Foreach ($i in $NewNics) {
+      if ($ActiveNics -notcontains $i){
+        Get-VirtualSwitch -Server $vmHost -Name {{ vswitch['name'] }} | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicActive $i
+      }
+    }
+    {% endfor %}
+    Disconnect-VIServer * -Confirm:$false
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: vsphere_vswitches is defined

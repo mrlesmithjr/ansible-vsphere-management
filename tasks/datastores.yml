@@ -1,0 +1,17 @@
+---
+- name: datastores | Managing Datastores
+  win_shell: |
+    $vmHost="{{ vsphere_management_host_ip }}"
+    Connect-VIServer -Server $vmHost
+    Get-DataStore -Server $vmHost -refresh
+    $CurrentNFSDataStores=@($(Get-Datastore -Server $vmHost | Where {$_.type -eq "NFS"} | Select-Object -ExpandProperty Name))
+    {% for datastore in vsphere_datastores %}
+    {%   if datastore['type']|lower == 'nfs' %}
+    if ($CurrentNFSDataStores -notcontains '{{ datastore['name'] }}'){
+      New-Datastore -Server $vmHost -Nfs -Name '{{ datastore['name'] }}' -Path '{{ datastore['path'] }}' -NfsHost {{ datastore['host'] }}
+    {%   endif %}
+    }
+    {% endfor %}
+    Disconnect-VIServer * -Confirm:$false
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: vsphere_datastores is defined

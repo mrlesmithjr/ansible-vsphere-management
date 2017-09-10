@@ -1,0 +1,24 @@
+---
+- name: ssh | Enabling SSH Service
+  win_shell: |
+    $vmHost="{{ vsphere_management_host_ip }}"
+    Connect-VIServer -Server $vmHost
+    $CurrentSSHStatus=$(Get-VMHostService -Server $vmHost | Where-Object {$_.Key -eq 'TSM-SSH'} | Select-Object -ExpandProperty Running)
+    if ($CurrentSSHStatus -ne $true) {
+     Get-VMHostService -Server $vmHost | Where-Object {$_.Key -eq 'TSM-SSH'} | Start-VMHostService -Confirm:$false
+    }
+    Disconnect-VIServer * -Confirm:$false
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: vsphere_enable_ssh
+
+- name: ssh | Disabling SSH Service
+  win_shell: |
+    $vmHost="{{ vsphere_management_host_ip }}"
+    Connect-VIServer -Server $vmHost
+    $CurrentSSHStatus=$(Get-VMHostService -Server $vmHost | Where-Object {$_.Key -eq 'TSM-SSH'} | Select-Object -ExpandProperty Running)
+    if ($CurrentSSHStatus -ne $false) {
+     Get-VMHostService -Server $vmHost | Where-Object {$_.Key -eq 'TSM-SSH'} | Stop-VMHostService -Confirm:$false
+    }
+    Disconnect-VIServer * -Confirm:$false
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: not vsphere_enable_ssh

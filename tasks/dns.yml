@@ -1,0 +1,13 @@
+---
+- name: dns | Configuring DNS
+  vmware_dns_config:
+    hostname: "{{ vsphere_management_host_ip }}"
+    username: "{{ vsphere_user_info['username'] }}"
+    password: "{{ vsphere_user_info['password'] }}"
+    change_hostname_to: "{{ hostvars[item]['inventory_hostname'] }}"
+    domainname: "{{ pri_domain_name }}"
+    dns_servers: "{{ vsphere_dns_nameservers|join(',') }}"
+    validate_certs: "{{ vsphere_validate_certs }}"
+  delegate_to: localhost
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: vsphere_dns_nameservers is defined

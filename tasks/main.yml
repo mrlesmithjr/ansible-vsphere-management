@@ -1,0 +1,10 @@
+---
+# tasks file for ansible-vsphere-management
+
+- include: invalid_certs.yml
+- include: creds.yml
+- include: network.yml
+- include: dns.yml
+- include: ssh.yml
+- include: ntp.yml
+- include: datastores.yml

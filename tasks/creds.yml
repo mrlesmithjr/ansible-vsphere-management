@@ -1,0 +1,7 @@
+---
+# This task will always run in order to alway keep passwords up to do and etc.
+- name: creds | Adding Credential Store Items
+  win_shell: |
+    New-VICredentialStoreItem -Host {{ vsphere_management_host_ip }} -User {{ vsphere_user_info['username'] }} -Password {{ vsphere_user_info['password'] }}
+    New-VICredentialStoreItem -Host {{ hostvars[item]['inventory_hostname'] }} -User {{ vsphere_user_info['username'] }} -Password {{ vsphere_user_info['password'] }}
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"

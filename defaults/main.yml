@@ -1,0 +1,74 @@
+---
+# defaults file for ansible-vsphere-management
+
+vsphere_datastores:
+  - name: Datastore_1
+    type: NFS
+    path: /TANK/NFS/vSphere/Datastore_1
+    host: 10.0.101.50
+
+vsphere_dns_nameservers:
+  - 10.10.10.1
+
+vsphere_enable_ssh: true
+
+vsphere_hosts_update: true
+
+vsphere_ntp_servers:
+  - 96.126.105.86
+  - 208.73.56.29
+  # - 132.163.4.101
+  # - 38.229.71.1
+
+vsphere_remove_default_vm_network: true
+
+vsphere_updates:
+  - build: 4192238
+    path: /vmfs/volumes/Datastore_1/ESXi600-201608001
+    version: 6.0.0
+  - build: 5050593
+    path: /vmfs/volumes/Datastore_1/update-from-esxi6.0-6.0_update03
+    version: 6.0.0
+  # - build: 5050593
+  #   path: /vmfs/volumes/Datastore_1/VMware-ESXi-6.0.0-Update3-5224934-HPE-600.10.1.0.73-Jul2017-depot
+  #   version: 6.0.0
+  - build: 5572656
+    path: /vmfs/volumes/Datastore_1/ESXi600-201706001
+    version: 6.0.0
+
+vsphere_user_info:
+  username: root
+  password: VMw@re1
+
+vsphere_validate_certs: false
+
+vsphere_vswitches:
+  - name: vSwitch0
+    nics:
+      - vmnic2
+      - vmnic3
+      # - vmnic4
+      # - vmnic5
+    portgroups:
+      - name: vlan-101
+        vlan_id: 101
+      - name: vlan-102
+        vlan_id: 102
+      - name: vlan-201
+        vlan_id: 201
+    # vmkernel_ports:
+    #   - name: vmk0
+    #     enable_ft: false
+    #     enable_mgmt: true
+    #     enable_vmotion: false
+    #     enable_vsan: false
+    #     ip_address: '{{ ansible_host }}'
+    #     portgroup_name: Management Network
+    #     subnet_mask: 255.255.255.0
+    #     vland_id: 101
+    #     vswitch_name: vSwitch0
+
+vsphere_management_invalid_certs_action: Ignore
+
+vsphere_management_host_ip: "{{ hostvars[item]['ansible_host'] }}"
+vsphere_management_hosts_group: vsphere_hosts
