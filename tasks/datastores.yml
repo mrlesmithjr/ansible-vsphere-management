@@ -1,7 +1,7 @@
 ---
 - name: datastores | Managing Datastores
   win_shell: |
-    $vmHost="{{ vsphere_management_host_ip }}"
+    $vmHost="{{ hostvars[item]['ansible_host'] }}"
     Connect-VIServer -Server $vmHost
     Get-DataStore -Server $vmHost -refresh
     $CurrentNFSDataStores=@($(Get-Datastore -Server $vmHost | Where {$_.type -eq "NFS"} | Select-Object -ExpandProperty Name))

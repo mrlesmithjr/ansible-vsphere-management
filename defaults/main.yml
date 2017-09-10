@@ -78,5 +78,4 @@ vsphere_vswitches:
     #     vswitch_name: vSwitch0
 vsphere_management_invalid_certs_action: Ignore
 
-vsphere_management_host_ip: "{{ hostvars[item]['ansible_host'] }}"
 vsphere_management_hosts_group: vsphere_hosts

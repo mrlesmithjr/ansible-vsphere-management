@@ -1,7 +1,7 @@
 ---
 - name: network | Managing vSwitches
   win_shell: |
-    $vmHost="{{ vsphere_management_host_ip }}"
+    $vmHost="{{ hostvars[item]['ansible_host'] }}"
     Connect-VIServer -Server $vmHost
     $CurrentvSwitches=@(Get-VMHost -Server $vmHost | Get-VirtualSwitch| Select-Object -ExpandProperty Name)
     $DesiredvSwitches=@("{% for vs in vsphere_vswitches %}{{ vs['name'] }}{% if not loop.last %}", "{% endif %}{% endfor %}")

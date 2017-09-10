@@ -1,7 +1,7 @@
 ---
 - name: dns | Configuring DNS
   vmware_dns_config:
-    hostname: "{{ vsphere_management_host_ip }}"
+    hostname: "{{ hostvars[item]['ansible_host'] }}"
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     change_hostname_to: "{{ hostvars[item]['inventory_hostname'] }}"
