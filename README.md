@@ -1,38 +1,52 @@
-Role Name
-=========
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-A brief description of the role goes here.
+- [Role Name](#role-name)
+  - [Requirements](#requirements)
+    - [Software iSCSI](#software-iscsi)
+  - [Role Variables](#role-variables)
+  - [Dependencies](#dependencies)
+  - [Example Playbook](#example-playbook)
+  - [License](#license)
+  - [Author Information](#author-information)
 
-Requirements
-------------
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+# Role Name
 
-Role Variables
---------------
+## Requirements
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+### Software iSCSI
 
-Dependencies
-------------
+Because we iterate over `groups[vsphere_management_hosts_group]` to capture
+`hostvars` variables. The following variable `vsphere_enable_software_iscsi`
+needs to be defined as one of the examples below.
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+> Note: By default defining this variable only in this roles `defaults/main.yml`
+> does not have any effect on whether the iSCSI Software Adapter is enabled or
+> not.
 
-Example Playbook
-----------------
+`host_vars/esxi-01/iscsi.yml`
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+---
+vsphere_enable_software_iscsi: true
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+`group_vars/vsphere_hosts/iscsi.yml`
 
-License
--------
+```yaml
+---
+vsphere_enable_software_iscsi: true
+```
 
-BSD
+## Role Variables
 
-Author Information
-------------------
+## Dependencies
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+## Example Playbook
+
+## License
+
+## Author Information

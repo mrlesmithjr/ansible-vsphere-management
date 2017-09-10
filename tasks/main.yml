@@ -7,6 +7,9 @@
 - include: dns.yml
 - include: ssh.yml
 - include: ntp.yml
+- include: iscsi.yml
+  tags:
+    - vsphere_iscsi
 - include: datastores.yml
 - include: maintenance_mode.yml
   tags:
