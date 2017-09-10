@@ -1,5 +1,5 @@
 ---
-- name: updates |
+- name: updates | Managing Updates
   win_shell: |
     $vmHost="{{ hostvars[item]['ansible_host'] }}"
     Connect-VIServer -Server $vmHost
@@ -23,6 +23,25 @@
       }
     }
     {%   endfor %}
+    {% endif %}
+    {% if vsphere_reboot_after_updates %}
+    if ($RebootHost) {
+      if ($RebootHost -eq "true") {
+        Restart-VMHost -Confirm:$false
+        # Wait 30 Seconds For Server To Stop Responding
+        if (Test-Connection -Cn {{ hostvars[host]['ansible_host'] }} -BufferSize 16 -Count 1 -ea 0 -quiet) {
+          sleep 30
+        }
+        # Wait 60 Seconds For Server To Stop Responding
+        if (Test-Connection -Cn {{ hostvars[host]['ansible_host'] }} -BufferSize 16 -Count 1 -ea 0 -quiet) {
+          sleep 60
+        }
+        # Wait 120 Seconds For Server To Stop Responding
+        if (Test-Connection -Cn {{ hostvars[host]['ansible_host'] }} -BufferSize 16 -Count 1 -ea 0 -quiet) {
+          sleep 120
+        }
+      }
+    }
     {% endif %}
     Disconnect-VIServer * -Confirm:$false
   with_items: "{{ groups[vsphere_management_hosts_group] }}"

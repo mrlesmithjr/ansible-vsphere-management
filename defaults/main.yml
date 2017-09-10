@@ -24,6 +24,8 @@ vsphere_ntp_servers:
   # - 132.163.4.101
   # - 38.229.71.1
 
+vsphere_reboot_after_updates: false
+
 vsphere_updates:
   - build: 4192238
     path: /vmfs/volumes/Datastore_1/ESXi600-201608001
