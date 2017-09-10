@@ -20,8 +20,6 @@ vsphere_ntp_servers:
   # - 132.163.4.101
   # - 38.229.71.1
 
-vsphere_remove_default_vm_network: true
-
 vsphere_updates:
   - build: 4192238
     path: /vmfs/volumes/Datastore_1/ESXi600-201608001
@@ -44,6 +42,7 @@ vsphere_validate_certs: false
 
 vsphere_vswitches:
   - name: vSwitch0
+    load_balancing_policy: LoadBalanceSrcId
     nics:
       - vmnic2
       - vmnic3
@@ -53,13 +52,13 @@ vsphere_vswitches:
       - name: Management Network
         inherit_failover_order: true
         vlan_id: 101
-      - name: vlan-101
+      - name: VSS-VLAN-101
         inherit_failover_order: true
         vlan_id: 101
-      - name: vlan-102
+      - name: VSS-VLAN-102
         inherit_failover_order: true
         vlan_id: 102
-      - name: vlan-201
+      - name: VSS-VLAN-201
         inherit_failover_order: true
         vlan_id: 201
     # vmkernel_ports:
@@ -73,7 +72,6 @@ vsphere_vswitches:
     #     subnet_mask: 255.255.255.0
     #     vland_id: 101
     #     vswitch_name: vSwitch0
-
 vsphere_management_invalid_certs_action: Ignore
 
 vsphere_management_host_ip: "{{ hostvars[item]['ansible_host'] }}"
