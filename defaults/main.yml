@@ -14,6 +14,10 @@ vsphere_enable_ssh: true
 
 vsphere_hosts_update: true
 
+# Currently this needs to be defined per host in host_vars because of the way
+# we iterate through the list of hosts in vsphere_management_hosts_group
+vsphere_maintenance_mode: false
+
 vsphere_ntp_servers:
   - 96.126.105.86
   - 208.73.56.29

@@ -8,3 +8,10 @@
 - include: ssh.yml
 - include: ntp.yml
 - include: datastores.yml
+- include: maintenance_mode.yml
+  tags:
+    - vsphere_maintenance_mode
+    - vsphere_updates
+- include: updates.yml
+  tags:
+    - vsphere_updates

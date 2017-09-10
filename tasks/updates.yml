@@ -1,0 +1,33 @@
+---
+- name: updates |
+  win_shell: |
+    $vmHost="{{ vsphere_management_host_ip }}"
+    Connect-VIServer -Server $vmHost
+    $ESXCli=$(Get-EsxCli -Server $vmHost)
+    $SystemVersion=$($ESXCli.system.version.get().version)
+    $SystemVersionUpdate=$($ESXCli.system.version.get().update)
+    $SystemVersionBuild=$($ESXCli.system.version.get().build.Trim("Releasebuild-"))
+    $SystemAvailableUpdateBuilds=@($("{% for _build in vsphere_updates %}{{ _build['build'] }}{% if not loop.last %}", "{% endif %}{% endfor %}"))
+    $SystemAvailableUpdateBuilds=$SystemAvailableUpdateBuilds|sort
+    Foreach ($i in $SystemAvailableUpdateBuilds) {
+      if ($SystemVersionBuild -lt $i) {
+        $SystemUpdateBuild="$i"
+      }
+    }
+    {% if vsphere_updates is defined %}
+    {%   for update in vsphere_updates %}
+    if ($SystemVersion -eq '{{ update['version'] }}') {
+      if ($SystemUpdateBuild -eq '{{ update['build'] }}') {
+        Install-VMHostPatch -Server $vmHost -HostPath '{{ update['path'] }}/metadata.zip' -Confirm:$false
+        $RebootHost="true"
+      }
+    }
+    {%   endfor %}
+    {% endif %}
+    Disconnect-VIServer * -Confirm:$false
+  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  when: >
+        (hostvars[item]['vsphere_maintenance_mode'] is defined and
+        hostvars[item]['vsphere_maintenance_mode']) and
+        (vsphere_hosts_update is defined and
+        vsphere_hosts_update)
