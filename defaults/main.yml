@@ -50,11 +50,17 @@ vsphere_vswitches:
       # - vmnic4
       # - vmnic5
     portgroups:
+      - name: Management Network
+        inherit_failover_order: true
+        vlan_id: 101
       - name: vlan-101
+        inherit_failover_order: true
         vlan_id: 101
       - name: vlan-102
+        inherit_failover_order: true
         vlan_id: 102
       - name: vlan-201
+        inherit_failover_order: true
         vlan_id: 201
     # vmkernel_ports:
     #   - name: vmk0

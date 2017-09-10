@@ -35,6 +35,13 @@
     if ($PortGroups -notcontains '{{ portgroup['name'] }}'){
       New-VirtualPortGroup -Server $vmHost -VirtualSwitch {{ vswitch['name'] }} -Name {{ portgroup['name'] }}{% if portgroup['vlan_id'] is defined %} -VLanId {{ portgroup['vlan_id'] }}{% endif %} -Confirm:$false
     }
+    {%     if portgroup['inherit_failover_order'] is defined %}
+    $CurrentFailoverOrderInherited=($(Get-VirtualSwitch -Name {{ vswitch['name'] }} -Server $vmHost | Get-VirtualPortGroup -Name '{{ portgroup['name'] }}' | Get-NicTeamingPolicy | Select-Object -ExpandProperty IsFailoverOrderInherited))
+    if ($CurrentFailoverOrderInherited -ne '{{ portgroup['inherit_failover_order'] }}') {
+      $Policy=($(Get-VMHost -Server $vmHost | Get-VirtualPortGroup -Name '{{ portgroup['name'] }}'| Get-NicTeamingPolicy))
+      Set-NicTeamingPolicy -VirtualPortGroupPolicy $Policy -InheritFailoverOrder ${{ portgroup['inherit_failover_order']|lower }} -Confirm:$false
+    }
+    {%     endif %}
     {%   endfor %}
     {% endfor %}
     Disconnect-VIServer * -Confirm:$false
