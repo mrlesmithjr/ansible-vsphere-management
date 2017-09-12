@@ -89,14 +89,10 @@ vsphere_vswitches:
   - name: vSwitch0
     load_balancing_policy: LoadBalanceSrcId
     active_nics:
-      - vmnic2
-      - vmnic3
-      # - vmnic4
-      # - vmnic5
+      - vmnic0
+      - vmnic1
     standby_nics: []
-      # - vmnic4
     unused_nics: []
-      # - vmnic5
     portgroups:
       - name: Management Network
         inherit_failover_order: true
@@ -121,13 +117,14 @@ vsphere_vswitches:
     #     subnet_mask: 255.255.255.0
     #     vland_id: 101
     #     vswitch_name: vSwitch0
-  # - name: vSwitch1
-  #   active_nics:
-  #     - vmnic0
-  #   standby_nics: []
-  #     # - vmnic1
-  #   unused_nics: []
-  #     # - vmnic2
+  - name: vSwitch1
+    active_nics:
+      - vmnic2
+      - vmnic3
+      - vmnic4
+      - vmnic5
+    standby_nics: []
+    unused_nics: []
 vsphere_management_invalid_certs_action: Ignore
 
 vsphere_management_hosts_group: vsphere_hosts
