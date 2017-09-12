@@ -1,6 +1,10 @@
 ---
 # tasks file for ansible-vsphere-management
 
+- include: set_facts.yml
+  tags:
+    - vsphere_network
+
 - include: invalid_certs.yml
 
 - include: creds.yml

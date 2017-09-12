@@ -1,0 +1,8 @@
+---
+- name: set_facts | Setting Timestamp
+  set_fact:
+    vsphere_log_timestap: "{{lookup('pipe','date +%Y%m%d%H%M%S')}}"
+
+- name: set_facts | Setting Log File
+  set_fact:
+    vsphere_management_log: c:\tmp\vsphere_management_{{ vsphere_log_timestap }}.log
