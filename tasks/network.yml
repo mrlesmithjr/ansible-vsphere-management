@@ -29,9 +29,7 @@
     $DesiredStandbyNics=@()
     {%   endif %}
     $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
-    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
     $CurrentNics=@($vSwitch | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name)
-    $LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
     if ($DesiredActiveNics -ne $null) {
       Foreach ($i in $DesiredActiveNics){
         if ($CurrentNics -notcontains $i){
@@ -51,9 +49,7 @@
       }
     }
     $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
-    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
     $CurrentNics=@($vSwitch | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name)
-    $LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
     if ($CurrentNics -ne $null) {
       Foreach ($i in $CurrentNics){
         if ($DesiredActiveNics -notcontains $i -And $DesiredStandbyNics -notcontains $i){
@@ -112,8 +108,11 @@
     {%     endfor %}
     {%   endif %}
     {%   if vswitch['load_balancing_policy'] is defined %}
+    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
+    $LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
     $vmSwitchLoadBalancingPolicy="{{ vswitch['load_balancing_policy'] }}"
     If ($LoadBalancingPolicy -ne $vmSwitchLoadBalancingPolicy) {
+      "Setting $vSwitch Load Balancing Policy to $vmSwitchLoadBalancingPolicy on $vmHost" | Out-File -Append {{ vsphere_management_log }}
       $NicTeamingPolicy | Set-NicTeamingPolicy -LoadBalancingPolicy $vmSwitchLoadBalancingPolicy
     }
     {%   endif %}
