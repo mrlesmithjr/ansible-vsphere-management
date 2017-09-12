@@ -2,19 +2,38 @@
 # tasks file for ansible-vsphere-management
 
 - include: invalid_certs.yml
+
 - include: creds.yml
+
 - include: network.yml
+  tags:
+    - vsphere_network
+
 - include: dns.yml
+
 - include: ssh.yml
+
 - include: ntp.yml
+
 - include: iscsi.yml
   tags:
     - vsphere_iscsi
+
 - include: datastores.yml
+
 - include: maintenance_mode.yml
   tags:
     - vsphere_maintenance_mode
     - vsphere_updates
+
 - include: updates.yml
   tags:
     - vsphere_updates
+
+- include: template_vm.yml
+  when: vsphere_template_vm['deploy']
+
+- include: bootstrap_vms.yml
+  tags:
+    - vsphere_bootstrap_vms
+  when: vsphere_bootstrap_vms is defined

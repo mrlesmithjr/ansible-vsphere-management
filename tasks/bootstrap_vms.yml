@@ -1,0 +1,141 @@
+---
+- name: bootstrap_vms | Setting Bootstrap Host
+  set_fact:
+    vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
+
+- name: bootstrap_vms | Deploying Bootstrap VMs
+  win_shell: |
+    $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+    {% for vm in vsphere_bootstrap_vms %}
+    {%   if vm['deploy'] %}
+    $DataStore="{{ vm['datastore'] }}"
+    $NetworkName="{{ vm['network_name'] }}"
+    $vAppSourcePath="{{ vm['vapp_source_path'] }}"
+    Connect-VIServer -Server $vmHost
+    $vmServer=(Get-VMHost -Server $vmHost)
+    $vms=@(($vmserver | Get-VM).Name)
+    $vmName="{{ vm['vm_name'] }}"
+    If ($vms -notcontains $vmName) {
+      $deployBootstrapVM=($vmServer | Import-VApp -Datastore $DataStore -Source $vAppSourcePath -Name $vmName -DiskStorageFormat Thin -Confirm:$false)
+      $vm=($vmServer | Get-VM $vmName)
+      $vmCPU=$($vm.NumCpu)
+      If ($vmCPU -ne {{ vm['cpus'] }}) {
+        $vm | set-VM -NumCpu {{ vm['cpus'] }} -Confirm:$false
+      }
+      $vmMemory=$($vm.MemoryMB)
+      If ($vmMemory -ne {{ vm['memory_mb'] }}) {
+        $vm | Set-VM -MemoryMB {{ vm['memory_mb'] }} -Confirm:$false
+      }
+      $vm | Get-NetworkAdapter| Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Confirm:$false
+      $vm | Start-VM -Confirm:$false
+      do {
+        $vmToolsStatus=($vm | Get-View).Guest.ToolsStatus
+        sleep 3
+      }
+      until ($vmToolsStatus -eq 'toolsOk')
+    }
+    {%   endif %}
+    {% endfor %}
+    Disconnect-VIServer * -Confirm:$false
+
+- name: bootstrap_vms | Managing Resources On Bootstrap VMs
+  win_shell: |
+    $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+    {% for vm in vsphere_bootstrap_vms %}
+    {%   if vm['deploy'] %}
+    $DataStore="{{ vm['datastore'] }}"
+    $NetworkName="{{ vm['network_name'] }}"
+    Connect-VIServer -Server $vmHost
+    $vmServer=(Get-VMHost -Server $vmHost)
+    $vms=@(($vmserver | Get-VM).Name)
+    $vmName="{{ vm['vm_name'] }}"
+    If ($vms -contains $vmName) {
+      $vm=($vmServer | Get-VM $vmName)
+      $vmPowerState=$($vm.PowerState)
+      $vmCPU=$($vm.NumCpu)
+      If ($vmCPU -ne {{ vm['cpus'] }}) {
+        If ($vmPowerState -eq 'PoweredOn') {
+          $vm | Shutdown-VMGuest -Confirm:$false
+          do {
+            $vm=($vmServer | Get-VM $vmName)
+            $vmPowerState=$($vm.PowerState)
+            sleep 3
+          } until ($vmPowerState -eq 'PoweredOff')
+        }
+        $vm | set-VM -NumCpu {{ vm['cpus'] }} -Confirm:$false
+      }
+      $vm=($vmServer | Get-VM $vmName)
+      $vmPowerState=$($vm.PowerState)
+      $vmMemory=$($vm.MemoryMB)
+      If ($vmMemory -ne {{ vm['memory_mb'] }}) {
+        If ($vmPowerState -eq 'PoweredOn') {
+          $vm | Shutdown-VMGuest -Confirm:$false
+          do {
+            $vm=($vmServer | Get-VM $vmName)
+            $vmPowerState=$($vm.PowerState)
+            sleep 3
+          } until ($vmPowerState -eq 'PoweredOff')
+        }
+        $vm | Set-VM -MemoryMB {{ vm['memory_mb'] }} -Confirm:$false
+      }
+      $vm=($vmServer | Get-VM $vmName)
+      $vmPowerState=$($vm.PowerState)
+      If ($vmPowerState -ne 'PoweredOn') {
+        $vm | Start-VM -Confirm:$false
+      }
+      do {
+        $vmToolsStatus=($vm | Get-View).Guest.ToolsStatus
+        sleep 3
+      }
+      until ($vmToolsStatus -eq 'toolsOk')
+    }
+    {%   endif %}
+    {% endfor %}
+    Disconnect-VIServer * -Confirm:$false
+
+- name: bootstrap_vms | Waiting For All IP Addresses To Be Captured
+  vmware_guest_facts:
+    hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+    username: "{{ vsphere_user_info['username'] }}"
+    password: "{{ vsphere_user_info['password'] }}"
+    datacenter: ha-datacenter
+    validate_certs: false
+    name: "{{ item['vm_name'] }}"
+    folder: /ha-datacenter/vm
+  delegate_to: localhost
+  register: _vsphere_bootstrap_vm_facts
+  until: _vsphere_bootstrap_vm_facts['instance']['ipv4'] != None
+  retries: 30
+  delay: 10
+  with_items: "{{ vsphere_bootstrap_vms }}"
+
+- name: bootstrap_vms | Creating Dynamic Inventory For bootstrap_vm
+  add_host:
+    hostname: "{{ item['instance']['hw_name'] }}"
+    ansible_host: "{{ item['instance']['ipv4'] }}"
+    groups: bootstrap_vms
+  changed_when: false
+  with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
+
+- name: bootstrap_vms | Displaying IP Addresses For Each VM
+  debug: msg="{{ hostvars[item]['inventory_hostname'] }} has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['bootstrap_vms'] }}"
+
+- name: bootstrap_vms | Waiting for SSH
+  wait_for:
+    host: "{{ hostvars[item]['ansible_host'] }}"
+    port: 22
+    search_regex: OpenSSH
+    delay: 10
+  vars:
+    ansible_connection: local
+  with_items: "{{ groups['bootstrap_vms'] }}"
+  when: vsphere_bootstrap_vms_wait_for_ssh
+
+- name: bootstrap_vms | Creating Inventory For bootstrap_vms
+  template:
+    src: bootstrap_vms.inv.j2
+    dest: "{{ vsphere_bootstrap_vms_inventory_file }}"
+  become: false
+  delegate_to: localhost
+  when: vsphere_bootstrap_generate_inventory

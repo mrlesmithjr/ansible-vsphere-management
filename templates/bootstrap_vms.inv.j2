@@ -1,0 +1,4 @@
+[bootstrap_vms]
+{% for host in groups['bootstrap_vms'] %}
+{{ hostvars[host]['inventory_hostname'] }} ansible_host={{ hostvars[host]['ansible_host'] }}
+{% endfor %}
