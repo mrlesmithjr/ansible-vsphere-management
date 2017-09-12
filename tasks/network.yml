@@ -4,19 +4,12 @@
     $vmHost="{{ hostvars[item]['ansible_host'] }}"
     Connect-VIServer -Server $vmHost
     $vmServer=(Get-VMHost -Server $vmHost)
-    $CurrentvSwitches=@($vmServer | Get-VirtualSwitch| Select-Object -ExpandProperty Name)
-    $DesiredvSwitches=@("{% for vs in vsphere_vswitches %}{{ vs['name'] }}{% if not loop.last %}", "{% endif %}{% endfor %}")
-    Foreach ($i in $CurrentvSwitches) {
-      if ($DesiredvSwitches -notcontains $i) {
-        "Removing $i on $vmHost" | Out-File -Append {{ vsphere_management_log }}
-        Remove-VirtualSwitch -Server $vmHost $i -Confirm:$false
-      }
-    }
     {% for vswitch in vsphere_vswitches %}
+    $CurrentvSwitches=@(($vmServer | Get-VirtualSwitch).Name)
     $vSwitchName="{{ vswitch['name'] }}"
     if ($CurrentvSwitches -notcontains $vSwitchName){
-      "Adding $i on $vmHost" | Out-File -Append {{ vsphere_management_log }}
-      New-VirtualSwitch -Server $vmHost -Name $vSwitchName -Confirm:$false
+      "Adding $vSwitchName on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+      New-VirtualSwitch -Server $vmHost -Name $vSwitchName -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
     }
     {%   if vswitch['active_nics'] is defined %}
     $DesiredActiveNics=@("{{ vswitch['active_nics']|join('", "') }}")
@@ -64,8 +57,8 @@
     if ($DesiredActiveNics -ne $null) {
       Foreach ($i in $DesiredActiveNics) {
         if ($ActiveNics -notcontains $i){
-          "Making $i active on $vmHost" | Out-File -Append {{ vsphere_management_log }}
-          $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicActive $i
+          "Making $i active for $vSwitchName on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicActive $i | Out-File -Append {{ vsphere_management_log }}
         }
       }
     }
@@ -75,8 +68,8 @@
     if ($DesiredStandbyNics -ne $null) {
       Foreach ($i in $DesiredStandbyNics) {
         if ($StandByNics -notcontains $i){
-          "Making $i standby on $vmHost" | Out-File -Append {{ vsphere_management_log }}
-          $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicStandby $i
+          "Making $i standby for $vSwitchName on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicStandby $i | Out-File -Append {{ vsphere_management_log }}
         }
       }
     }
@@ -117,5 +110,14 @@
     }
     {%   endif %}
     {% endfor %}
+    $CurrentvSwitches=@(($vmServer | Get-VirtualSwitch).Name)
+    $DesiredvSwitches=@("{% for vs in vsphere_vswitches %}{{ vs['name'] }}{% if not loop.last %}", "{% endif %}{% endfor %}")
+    Foreach ($i in $CurrentvSwitches) {
+      if ($DesiredvSwitches -notcontains $i) {
+        "Removing $i on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+        Remove-VirtualSwitch -Server $vmHost $i -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+      }
+    }
+    Disconnect-VIServer * -Confirm:$false
   with_items: "{{ groups[vsphere_management_hosts_group] }}"
   when: vsphere_vswitches is defined
