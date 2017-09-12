@@ -95,6 +95,7 @@ vsphere_vswitches:
       # - vmnic5
     standby_nics: []
       # - vmnic4
+    unused_nics: []
       # - vmnic5
     portgroups:
       - name: Management Network
@@ -125,6 +126,8 @@ vsphere_vswitches:
   #     - vmnic0
   #   standby_nics: []
   #     # - vmnic1
+  #   unused_nics: []
+  #     # - vmnic2
 vsphere_management_invalid_certs_action: Ignore
 
 vsphere_management_hosts_group: vsphere_hosts

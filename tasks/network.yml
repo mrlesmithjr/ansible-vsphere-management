@@ -21,6 +21,11 @@
     {%   elif vswitch['standby_nics'] is not defined %}
     $DesiredStandbyNics=@()
     {%   endif %}
+    {%   if vswitch['unused_nics'] is defined %}
+    $DesiredUnusedNics=@("{{ vswitch['unused_nics']|join('", "') }}")
+    {%   elif vswitch['unused_nics'] is not defined %}
+    $DesiredUnusedNics=@()
+    {%   endif %}
     $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
     $CurrentNics=@($vSwitch | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name)
     if ($DesiredActiveNics -ne $null) {
@@ -28,7 +33,7 @@
         if ($CurrentNics -notcontains $i){
           "Adding $i to $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
           $Nic=$(Get-VMHostNetworkAdapter -Server $vmHost -Physical -Name $i)
-          $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false
+          $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
         }
       }
     }
@@ -37,7 +42,16 @@
         if ($CurrentNics -notcontains $i){
           "Adding $i to $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
           $Nic=$(Get-VMHostNetworkAdapter -Server $vmHost -Physical -Name $i)
-          $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false
+          $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        }
+      }
+    }
+    if ($DesiredUnusedNics -ne $null) {
+      Foreach ($i in $DesiredUnusedNics){
+        if ($CurrentNics -notcontains $i){
+          "Adding $i to $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $Nic=$(Get-VMHostNetworkAdapter -Server $vmHost -Physical -Name $i)
+          $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
         }
       }
     }
@@ -45,7 +59,7 @@
     $CurrentNics=@($vSwitch | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name)
     if ($CurrentNics -ne $null) {
       Foreach ($i in $CurrentNics){
-        if ($DesiredActiveNics -notcontains $i -And $DesiredStandbyNics -notcontains $i){
+        if ($DesiredActiveNics -notcontains $i -And $DesiredStandbyNics -notcontains $i -And $DesiredUnusedNics -notcontains $i){
           "Removing $i from $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
           $vmServer | Get-VMHostNetworkAdapter -Physical -Name $i | Remove-VirtualSwitchPhysicalNetworkAdapter -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
         }
@@ -70,6 +84,17 @@
         if ($StandByNics -notcontains $i){
           "Making $i standby for $vSwitchName on $vmHost" | Out-File -Append {{ vsphere_management_log }}
           $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicStandby $i | Out-File -Append {{ vsphere_management_log }}
+        }
+      }
+    }
+    $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
+    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
+    $UnusedNics=@(($NicTeamingPolicy).UnusedNic)
+    if ($DesiredUnusedNics -ne $null) {
+      Foreach ($i in $DesiredUnusedNics) {
+        if ($UnusedNics -notcontains $i){
+          "Making $i unused for $vSwitchName on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicUnused $i | Out-File -Append {{ vsphere_management_log }}
         }
       }
     }
