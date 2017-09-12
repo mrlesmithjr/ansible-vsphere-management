@@ -1,0 +1,3 @@
+---
+- src: https://github.com/mrlesmithjr/ansible-windows-powercli.git
+- src: https://github.com/mrlesmithjr/ansible-windows-remote-desktop.git
