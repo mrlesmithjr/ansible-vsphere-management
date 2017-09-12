@@ -3,47 +3,94 @@
   win_shell: |
     $vmHost="{{ hostvars[item]['ansible_host'] }}"
     Connect-VIServer -Server $vmHost
-    $CurrentvSwitches=@(Get-VMHost -Server $vmHost | Get-VirtualSwitch| Select-Object -ExpandProperty Name)
+    $vmServer=(Get-VMHost -Server $vmHost)
+    $CurrentvSwitches=@($vmServer | Get-VirtualSwitch| Select-Object -ExpandProperty Name)
     $DesiredvSwitches=@("{% for vs in vsphere_vswitches %}{{ vs['name'] }}{% if not loop.last %}", "{% endif %}{% endfor %}")
     Foreach ($i in $CurrentvSwitches) {
       if ($DesiredvSwitches -notcontains $i) {
+        "Removing $i on $vmHost" | Out-File -Append {{ vsphere_management_log }}
         Remove-VirtualSwitch -Server $vmHost $i -Confirm:$false
       }
     }
     {% for vswitch in vsphere_vswitches %}
     $vSwitchName="{{ vswitch['name'] }}"
     if ($CurrentvSwitches -notcontains $vSwitchName){
+      "Adding $i on $vmHost" | Out-File -Append {{ vsphere_management_log }}
       New-VirtualSwitch -Server $vmHost -Name $vSwitchName -Confirm:$false
     }
-    $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
-    $NicTeamingPolicy=(Get-VMHost -Server $vmHost | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
-    $ActiveNics=@($NicTeamingPolicy | Select-Object -ExpandProperty ActiveNic)
-    $CurrentNics=@($vSwitch | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name)
-    {%   if vswitch['nics'] is defined %}
-    $DesiredNics=@($("{{ vswitch['nics']|join('", "') }}"))
-    $LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
-    Foreach ($i in $DesiredNics){
-      if ($CurrentNics -notcontains $i){
-        $Nic=$(Get-VMHostNetworkAdapter -Server $vmHost -Physical -Name $i)
-        $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false
-      }
-    }
-    Foreach ($i in $CurrentNics){
-      if ($DesiredNics -notcontains $i){
-        Get-VMHost -Server $vmHost | Get-VMHostNetworkAdapter -Physical -Name $i | Remove-VirtualSwitchPhysicalNetworkAdapter -Confirm:$false
-      }
-    }
-    Foreach ($i in $DesiredNics) {
-      if ($ActiveNics -notcontains $i){
-        $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicActive $i
-      }
-    }
+    {%   if vswitch['active_nics'] is defined %}
+    $DesiredActiveNics=@("{{ vswitch['active_nics']|join('", "') }}")
+    {%   elif vswitch['active_nics'] is not defined %}
+    $DesiredActiveNics=@()
     {%   endif %}
+    {%   if vswitch['standby_nics'] is defined %}
+    $DesiredStandbyNics=@("{{ vswitch['standby_nics']|join('", "') }}")
+    {%   elif vswitch['standby_nics'] is not defined %}
+    $DesiredStandbyNics=@()
+    {%   endif %}
+    $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
+    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
+    $CurrentNics=@($vSwitch | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name)
+    $LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
+    if ($DesiredActiveNics -ne $null) {
+      Foreach ($i in $DesiredActiveNics){
+        if ($CurrentNics -notcontains $i){
+          "Adding $i to $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $Nic=$(Get-VMHostNetworkAdapter -Server $vmHost -Physical -Name $i)
+          $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false
+        }
+      }
+    }
+    if ($DesiredStandbyNics -ne $null) {
+      Foreach ($i in $DesiredStandbyNics){
+        if ($CurrentNics -notcontains $i){
+          "Adding $i to $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $Nic=$(Get-VMHostNetworkAdapter -Server $vmHost -Physical -Name $i)
+          $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $Nic -Confirm:$false
+        }
+      }
+    }
+    $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
+    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
+    $CurrentNics=@($vSwitch | Get-VMHostNetworkAdapter -Physical | Select-Object -ExpandProperty Name)
+    $LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
+    if ($CurrentNics -ne $null) {
+      Foreach ($i in $CurrentNics){
+        if ($DesiredActiveNics -notcontains $i -And $DesiredStandbyNics -notcontains $i){
+          "Removing $i from $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $vmServer | Get-VMHostNetworkAdapter -Physical -Name $i | Remove-VirtualSwitchPhysicalNetworkAdapter -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        }
+      }
+    }
+    $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
+    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
+    $ActiveNics=@(($NicTeamingPolicy).ActiveNic)
+    if ($DesiredActiveNics -ne $null) {
+      Foreach ($i in $DesiredActiveNics) {
+        if ($ActiveNics -notcontains $i){
+          "Making $i active on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicActive $i
+        }
+      }
+    }
+    $vSwitch=(Get-VirtualSwitch -Server $vmHost -Name $vSwitchName)
+    $NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
+    $StandByNics=@(($NicTeamingPolicy).StandbyNic)
+    if ($DesiredStandbyNics -ne $null) {
+      Foreach ($i in $DesiredStandbyNics) {
+        if ($StandByNics -notcontains $i){
+          "Making $i standby on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+          $vSwitch | Get-NicTeamingPolicy | Set-NicTeamingPolicy -MakeNicStandby $i
+        }
+      }
+    }
+
     {%   if vswitch['portgroups'] is defined %}
     $CurrentPortGroups=@($($vSwitch | Get-VirtualPortGroup | Select-Object -ExpandProperty Name))
     $DesiredPortGroups=@("{% for pg in vswitch['portgroups'] %}{{ pg['name'] }}{% if not loop.last %}", "{% endif %}{% endfor %}")
     Foreach ($i in $CurrentPortGroups) {
       if ($DesiredPortGroups -notcontains $i) {
+        "Removing $i from $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
         $pg=($vSwitch | Get-VirtualPortGroup -Name $i)
         Remove-VirtualPortGroup -VirtualPortGroup $pg -Confirm:$false
       }
@@ -51,13 +98,14 @@
     {%     for portgroup in vswitch['portgroups'] %}
     $PortGroupName="{{ portgroup['name'] }}"
     if ($CurrentPortGroups -notcontains $PortGroupName){
+      "Adding $i on $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
       New-VirtualPortGroup -Server $vmHost -VirtualSwitch $vSwitchName -Name $PortGroupName{% if portgroup['vlan_id'] is defined %} -VLanId {{ portgroup['vlan_id'] }}{% endif %} -Confirm:$false
     }
     {%       if portgroup['inherit_failover_order'] is defined %}
     $CurrentFailoverOrderInherited="$($vSwitch | Get-VirtualPortGroup -Name $PortGroupName | Get-NicTeamingPolicy | Select-Object -ExpandProperty IsFailoverOrderInherited)"
     $DesiredFailoverOrderInherited="{{ portgroup['inherit_failover_order'] }}"
     if ($CurrentFailoverOrderInherited -ne $DesiredFailoverOrderInherited) {
-      $Policy=(Get-VMHost -Server $vmHost | Get-VirtualPortGroup -Name $PortGroupName| Get-NicTeamingPolicy)
+      $Policy=($vmServer | Get-VirtualPortGroup -Name $PortGroupName| Get-NicTeamingPolicy)
       Set-NicTeamingPolicy -VirtualPortGroupPolicy $Policy -InheritFailoverOrder ${{ portgroup['inherit_failover_order']|lower }} -Confirm:$false
     }
     {%       endif %}

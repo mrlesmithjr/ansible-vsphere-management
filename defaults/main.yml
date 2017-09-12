@@ -88,9 +88,12 @@ vsphere_validate_certs: false
 vsphere_vswitches:
   - name: vSwitch0
     load_balancing_policy: LoadBalanceSrcId
-    nics:
+    active_nics:
       - vmnic2
       - vmnic3
+      # - vmnic4
+      # - vmnic5
+    standby_nics: []
       # - vmnic4
       # - vmnic5
     portgroups:
