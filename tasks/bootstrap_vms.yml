@@ -108,6 +108,7 @@
   retries: 30
   delay: 10
   with_items: "{{ vsphere_bootstrap_vms }}"
+  when: item['deploy']
 
 - name: bootstrap_vms | Creating Dynamic Inventory For bootstrap_vm
   add_host:
