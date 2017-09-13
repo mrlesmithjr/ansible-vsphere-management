@@ -104,18 +104,21 @@ $DesiredPortGroups=@("{% for pg in vswitch['portgroups'] %}{{ pg['name'] }}{% if
 $DesiredPortGroups=@()
 {% endif %}
 Foreach ($i in $CurrentPortGroups) {
-  if ($DesiredPortGroups -ne $null) {
+  if ($DesiredPortGroups -ne $null -And $i -ne $null) {
     if ($DesiredPortGroups -notcontains $i) {
-    $vms=@($vmServer | Get-VirtualPortGroup -Name $i | Get-VM)
+      $vms=@($vmServer | Get-VirtualPortGroup -Name $i | Get-VM)
+      if ($vms.Count -ne 0) {
+        "Creating $i-ToBeRemoved on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+        $pgVlanId=((Get-VirtualPortGroup -Server $vmHost -Name $i).VlanId)
+        $pgToBeRemoved="$i-ToBeRemoved"
+        New-VirtualPortGroup -Server $vmHost -VirtualSwitch $vSwitchName -Name $pgToBeRemoved -VLanId $pgVlanId -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        $vmServer | Get-VM | Get-NetworkAdapter | Where { $_.NetworkName -eq $i } | Set-NetworkAdapter -Portgroup $pgToBeRemoved -RunAsync -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+      }
+      $vms=@($vmServer | Get-VirtualPortGroup -Name $i | Get-VM)
       if ($vms.Count -eq 0) {
         "Removing $i from $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
         $pg=($vSwitch | Get-VirtualPortGroup -Name $i)
         Remove-VirtualPortGroup -VirtualPortGroup $pg -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
-      }
-      if ($vms.Count -ne 0) {
-        "Renaming $1 to $i-ToBeRemoved on $vmHost" | Out-File -Append {{ vsphere_management_log }}
-        $pgRenameVlanId=((Get-VirtualPortGroup -Server $vmHost -Name $i).VlanId)
-        Get-VirtualPortGroup -Server $vmHost -Name $i | Set-VirtualPortGroup -Name $i-ToBeRemoved -VLanId $pgRenameVlanId -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
       }
     }
   }
@@ -127,30 +130,29 @@ $PortGroupName="{{ portgroup['name'] }}"
 if ($AllPortGroups -notcontains $PortGroupName){
   "Adding $i on $vSwitch on $vmHost" | Out-File -Append {{ vsphere_management_log }}
   New-VirtualPortGroup -Server $vmHost -VirtualSwitch $vSwitchName -Name $PortGroupName{% if portgroup['vlan_id'] is defined %} -VLanId {{ portgroup['vlan_id'] }}{% endif %} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  $pgToBeRemoved="$PortGroupName-ToBeRemoved"
+  $vmServer | Get-VM | Get-NetworkAdapter | Where { $_.NetworkName -eq $pgToBeRemoved } | Set-NetworkAdapter -Portgroup $PortGroupName -RunAsync -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 }
-if ($AllPortGroups -contains $PortGroupName){
-  "Rename portgroup"
-}
-{%       if portgroup['inherit_failover_order'] is defined %}
-$CurrentFailoverOrderInherited="$($vSwitch | Get-VirtualPortGroup -Name $PortGroupName | Get-NicTeamingPolicy | Select-Object -ExpandProperty IsFailoverOrderInherited)"
-$DesiredFailoverOrderInherited="{{ portgroup['inherit_failover_order'] }}"
-if ($CurrentFailoverOrderInherited -ne $DesiredFailoverOrderInherited) {
-  "Changing failover policy from $CurrentFailoverOrderInherited to $DesiredFailoverOrderInherited on $vmHost" | Out-File -Append {{ vsphere_management_log }}
-  $Policy=($vmServer | Get-VirtualPortGroup -Name $PortGroupName| Get-NicTeamingPolicy)
-  Set-NicTeamingPolicy -VirtualPortGroupPolicy $Policy -InheritFailoverOrder ${{ portgroup['inherit_failover_order']|lower }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
-}
-{%       endif %}
+#{%       if portgroup['inherit_failover_order'] is defined %}
+#$CurrentFailoverOrderInherited="$($vSwitch | Get-VirtualPortGroup -Name $PortGroupName | Get-NicTeamingPolicy | Select-Object -ExpandProperty IsFailoverOrderInherited)"
+#$DesiredFailoverOrderInherited="{{ portgroup['inherit_failover_order'] }}"
+#if ($CurrentFailoverOrderInherited -ne $DesiredFailoverOrderInherited) {
+#  "Changing failover policy from $CurrentFailoverOrderInherited to $DesiredFailoverOrderInherited on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+#  $Policy=($vmServer | Get-VirtualPortGroup -Name $PortGroupName| Get-NicTeamingPolicy)
+#  Set-NicTeamingPolicy -VirtualPortGroupPolicy $Policy -InheritFailoverOrder ${{ portgroup['inherit_failover_order']|lower }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+#}
+#{%       endif %}
 {%     endfor %}
 {%   endif %}
-{%   if vswitch['load_balancing_policy'] is defined %}
-$NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
-$LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
-$vmSwitchLoadBalancingPolicy="{{ vswitch['load_balancing_policy'] }}"
-If ($LoadBalancingPolicy -ne $vmSwitchLoadBalancingPolicy) {
-  "Setting $vSwitch Load Balancing Policy to $vmSwitchLoadBalancingPolicy on $vmHost" | Out-File -Append {{ vsphere_management_log }}
-  $NicTeamingPolicy | Set-NicTeamingPolicy -LoadBalancingPolicy $vmSwitchLoadBalancingPolicy -Confirm $false | Out-File -Append {{ vsphere_management_log }}
-}
-{%   endif %}
+#{%   if vswitch['load_balancing_policy'] is defined %}
+#$NicTeamingPolicy=($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-NicTeamingPolicy)
+#$LoadBalancingPolicy=($NicTeamingPolicy | Select-Object -ExpandProperty LoadBalancingPolicy)
+#$vmSwitchLoadBalancingPolicy="{{ vswitch['load_balancing_policy'] }}"
+#If ($LoadBalancingPolicy -ne $vmSwitchLoadBalancingPolicy) {
+#  "Setting $vSwitch Load Balancing Policy to $vmSwitchLoadBalancingPolicy on $vmHost" | Out-File -Append {{ vsphere_management_log }}
+#  $NicTeamingPolicy | Set-NicTeamingPolicy -LoadBalancingPolicy $vmSwitchLoadBalancingPolicy -Confirm $false | Out-File -Append {{ vsphere_management_log }}
+#}
+#{%   endif %}
 {% endfor %}
 $CurrentvSwitches=@(($vmServer | Get-VirtualSwitch).Name)
 $DesiredvSwitches=@("{% for vs in vsphere_vswitches %}{{ vs['name'] }}{% if not loop.last %}", "{% endif %}{% endfor %}")

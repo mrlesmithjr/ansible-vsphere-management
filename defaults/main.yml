@@ -125,6 +125,17 @@ vsphere_vswitches:
       - vmnic5
     standby_nics: []
     unused_nics: []
+    portgroups: []
+      # - name: VSS-VLAN-101
+      #   inherit_failover_order: true
+      #   vlan_id: 101
+      # - name: VSS-VLAN-102
+      #   inherit_failover_order: true
+      #   vlan_id: 102
+      # - name: VSS-VLAN-201
+      #   inherit_failover_order: true
+      #   vlan_id: 201
+
 vsphere_management_invalid_certs_action: Ignore
 
 vsphere_management_hosts_group: vsphere_hosts
