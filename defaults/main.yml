@@ -29,6 +29,8 @@ vsphere_bootstrap_generate_inventory: true
 
 vsphere_bootstrap_vms_inventory_file: ../inventory/bootstrap_vms.inv
 
+vsphere_bootstrap_vms_json_output_file: ./bootstrap_vms.json
+
 vsphere_bootstrap_vms_wait_for_ssh: true
 
 vsphere_dns_nameservers:
