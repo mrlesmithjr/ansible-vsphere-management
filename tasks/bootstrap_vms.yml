@@ -95,7 +95,10 @@
 - name: bootstrap_vms | Displaying IP Addresses For Each VM
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
   with_items: "{{ groups['bootstrap_vms'] }}"
-  when: groups['bootstrap_vms'] is defined
+  when: >
+        groups['bootstrap_vms'] is defined and
+        (groups['vsphere_bootstrap_vms_deploy'] is defined and
+        hostvars[item]['inventory_hostname'] in groups['vsphere_bootstrap_vms_deploy'])
 
 - name: bootstrap_vms | Displaying Failed VMs
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} Failed and has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
@@ -113,7 +116,9 @@
   with_items: "{{ groups['bootstrap_vms'] }}"
   when: >
         vsphere_bootstrap_vms_wait_for_ssh and
-        groups['bootstrap_vms'] is defined
+        groups['bootstrap_vms'] is defined and
+        (groups['vsphere_bootstrap_vms_deploy'] is defined and
+        hostvars[item]['inventory_hostname'] in groups['vsphere_bootstrap_vms_deploy'])
 
 - name: bootstrap_vms | Creating Inventory For bootstrap_vms
   template:
