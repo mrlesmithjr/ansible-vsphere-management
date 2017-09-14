@@ -34,6 +34,16 @@ as changes however, if you watch your `vSphere` host tasks you will not see thin
 change unless something was required to change. This repo will be continually a
 work in progress so do not expect perfection.
 
+> Note: As this progresses you will notice that the focus around strict policy
+> enforcement is growing. The reason behind that is because the goal should be
+> that mostly everything in the environment should be defined as code. If manual
+> changes occur outside of the code this can lead to an unmanaged environment.
+> By enforcing strict policies, we can ensure that the environment is stable.
+> This is something that should exist but unfortunately most environments do not
+> follow this. Which means that this strict policy enforcement may not be suitable
+> for each environment. Over time the ability to enable/disable enforcement will
+> grow allowing for more flexibility.
+
 ## Requirements
 
 ### Windows 2012R2/2016 Host
