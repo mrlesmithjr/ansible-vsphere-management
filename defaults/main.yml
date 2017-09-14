@@ -136,6 +136,20 @@ vsphere_vswitches:
       #   inherit_failover_order: true
       #   vlan_id: 201
 
+vsphere_vswitches_management_network: Management Network
+
+# Add documentation on usage
+vsphere_vswitches_quarantine_unmanaged_portgroups: false
+
+# Add documentation on usage
+vsphere_vswitches_quarantine_vswitch: Quarantine
+
+# Add documentation on usage
+vsphere_vswitches_remove_unmanaged_portgroups: false
+
+# Add documentation on usage
+vsphere_vswitches_remove_unmanaged_vswitches: false
+
 vsphere_management_invalid_certs_action: Ignore
 
 vsphere_management_hosts_group: vsphere_hosts

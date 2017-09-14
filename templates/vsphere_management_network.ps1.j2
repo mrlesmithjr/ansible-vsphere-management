@@ -111,7 +111,7 @@ if ($DesiredUnusedNics -ne $null) {
 {%   for vswitch in vsphere_vswitches %}
 {%     for portgroup in vswitch['portgroups'] %}
 $DesiredVswitch="{{ vswitch['name'] }}"
-$ManagementNetwork="{{ vspshere_vswitches_management_network }}"
+$ManagementNetwork="{{ vsphere_vswitches_management_network }}"
 
 $dpg="{{ portgroup['name'] }}"
 if ($dpg -ne $ManagementNetwork) {
@@ -180,13 +180,67 @@ $DesiredvSwitches=@("{% for vs in vsphere_vswitches %}{{ vs['name'] }}{% if not 
 $AllvSwitches=(($vmServer | Get-VirtualSwitch).Name)
 foreach ($vSwitch in $AllvSwitches) {
   if ($DesiredvSwitches -notcontains $vSwitch) {
-    "$vSwitch Does Is Not A Desired vSwitch On $vmhost...Removing $vSwitch" | Out-File -Append {{ vsphere_management_log }}
+{%   if vsphere_vswitches_remove_unmanaged_vswitches %}
+    "$vSwitch Is Not A Desired vSwitch On $vmhost...Removing $vSwitch" | Out-File -Append {{ vsphere_management_log }}
     Remove-VirtualSwitch -Server $vmHost $vSwitch -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+{%   elif not vsphere_vswitches_remove_unmanaged_vswitches %}
+    "$vSwitch Is Not A Desired vSwitch On $vmhost...IT SHOULD BE REMOVED!!!!" | Out-File -Append {{ vsphere_management_log }}
+{%   endif %}
   }
   else {
     "$vSwitch Is A Desired vSwitch On $vmhost...Not Removing $vSwitch" | Out-File -Append {{ vsphere_management_log }}
   }
 }
+
+{%   if vsphere_vswitches_quarantine_unmanaged_portgroups %}
+$AllvSwitches=@(($vmServer | Get-VirtualSwitch).Name)
+$QuarantinevSwitch="{{ vsphere_vswitches_quarantine_vswitch }}"
+if ($AllvSwitches -notcontains $QuarantinevSwitch) {
+  $vmServer | New-VirtualSwitch -Name $QuarantinevSwitch -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+}
+
+{%     for vswitch in vsphere_vswitches %}
+$vSwitchName="{{ vswitch['name'] }}"
+{%       if vswitch['portgroups'] is defined %}
+$SafePortGroups=@("{% for dpg in vswitch['portgroups'] %}{{ dpg['name'] }}{% if not loop.last %}", "{% endif %}{% endfor %}")
+{%       elif vswitch['portgroups'] is not defined %}
+$SafePortGroups=@()
+{%       endif %}
+$vSwitchPortGroups=@(($vmServer | Get-VirtualSwitch -Name $vSwitchName | Get-VirtualPortGroup).Name)
+if ($vSwitchPortGroups -ne $null) {
+  foreach ($pg in $vSwitchPortGroups) {
+    if ($SafePortGroups -notcontains $pg) {
+      $vms=@(($vmServer | Get-VirtualPortGroup -Name $pg | Get-VM).Name)
+      if ($vms.Count -ne 0 -and $vms -ne $null) {
+        foreach ($vm in $vms) {
+          $_vm=($vmServer | Get-VM -Name $vm)
+          $_vmPowerState=($_vm.PowerState)
+          if ($_vmPowerState -eq 'PoweredOn') {
+            $_vm | Shutdown-VMGuest -Confirm:$false  | Out-File -Append {{ vsphere_management_log }}
+            do {
+              $_vm=($vmServer | Get-VM -Name $vm)
+              $_vmPowerState=($_vm.PowerState)
+              sleep 3
+            } until ($_vmPowerState -eq 'PoweredOff')
+          }
+          $QuarantinePG="Quarantine_$pg"
+          $pgVlanId=((Get-VirtualPortGroup -Server $vmHost -Name $pg).VlanId)
+          $QuarantinePortGroups=@(($vmServer | Get-VirtualSwitch -Name $QuarantinevSwitch | Get-VirtualPortGroup).Name)
+          if ($QuarantinePortGroups -notcontains $QuarantinePG) {
+            New-VirtualPortGroup -Server $vmHost -VirtualSwitch $QuarantinevSwitch -Name $QuarantinePG -VLanId $pgVlanId -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+          }
+          $_vm | Get-NetworkAdapter | Where-Object NetworkName -eq $pg | Set-NetworkAdapter -Portgroup $QuarantinePG -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        }
+      }
+      else {
+        "Deleting $pg"
+      }
+    }
+  }
+}
+
+{%     endfor %}
+{%   endif %}
 
 Disconnect-VIServer * -Confirm:$false
 
