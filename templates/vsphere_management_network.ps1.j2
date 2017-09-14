@@ -114,12 +114,18 @@ $DesiredVswitch="{{ vswitch['name'] }}"
 $ManagementNetwork="{{ vsphere_vswitches_management_network }}"
 
 $dpg="{{ portgroup['name'] }}"
+$pgVlanId="{{ portgroup['vlan_id']|default(0) }}"
 if ($dpg -ne $ManagementNetwork) {
   $AllPortGroups=(($vmServer | Get-VirtualPortGroup).Name)
   if ($AllPortGroups -contains $dpg) {
     $dpgvs=($vmServer | Get-VirtualPortGroup -Name $dpg | Get-VirtualSwitch | Select-Object -ExpandProperty Name)
     if ($dpgvs -eq $DesiredVswitch) {
       "$dpg Exists On The Correct vSwitch On $vmhost" | Out-File -Append {{ vsphere_management_log }}
+      $CurrentPGVlanId=((Get-VirtualPortGroup -Server $vmHost -Name $dpg).VlanId)
+      $DesiredPGVlanID=$pgVlanId
+      if ($CurrentPGVlanId -ne $DesiredPGVlanID) {
+        Get-VirtualPortGroup -Server $vmHost -Name $dpg | Set-VirtualPortGroup -VLanId $DesiredPGVlanID
+      }
       $pgToBeRemoved="$dpg-ToBeRemoved"
       if ($AllPortGroups -contains $pgToBeRemoved) {
         $dpgvsToBeRemoved=($vmServer | Get-VirtualPortGroup -Name $pgToBeRemoved | Get-VirtualSwitch | Select-Object -ExpandProperty Name)
@@ -134,12 +140,11 @@ if ($dpg -ne $ManagementNetwork) {
       "$dpg Does Not Exist On The Correct vSwitch On $vmhost" | Out-File -Append {{ vsphere_management_log }}
       $pgToBeRemoved="$dpg-ToBeRemoved"
       if ($AllPortGroups -notcontains $pgToBeRemoved) {
-        $pgVlanId=((Get-VirtualPortGroup -Server $vmHost -Name $dpg).VlanId)
         "$dpg-ToBeRemoved Does Not Exist So Creating It On $vmhost" | Out-File -Append {{ vsphere_management_log }}
         New-VirtualPortGroup -Server $vmHost -VirtualSwitch $DesiredVswitch -Name $pgToBeRemoved -VLanId $pgVlanId -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
         $vmServer | Get-VM | Get-NetworkAdapter | Where-Object NetworkName -eq $dpg | Set-NetworkAdapter -Portgroup $pgToBeRemoved -Confirm:$false -RunAsync | Out-File -Append {{ vsphere_management_log }}
         Get-VirtualPortGroup -Server $vmHost -Name $dpg | Remove-VirtualPortGroup -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
-        New-VirtualPortGroup -Server $vmHost -VirtualSwitch $DesiredVswitch -Name $dpg -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        New-VirtualPortGroup -Server $vmHost -VirtualSwitch $DesiredVswitch -Name $dpg -VLanId $pgVlanId -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
         $vmServer | Get-VM | Get-NetworkAdapter | Where-Object NetworkName -eq $pgToBeRemoved | Set-NetworkAdapter -Portgroup $dpg -Confirm:$false -RunAsync | Out-File -Append {{ vsphere_management_log }}
         Get-VirtualPortGroup -Server $vmHost -Name $pgToBeRemoved | Remove-VirtualPortGroup -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
       }
@@ -152,7 +157,7 @@ if ($dpg -ne $ManagementNetwork) {
   }
   else {
     "$dpg Does Not Exist so creating it On $vmhost" | Out-File -Append {{ vsphere_management_log }}
-    New-VirtualPortGroup -Server $vmHost -VirtualSwitch $dpgvs -Name $dpg -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+    New-VirtualPortGroup -Server $vmHost -VirtualSwitch $dpgvs -Name $dpg -VLanId $pgVlanId -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   }
 }
 {%     if portgroup['inherit_failover_order'] is defined %}
