@@ -104,9 +104,11 @@
     folder: /ha-datacenter/vm
   delegate_to: localhost
   register: _vsphere_bootstrap_vm_facts
-  until: _vsphere_bootstrap_vm_facts['instance']['ipv4'] != None
+  until: >
+         (_vsphere_bootstrap_vm_facts['instance']['ipv4'] != None)
   retries: 30
-  delay: 10
+  delay: 2
+  failed_when: false
   with_items: "{{ vsphere_bootstrap_vms }}"
   when: item['deploy']
 
@@ -115,12 +117,35 @@
     hostname: "{{ item['instance']['hw_name'] }}"
     ansible_host: "{{ item['instance']['ipv4'] }}"
     groups: bootstrap_vms
+    hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
   changed_when: false
   with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
+  when: >
+        (item['failed'] is defined and
+        not item['failed']) or
+        item['failed'] is not defined
+
+- name: bootstrap_vms | Creating Dynamic Inventory For bootstrap_vms_failed
+  add_host:
+    hostname: "{{ item['instance']['hw_name'] }}"
+    ansible_host: "{{ item['instance']['ipv4']|default(omit) }}"
+    hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
+    groups: bootstrap_vms_failed
+  changed_when: false
+  with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
+  when: >
+        item['failed'] is defined and
+        item['failed']
 
 - name: bootstrap_vms | Displaying IP Addresses For Each VM
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
   with_items: "{{ groups['bootstrap_vms'] }}"
+  when: groups['bootstrap_vms'] is defined
+
+- name: bootstrap_vms | Displaying Failed VMs
+  debug: msg="{{ hostvars[item]['inventory_hostname'] }} Failed and has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['bootstrap_vms_failed'] }}"
+  when: groups['bootstrap_vms_failed'] is defined
 
 - name: bootstrap_vms | Waiting for SSH
   wait_for:
@@ -131,7 +156,9 @@
   vars:
     ansible_connection: local
   with_items: "{{ groups['bootstrap_vms'] }}"
-  when: vsphere_bootstrap_vms_wait_for_ssh
+  when: >
+        vsphere_bootstrap_vms_wait_for_ssh and
+        groups['bootstrap_vms'] is defined
 
 - name: bootstrap_vms | Creating Inventory For bootstrap_vms
   template:
