@@ -31,6 +31,9 @@ vsphere_bootstrap_vms_inventory_file: ../inventory/bootstrap_vms.inv
 
 vsphere_bootstrap_vms_json_output_file: ./bootstrap_vms.json
 
+# This file will contain the encrypted password to use with the boostrap_vms.ps1 script
+vsphere_bootstrap_vms_secure_password_file: c:\tmp\pwd.txt
+
 vsphere_bootstrap_vms_wait_for_ssh: true
 
 vsphere_dns_nameservers:

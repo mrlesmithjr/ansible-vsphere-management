@@ -16,6 +16,10 @@
   with_items: "{{ vsphere_bootstrap_vms }}"
   when: item['deploy']
 
+- name: bootstrap_vms | Generating Secure Password
+  win_shell: $Password=ConvertTo-SecureString -String "{{ vsphere_bootstrap_user_info['password'] }}" -AsPlainText -Force | ConvertFrom-SecureString | Out-File {{ vsphere_bootstrap_vms_secure_password_file }}
+  no_log: true
+
 - name: bootstrap_vms | Generating bootstrap_vms.ps1 Powershell Script
   win_template:
     src: bootstrap_vms.ps1.j2

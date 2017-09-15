@@ -114,6 +114,30 @@ else {
   }
   until ($vmToolsStatus -eq 'toolsOk')
 }
+$SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
+$SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
+$SecureCreds=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SecureBootStrapUser,$SecureBootStrapPassword
+$vm=$vmServer | Get-VM $vmName
+$vmView=$vm | Get-View
+$vmPowerState=$vm.PowerState
+$vmToolsStatus=$vmView.Guest.ToolsStatus
+if ($vmPowerState -eq 'PoweredOn' -and $vmToolsStatus -eq 'toolsOk') {
+  $vmGuestFamily=$vm.Guest.GuestFamily
+  $vmHostName=$vm.Guest.HostName
+  if ($vmGuestFamily -eq 'linuxGuest') {
+    if ($vmHostName -ne $vmName) {
+      $vm | Invoke-VMScript -GuestCredential $SecureCreds -ScriptType Bash "sudo hostnamectl set-hostname $vmName" | Out-File -Append {{ vsphere_management_log }}
+      $vm | Restart-VMGuest -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+      do {
+        $vm=$vmServer | Get-VM $vmName
+        $vmView=$vm | Get-View
+        $vmToolsStatus=$vmView.Guest.ToolsStatus
+        sleep 3
+      }
+      until ($vmToolsStatus -eq 'toolsOk')
+    }
+  }
+}
 {%   endfor %}
 
 Disconnect-VIServer * -Confirm:$false
