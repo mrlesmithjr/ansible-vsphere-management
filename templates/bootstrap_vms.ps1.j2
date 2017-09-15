@@ -6,27 +6,30 @@ $NetworkName="{{ hostvars[vm]['network_name'] }}"
 $vAppSourcePath="{{ hostvars[vm]['vapp_source_path'] }}"
 $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
 
-Connect-VIServer -Server $vmHost
+Connect-VIServer -Server $vmHost | Out-Null
 
-$vmServer=(Get-VMHost -Server $vmHost)
-$vms=@(($vmServer | Get-VM).Name)
+$vmServer=Get-VMHost -Server $vmHost
+$vms=($vmServer | Get-VM).Name
 
 {%     if hostvars[vm]['hw_product_uuid'] is defined %}
   $vmInventoryUuid="{{ hostvars[vm]['hw_product_uuid'] }}"
 if ($vms -notcontains $vmName) {
-  foreach ($i in $vms) {
-    $vmUuid=$((($vmServer | get-VM $i | Get-View).Config).Uuid)
+  foreach ($vm in $vms) {
+    $vm=$vmServer | Get-VM $vm
+    $vmView=$_vm | Get-View
+    $vmUuid=$_vmView.Config.Uuid
     if ($vmInventoryUuid -eq $vmUuid) {
-      $_vmName=$((($vmServer | get-VM $i | Get-View).Config).Name)
-      $vmServer | Get-VM $_vmName | Set-VM -Name $vmName -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+      $vm | Set-VM -Name $vmName -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
     }
   }
 }
-$vms=@(($vmserver | Get-VM).Name)
+$vms=($vmServer | Get-VM).Name
 {%     endif %}
 
 if ($vms -contains $vmName) {
-  $vmUuid=((($vmServer | get-VM $vmName | Get-View).Config).Uuid)
+  $vm=$vmServer | Get-VM $vmName
+  $vmView=$vm | Get-View
+  $vmUuid=$vmView.Config.Uuid
 {%   if hostvars[vm]['hw_product_uuid'] is defined %}
   $vmInventoryUuid="{{ hostvars[vm]['hw_product_uuid'] }}"
   if ($vmInventoryUuid -eq $vmUuid) {
@@ -40,8 +43,8 @@ if ($vms -contains $vmName) {
 {%   endif %}
   if ($vmUuidMatches) {
     $vm=($vmServer | Get-VM $vmName)
-    $vmPowerState=$($vm.PowerState)
-    $vmNetwork=($($vm | Get-NetworkAdapter).NetworkName)
+    $vmPowerState=$vm.PowerState
+    $vmNetwork=($vm | Get-NetworkAdapter).NetworkName
     if ($vmNetwork -ne $NetworkName) {
       if ($vmPowerState -eq 'PoweredOn'){
         "VM Is Not On Correct Network...Moving From $vmNetwork To $NetworkName" | Out-File -Append {{ vsphere_management_log }}
@@ -52,39 +55,40 @@ if ($vms -contains $vmName) {
         $vm | Get-NetworkAdapter | Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
       }
     }
-    $vmCPU=$($vm.NumCpu)
+    $vmCPU=$vm.NumCpu
     if ($vmCPU -ne {{ hostvars[vm]['cpus'] }}) {
       if ($vmPowerState -eq 'PoweredOn') {
         $vm | Shutdown-VMGuest -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
         do {
-          $vm=($vmServer | Get-VM $vmName)
-          $vmPowerState=$($vm.PowerState)
+          $vm=$vmServer | Get-VM $vmName
+          $vmPowerState=$vm.PowerState
           sleep 3
         } until ($vmPowerState -eq 'PoweredOff')
       }
       $vm | set-VM -NumCpu {{ hostvars[vm]['cpus'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
     }
-    $vm=($vmServer | Get-VM $vmName)
-    $vmPowerState=$($vm.PowerState)
-    $vmMemory=$($vm.MemoryMB)
+    $vm=$vmServer | Get-VM $vmName
+    $vmPowerState=$vm.PowerState
+    $vmMemory=$vm.MemoryMB
     if ($vmMemory -ne {{ hostvars[vm]['memory_mb'] }}) {
       if ($vmPowerState -eq 'PoweredOn') {
         $vm | Shutdown-VMGuest -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
         do {
-          $vm=($vmServer | Get-VM $vmName)
-          $vmPowerState=$($vm.PowerState)
+          $vm=$vmServer | Get-VM $vmName
+          $vmPowerState=$vm.PowerState
           sleep 3
         } until ($vmPowerState -eq 'PoweredOff')
       }
       $vm | Set-VM -MemoryMB {{ hostvars[vm]['memory_mb'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
     }
-    $vm=($vmServer | Get-VM $vmName)
-    $vmPowerState=$($vm.PowerState)
+    $vm=$vmServer | Get-VM $vmName
+    $vmPowerState=$vm.PowerState
     if ($vmPowerState -ne 'PoweredOn') {
       $vm | Start-VM -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
     }
     do {
-      $vmToolsStatus=($vm | Get-View).Guest.ToolsStatus
+      $vmView=$vm | Get-View
+      $vmToolsStatus=$vmView.Guest.ToolsStatus
       sleep 3
     }
     until ($vmToolsStatus -eq 'toolsOk')
@@ -92,19 +96,20 @@ if ($vms -contains $vmName) {
 }
 else {
   $deployBootstrapVM=($vmServer | Import-VApp -Datastore $DataStore -Source $vAppSourcePath -Name $vmName -DiskStorageFormat Thin -Confirm:$false) | Out-File -Append {{ vsphere_management_log }}
-  $vm=($vmServer | Get-VM $vmName)
-  $vmCPU=$($vm.NumCpu)
+  $vm=$vmServer | Get-VM $vmName
+  $vmCPU=$vm.NumCpu
   if ($vmCPU -ne {{ hostvars[vm]['cpus'] }}) {
     $vm | set-VM -NumCpu {{ hostvars[vm]['cpus'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   }
-  $vmMemory=$($vm.MemoryMB)
+  $vmMemory=$vm.MemoryMB
   if ($vmMemory -ne {{ hostvars[vm]['memory_mb'] }}) {
     $vm | Set-VM -MemoryMB {{ hostvars[vm]['memory_mb'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   }
   $vm | Get-NetworkAdapter| Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   $vm | Start-VM -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   do {
-    $vmToolsStatus=($vm | Get-View).Guest.ToolsStatus
+    $vmView=$vm | Get-View
+    $vmToolsStatus=$vmView.Guest.ToolsStatus
     sleep 3
   }
   until ($vmToolsStatus -eq 'toolsOk')
