@@ -6,15 +6,12 @@
   win_template:
     src: vsphere_management_network.ps1.j2
     dest: c:\tmp\vsphere_management_network.ps1
-  register: _vsphere_management_network_script
   when: vsphere_vswitches is defined
 
 - name: network | Executing Network Powershell Script
   win_shell: c:\tmp\vsphere_management_network.ps1
   failed_when: _vsphere_management_network_script_execution['stderr_lines'] != []
   register: _vsphere_management_network_script_execution
-  when: >
-        _vsphere_management_network_script['changed'] and
-        vsphere_vswitches is defined
+  when: vsphere_vswitches is defined
 
 - debug: var=_vsphere_management_network_script_execution
