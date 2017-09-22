@@ -1,12 +1,12 @@
 {% if groups['vsphere_bootstrap_vms_deploy'] is defined %}
 $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+Connect-VIServer -Server $vmHost | Out-Null
+
 {%   for vm in groups['vsphere_bootstrap_vms_deploy'] %}
 $DataStore="{{ hostvars[vm]['datastore'] }}"
 $NetworkName="{{ hostvars[vm]['network_name'] }}"
 $vAppSourcePath="{{ hostvars[vm]['vapp_source_path'] }}"
 $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
-
-Connect-VIServer -Server $vmHost | Out-Null
 
 $vmServer=Get-VMHost -Server $vmHost
 $vms=($vmServer | Get-VM).Name
