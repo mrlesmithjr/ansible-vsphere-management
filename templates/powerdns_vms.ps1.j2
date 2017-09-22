@@ -1,0 +1,72 @@
+$vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+$DataStore="{{ vsphere_powerdns_vms['datastore'] }}"
+$NetworkName="{{ vsphere_powerdns_vms['network_name'] }}"
+$vAppSourcePath="{{ vsphere_powerdns_vms['vapp_source_path'] }}"
+
+Connect-VIServer -Server $vmHost | Out-Null
+
+$vmServer=Get-VMHost -Server $vmHost
+$vms=($vmServer | Get-VM).Name
+
+{% for vm in groups['vsphere_powerdns_vms_deploy'] %}
+$vmName="{{ hostvars[vm]['inventory_hostname'] }}"
+if ($vms -notcontains $vmName) {
+  $deployVM=$vmServer | Import-VApp -Datastore $DataStore -Source $vAppSourcePath -Name $vmName -DiskStorageFormat Thin -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  $vm=$vmServer | Get-VM $vmName
+  $vmCPU=$vm.NumCpu
+  if ($vmCPU -ne {{ vsphere_powerdns_vms['cpus'] }}) {
+    $vm | set-VM -NumCpu {{ vsphere_powerdns_vms['cpus'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  }
+  $vmMemory=$vm.MemoryMB
+  if ($vmMemory -ne {{ vsphere_powerdns_vms['memory_mb'] }}) {
+    $vm | Set-VM -MemoryMB {{ vsphere_powerdns_vms['memory_mb'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  }
+  $vm | Get-NetworkAdapter| Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  $vm | Start-VM -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  do {
+    $vmView=$vm | Get-View
+    $vmToolsStatus=$vmView.Guest.ToolsStatus
+    sleep 3
+  }
+  until ($vmToolsStatus -eq 'toolsOk')
+}
+else {
+  $vm=$vmServer | Get-VM $vmName
+  $vmPowerState=$vm.PowerState
+  if ($vmPowerState -ne 'PoweredOn') {
+    $vm | Start-VM -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  }
+  do {
+    $vmView=$vm | Get-View
+    $vmToolsStatus=$vmView.Guest.ToolsStatus
+    sleep 3
+  }
+  until ($vmToolsStatus -eq 'toolsOk')
+}
+$SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
+$SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
+$SecureCreds=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SecureBootStrapUser,$SecureBootStrapPassword
+$vm=$vmServer | Get-VM $vmName
+$vmView=$vm | Get-View
+$vmPowerState=$vm.PowerState
+$vmToolsStatus=$vmView.Guest.ToolsStatus
+if ($vmPowerState -eq 'PoweredOn' -and $vmToolsStatus -eq 'toolsOk') {
+  $vmGuestFamily=$vm.Guest.GuestFamily
+  $vmHostName=$vm.Guest.HostName
+  if ($vmGuestFamily -eq 'linuxGuest') {
+    if ($vmHostName -ne $vmName) {
+      $vm | Invoke-VMScript -GuestCredential $SecureCreds -ScriptType Bash "sudo hostnamectl set-hostname $vmName" | Out-File -Append {{ vsphere_management_log }}
+      $vm | Restart-VMGuest -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+      do {
+        $vm=$vmServer | Get-VM $vmName
+        $vmView=$vm | Get-View
+        $vmToolsStatus=$vmView.Guest.ToolsStatus
+        sleep 3
+      }
+      until ($vmToolsStatus -eq 'toolsOk')
+    }
+  }
+}
+{% endfor %}
+
+Disconnect-VIServer * -Confirm:$false

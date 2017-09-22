@@ -1,13 +1,51 @@
 ---
+- name: dns | Setting DNS Servers
+  set_fact:
+    vsphere_dns_nameservers: "{{ vsphere_dns_servers|join(',') }}"
+  when: >
+        groups['vsphere_powerdns_vms'] is not defined and
+        vsphere_dns_servers is defined
+
+- name: dns | Setting DNS Servers (PowerDNS)
+  set_fact:
+    vsphere_dns_nameservers: "{% for item in groups['vsphere_powerdns_vms'] %}{{ hostvars[item]['ansible_host'] }}{% if not loop.last %},{% endif %}{% endfor %}"
+  when: >
+        groups['vsphere_powerdns_vms'] is defined
+
 - name: dns | Configuring DNS
   vmware_dns_config:
     hostname: "{{ hostvars[item]['ansible_host'] }}"
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
-    change_hostname_to: "{{ hostvars[item]['inventory_hostname'] }}"
+    change_hostname_to: "{{ hostvars[item]['inventory_hostname_short'] }}"
     domainname: "{{ pri_domain_name }}"
-    dns_servers: "{{ vsphere_dns_nameservers|join(',') }}"
+    dns_servers: "{{ vsphere_dns_nameservers }}"
     validate_certs: "{{ vsphere_validate_certs }}"
   delegate_to: localhost
   with_items: "{{ groups[vsphere_management_hosts_group] }}"
   when: vsphere_dns_nameservers is defined
+
+- name: dns | Creating Forward/Reverse Zones
+  shell: |
+           source ../scripts/pdns/bin/activate
+           ../scripts/pdns.py add_zones --apihost {{ hostvars[groups['vsphere_powerdns_vms'][0]]['ansible_host'] }} --zone {{ item }} --zoneType NATIVE
+           deactivate
+  delegate_to: localhost
+  become: false
+  with_items:
+    - '{{ pri_domain_name }}.'
+    - '0.10.in-addr.arpa.'
+  when: groups['vsphere_powerdns_vms'] is defined
+
+- name: dns | Adding ESXi Hosts To {{ pri_domain_name }} Zone
+  shell: |
+           source ../scripts/pdns/bin/activate
+           ../scripts/pdns.py add_records --apihost {{ hostvars[groups['vsphere_powerdns_vms'][0]]['ansible_host'] }} --zone {{ pri_domain_name }}. --name {{ hostvars[item]['inventory_hostname_short'] }} --content {{ hostvars[item]['ansible_host'] }} --recordType A
+           deactivate
+  delegate_to: localhost
+  become: false
+  register: _pdns_records
+  with_items: "{{ groups['vsphere_hosts'] }}"
+  when: groups['vsphere_powerdns_vms'] is defined
+
+- debug: var=_pdns_records

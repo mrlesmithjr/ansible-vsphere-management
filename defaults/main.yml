@@ -36,14 +36,15 @@ vsphere_bootstrap_vms_secure_password_file: c:\tmp\pwd.txt
 
 vsphere_bootstrap_vms_wait_for_ssh: true
 
-vsphere_dns_nameservers:
-  - 10.10.10.1
+# Only define these if not using PowerDNS for DNS
+vsphere_dns_servers: []
+  # - 10.10.10.1
 
 # Define this on a host_vars or group_vars level. Because we look for hostvars
 # variable the default variable defined here does not apply.
 vsphere_enable_software_iscsi: false
 
-vsphere_enable_ssh: true
+vsphere_enable_ssh: false
 
 vsphere_hosts_update: true
 
@@ -56,6 +57,20 @@ vsphere_ntp_servers:
   - 208.73.56.29
   # - 132.163.4.101
   # - 38.229.71.1
+
+vsphere_powerdns_vms: []
+  # cpus: 1
+  # datastore: Datastore_1
+  # deploy: false
+  # memory_mb: 1024
+  # naming: pdns
+  # network_name: VSS-VLAN-101
+  # vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  # vm_count: 3
+
+vsphere_powerdns_generate_inventory: true
+
+vsphere_powerdns_vms_inventory_file: ../inventory/vsphere_powerdns_vms.inv
 
 vsphere_reboot_after_updates: false
 
