@@ -27,9 +27,9 @@ vsphere_bootstrap_vms:
 
 vsphere_bootstrap_generate_inventory: true
 
-vsphere_bootstrap_vms_inventory_file: ../inventory/bootstrap_vms.inv
+vsphere_bootstrap_vms_inventory_file: ../inventory/vsphere_bootstrap_vms.inv
 
-vsphere_bootstrap_vms_json_output_file: ./bootstrap_vms.json
+vsphere_bootstrap_vms_json_output_file: ../inventory/vsphere_bootstrap_vms.json
 
 # This file will contain the encrypted password to use with the boostrap_vms.ps1 script
 vsphere_bootstrap_vms_secure_password_file: c:\tmp\pwd.txt
