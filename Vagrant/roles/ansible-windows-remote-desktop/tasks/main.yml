@@ -1,9 +1,0 @@
----
-# tasks file for ansible-windows-remote-desktop
-
-- include: features.yml
-
-- include: firewall.yml
-  when: windows_remote_desktop_firewall is defined
-
-- include: reboot.yml
