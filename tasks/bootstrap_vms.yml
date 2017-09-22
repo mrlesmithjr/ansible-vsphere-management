@@ -47,7 +47,7 @@
 - name: bootstrap_vms | Generating Nicely Formatted JSON Info
   template:
     src: bootstrap_vms.json.j2
-    dest: ./bootstrap_vms.json
+    dest: "{{ vsphere_bootstrap_vms_json_output_file }}"
   delegate_to: localhost
   become: false
   when: _vsphere_bootstrap_vm_configs['changed']
@@ -71,11 +71,11 @@
   with_items: "{{ vsphere_bootstrap_vms }}"
   when: item['deploy']
 
-- name: bootstrap_vms | Creating Dynamic Inventory For bootstrap_vm
+- name: bootstrap_vms | Creating Dynamic Inventory For vsphere_bootstrap_vms
   add_host:
     hostname: "{{ item['instance']['hw_name'] }}"
     ansible_host: "{{ item['instance']['ipv4'] }}"
-    groups: bootstrap_vms
+    groups: vsphere_bootstrap_vms
     hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
   changed_when: false
   with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
@@ -84,12 +84,12 @@
         not item['failed']) or
         item['failed'] is not defined
 
-- name: bootstrap_vms | Creating Dynamic Inventory For bootstrap_vms_failed
+- name: bootstrap_vms | Creating Dynamic Inventory For vsphere_bootstrap_vms_failed
   add_host:
     hostname: "{{ item['instance']['hw_name'] }}"
     ansible_host: "{{ item['instance']['ipv4']|default(omit) }}"
     hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
-    groups: bootstrap_vms_failed
+    groups: vsphere_bootstrap_vms_failed
   changed_when: false
   with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
   when: >
@@ -98,16 +98,16 @@
 
 - name: bootstrap_vms | Displaying IP Addresses For Each VM
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
-  with_items: "{{ groups['bootstrap_vms'] }}"
+  with_items: "{{ groups['vsphere_bootstrap_vms'] }}"
   when: >
-        groups['bootstrap_vms'] is defined and
+        groups['vsphere_bootstrap_vms'] is defined and
         (groups['vsphere_bootstrap_vms_deploy'] is defined and
         hostvars[item]['inventory_hostname'] in groups['vsphere_bootstrap_vms_deploy'])
 
 - name: bootstrap_vms | Displaying Failed VMs
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} Failed and has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
-  with_items: "{{ groups['bootstrap_vms_failed'] }}"
-  when: groups['bootstrap_vms_failed'] is defined
+  with_items: "{{ groups['vsphere_bootstrap_vms_failed'] }}"
+  when: groups['vsphere_bootstrap_vms_failed'] is defined
 
 - name: bootstrap_vms | Waiting for SSH
   wait_for:
@@ -117,14 +117,14 @@
     delay: 10
   vars:
     ansible_connection: local
-  with_items: "{{ groups['bootstrap_vms'] }}"
+  with_items: "{{ groups['vsphere_bootstrap_vms'] }}"
   when: >
         vsphere_bootstrap_vms_wait_for_ssh and
-        groups['bootstrap_vms'] is defined and
+        groups['vsphere_bootstrap_vms'] is defined and
         (groups['vsphere_bootstrap_vms_deploy'] is defined and
         hostvars[item]['inventory_hostname'] in groups['vsphere_bootstrap_vms_deploy'])
 
-- name: bootstrap_vms | Creating Inventory For bootstrap_vms
+- name: bootstrap_vms | Creating Inventory For vsphere_bootstrap_vms
   template:
     src: bootstrap_vms.inv.j2
     dest: "{{ vsphere_bootstrap_vms_inventory_file }}"
