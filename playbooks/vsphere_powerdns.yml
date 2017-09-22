@@ -1,0 +1,11 @@
+---
+- hosts: vsphere_powerdns_vms
+  roles:
+    - role: ansible-change-hostname
+    - role: ansible-etc-hosts
+    - role: ansible-mariadb-galera-cluster
+    - role: ansible-powerdns-authoritative
+    - role: ansible-powerdns-recursor
+    - role: ansible-apache2
+    - role: ansible-phpipam
+      become: true
