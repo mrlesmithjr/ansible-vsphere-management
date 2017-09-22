@@ -1,3 +1,10 @@
 ---
+- src: https://github.com/mrlesmithjr/ansible-apache2.git
+- src: https://github.com/mrlesmithjr/ansible-change-hostname.git
+- src: https://github.com/mrlesmithjr/ansible-etc-hosts.git
+- src: https://github.com/mrlesmithjr/ansible-mariadb-galera-cluster.git
+- src: https://github.com/mrlesmithjr/ansible-phpipam.git
+- src: https://github.com/mrlesmithjr/ansible-powerdns-authoritative.git
+- src: https://github.com/mrlesmithjr/ansible-powerdns-recursor.git
 - src: https://github.com/mrlesmithjr/ansible-windows-powercli.git
 - src: https://github.com/mrlesmithjr/ansible-windows-remote-desktop.git
