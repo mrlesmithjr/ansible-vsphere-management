@@ -1,0 +1,42 @@
+# {{ ansible_managed }}
+
+[client]
+port = 3306
+socket = /var/run/mysqld/mysqld.sock
+
+[mysqld_safe]
+nice = 0
+socket = /var/run/mysqld/mysqld.sock
+
+[mysqld]
+basedir = /usr
+datadir	= /var/lib/mysql
+expire_logs_days = {{ mariadb_mysql_settings['expire_logs_days'] }}
+key_buffer = {{ mariadb_mysql_settings['key_buffer_size'] }}
+lc-messages-dir = /usr/share/mysql
+log_error = /var/log/mysql/error.log
+max_allowed_packet = {{ mariadb_mysql_settings['max_allowed_packet'] }}
+max_binlog_size = {{ mariadb_mysql_settings['max_binlog_size'] }}
+myisam-recover = BACKUP
+pid-file = /var/run/mysqld/mysqld.pid
+port = {{ mariadb_mysql_port }}
+query_cache_limit = {{ mariadb_mysql_settings['query_cache_limit'] }}
+query_cache_size = {{ mariadb_mysql_settings['query_cache_size'] }}
+skip-external-locking
+socket = /var/run/mysqld/mysqld.sock
+thread_cache_size = {{ mariadb_mysql_settings['query_cache_size'] }}
+thread_stack = {{ mariadb_mysql_settings['thread_stack'] }}
+tmpdir = /tmp
+user = mysql
+
+[mysqldump]
+max_allowed_packet = 16M
+quick
+quote-names
+
+[mysql]
+
+[isamchk]
+key_buffer = 16M
+
+!includedir /etc/mysql/conf.d/

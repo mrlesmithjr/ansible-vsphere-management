@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  author: Larry Smith Jr.
+  description: An [Ansible](https://www.ansible.com) role to install/configure a [MariaDB-Galera Cluster](https://mariadb.com/kb/en/mariadb/what-is-mariadb-galera-cluster/)
+
+  license: MIT
+
+  min_ansible_version: 1.2
+  platforms:
+  - name: EL
+    versions:
+    - 7
+  - name: Ubuntu
+    versions:
+    - precise
+    - trusty
+    - xenial
+  - name: Debian
+    versions:
+    - jessie
+
+  categories:
+  - database
+  - database:sql
+dependencies: []
