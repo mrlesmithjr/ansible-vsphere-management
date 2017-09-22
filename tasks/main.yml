@@ -4,39 +4,61 @@
 - include: set_facts.yml
   tags:
     - vsphere_bootstrap_vms
+    - vsphere_management
     - vsphere_network
+    - vsphere_powerdns_vms
 
 - include: invalid_certs.yml
+  tags:
+    - vsphere_management
 
 - include: creds.yml
+  tags:
+    - vsphere_bootstrap_vms
+    - vsphere_management
+    - vsphere_network
+    - vsphere_powerdns_vms
 
 - include: network.yml
   tags:
     - vsphere_network
 
 - include: dns.yml
+  tags:
+    - vsphere_management
 
 - include: ssh.yml
+  tags:
+    - vsphere_management
 
 - include: ntp.yml
+  tags:
+    - vsphere_management
 
 - include: iscsi.yml
   tags:
     - vsphere_iscsi
+    - vsphere_management
 
 - include: datastores.yml
+  tags:
+    - vsphere_management
 
 - include: maintenance_mode.yml
   tags:
     - vsphere_maintenance_mode
+    - vsphere_management
     - vsphere_updates
 
 - include: updates.yml
   tags:
+    - vsphere_management
     - vsphere_updates
 
 - include: template_vm.yml
   when: vsphere_template_vm['deploy']
+  tags:
+    - vsphere_management
 
 - include: bootstrap_vms.yml
   tags:
