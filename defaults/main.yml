@@ -52,11 +52,11 @@ vsphere_hosts_update: true
 # we iterate through the list of hosts in vsphere_management_hosts_group
 vsphere_maintenance_mode: false
 
-vsphere_ntp_servers:
-  - 96.126.105.86
-  - 208.73.56.29
-  # - 132.163.4.101
-  # - 38.229.71.1
+vsphere_ntp_servers: []
+  # - ip: "{{ vsphere_ntp_vips[0] }}"
+  #   hostname: ntp_01.{{ pri_domain_name }}
+  # - ip: "{{ vsphere_ntp_vips[1] }}"
+  #   hostname: ntp_02.{{ pri_domain_name }}
 
 vsphere_powerdns_vms: []
   # cpus: 1

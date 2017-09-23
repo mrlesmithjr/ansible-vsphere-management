@@ -1,11 +1,17 @@
 #! /usr/bin/env bash
 
 LOG_DIR=logs
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+
 
 if [ ! -d $LOG_DIR ]; then
   mkdir $LOG_DIR
 else [ -d $LOG_DIR ]
   echo "$LOG_DIR already exists"
+fi
+
+if [ -f $LOG_DIR/ansible.log ]; then
+  mv $LOG_DIR/ansible.log $LOG_DIR/ansible.log.$timestamp
 fi
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_management

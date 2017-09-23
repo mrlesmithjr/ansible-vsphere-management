@@ -4,6 +4,7 @@
 - src: https://github.com/mrlesmithjr/ansible-etc-hosts.git
 - src: https://github.com/mrlesmithjr/ansible-keepalived.git
 - src: https://github.com/mrlesmithjr/ansible-mariadb-galera-cluster.git
+- src: https://github.com/mrlesmithjr/ansible-ntp.git
 - src: https://github.com/mrlesmithjr/ansible-phpipam.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-authoritative.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-recursor.git

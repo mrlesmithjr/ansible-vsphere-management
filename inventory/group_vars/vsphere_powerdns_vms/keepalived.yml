@@ -14,7 +14,8 @@ keepalived_router_info:
     router_pri_master: 150
     vip_int: "{{ ansible_primary_interface }}"
     vip_addresses:
-      - "{{ vsphere_dns_servers[0]['ip'] }}"
+      - "{{ vsphere_dns_vips[0] }}"
+      - "{{ vsphere_ntp_vips[0] }}"
   - name: vrrp_2
     # check_script:
     #   - name: chk_nginx
@@ -27,4 +28,5 @@ keepalived_router_info:
     router_pri_master: 150
     vip_int: "{{ ansible_primary_interface }}"
     vip_addresses:
-      - "{{ vsphere_dns_servers[1]['ip'] }}"
+      - "{{ vsphere_dns_vips[1] }}"
+      - "{{ vsphere_ntp_vips[1] }}"

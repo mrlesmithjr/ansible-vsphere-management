@@ -1,0 +1,14 @@
+---
+vsphere_ntp_servers:
+  - ip: "{{ vsphere_ntp_vips[0] }}"
+    hostname: ntp_01.{{ pri_domain_name }}
+  - ip: "{{ vsphere_ntp_vips[1] }}"
+    hostname: ntp_02.{{ pri_domain_name }}
+
+# Defines your primary domain name (FQDN)
+ntp_pri_domain_name: "{{ pri_domain_name }}"
+
+# Defines internal ntp servers for clients to poll
+ntp_servers:
+ - "{{ vsphere_ntp_servers[0]['hostname'] }}"
+ - "{{ vsphere_ntp_servers[1]['hostname'] }}"
