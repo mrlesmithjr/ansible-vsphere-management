@@ -1,7 +1,11 @@
 {% if groups['vsphere_powerdns_vms'] is defined %}
 [vsphere_powerdns_vms]
 {% for host in groups['vsphere_powerdns_vms'] %}
+{%   if _vsphere_powerdns_vms_info is not defined %}
 {{ hostvars[host]['inventory_hostname'] }} ansible_host={{ hostvars[host]['ansible_host'] }} hw_product_uuid={{ hostvars[host]['hw_product_uuid'] }}
+{%   elif _vsphere_powerdns_vms_info is defined %}
+{{ hostvars[host]['inventory_hostname'] }} ansible_host={{ hostvars[host]['ansible_' + ansible_primary_interface]['ipv4']['address'] }} hw_product_uuid={{ hostvars[host]['hw_product_uuid'] }}
+{%   endif %}
 {% endfor %}
 {% elif groups['vsphere_powerdns_vms'] is not defined %}
 [vsphere_powerdns_vms]

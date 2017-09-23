@@ -45,6 +45,8 @@
   with_items: "{{ groups['vsphere_powerdns_vms_deploy'] }}"
   when: groups['vsphere_powerdns_vms_deploy'] is defined
 
+- debug: var=_vsphere_powerdns_vm_facts
+
 - name: powerdns_vms | Creating Initial VM Snapshot
   vmware_guest_snapshot:
     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"

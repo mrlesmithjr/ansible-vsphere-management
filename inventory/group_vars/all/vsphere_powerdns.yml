@@ -1,4 +1,6 @@
 ---
+vsphere_powerdns_vms_inventory_file: ../inventory/vsphere_powerdns_vms.inv
+
 vsphere_powerdns_vms:
   cpus: 1
   datastore: Datastore_1

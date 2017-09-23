@@ -6,13 +6,14 @@
       add_host:
         groups: pdns_nameservers
         name: "{{ hostvars[item]['inventory_hostname_short'] }}.{{ pri_domain_name }}."
+      changed_when: false
       with_items: "{{ groups['vsphere_powerdns_vms'] }}"
 
     - name: Setting DNS Nameservers
       set_fact:
         _pdns_nameservers: "{{ groups['pdns_nameservers']|to_json }}"
 
-    - name: Add Zone
+    - name: Add Zones
       uri:
         url: "{{ pdns_api_url }}/servers/localhost/zones"
         method: POST
@@ -28,8 +29,9 @@
           X-API-Key: "{{ pdns_webserver_password }}"
         status_code: 201, 422
       with_items: "{{ pdns_zones }}"
+      when: pdns_zones is defined
 
-    - name: Add Records
+    - name: Add Records For All Hosts
       uri:
         url: "{{ pdns_api_url }}/servers/localhost/zones/{{ pri_domain_name }}."
         method: PATCH
@@ -50,3 +52,25 @@
         status_code: 201, 204
       with_items: "{{ groups['all'] }}"
       when: hostvars[item]['ansible_host'] is defined
+
+    - name: Add DNS Records
+      uri:
+        url: "{{ pdns_api_url }}/servers/localhost/zones/{{ pri_domain_name }}."
+        method: PATCH
+        body:
+          rrsets:
+            - name: "{{ item['hostname'] }}."
+              type: "A"
+              changetype: "REPLACE"
+              ttl: 86400
+              priority: 0
+              records:
+                - content: "{{ item['ip'] }}"
+                  disabled: false
+                  set-ptr: true
+        body_format: json
+        headers:
+          X-API-Key: "{{ pdns_webserver_password }}"
+        status_code: 201, 204
+      with_items: "{{ vsphere_dns_servers }}"
+      when: vsphere_dns_servers is defined
