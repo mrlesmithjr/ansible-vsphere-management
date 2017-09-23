@@ -20,6 +20,8 @@
   roles:
     - role: ansible-change-hostname
     - role: ansible-etc-hosts
+    - role: ansible-sshd
+      become: true
     - role: ansible-keepalived
       when: >
             vsphere_dns_servers is defined and

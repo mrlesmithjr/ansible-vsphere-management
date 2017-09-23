@@ -7,5 +7,6 @@
 - src: https://github.com/mrlesmithjr/ansible-phpipam.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-authoritative.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-recursor.git
+- src: https://github.com/mrlesmithjr/ansible-sshd.git
 - src: https://github.com/mrlesmithjr/ansible-windows-powercli.git
 - src: https://github.com/mrlesmithjr/ansible-windows-remote-desktop.git
