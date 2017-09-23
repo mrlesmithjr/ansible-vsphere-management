@@ -4,7 +4,8 @@
     vsphere_dns_nameservers: "{{ vsphere_dns_servers|join(',') }}"
   when: >
         groups['vsphere_powerdns_vms'] is not defined and
-        vsphere_dns_servers is defined
+        (vsphere_dns_servers is defined and
+          vsphere_dns_servers != [])
 
 - name: dns | Setting DNS Servers (PowerDNS)
   set_fact:

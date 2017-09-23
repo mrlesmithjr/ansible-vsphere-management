@@ -9,6 +9,7 @@
     groups: vsphere_powerdns_vms_deploy
   changed_when: false
   with_sequence: start=1 end={{ vsphere_powerdns_vms['vm_count'] }}
+  when: vsphere_powerdns_vms is defined
 
 - name: powerdns_vms | Generating Secure Password
   win_shell: $Password=ConvertTo-SecureString -String "{{ vsphere_bootstrap_user_info['password'] }}" -AsPlainText -Force | ConvertFrom-SecureString | Out-File {{ vsphere_bootstrap_vms_secure_password_file }}

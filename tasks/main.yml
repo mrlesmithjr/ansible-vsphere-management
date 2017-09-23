@@ -54,7 +54,10 @@
     - vsphere_updates
 
 - include: template_vm.yml
-  when: vsphere_template_vm['deploy']
+  when: >
+        vsphere_template_vm is defined and
+        (vsphere_template_vm['deploy'] is defined and
+        vsphere_template_vm['deploy'])
   tags:
     - vsphere_management
 
@@ -69,7 +72,8 @@
     - vsphere_powerdns_vms
   when: >
         vsphere_powerdns_vms is defined and
-        vsphere_powerdns_vms['deploy']
+        (vsphere_powerdns_vms['deploy'] is defined and
+        vsphere_powerdns_vms['deploy'])
 
 - include: dns.yml
   tags:
