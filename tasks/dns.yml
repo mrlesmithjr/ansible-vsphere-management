@@ -25,28 +25,3 @@
   delegate_to: localhost
   with_items: "{{ groups[vsphere_management_hosts_group] }}"
   when: vsphere_dns_nameservers is defined
-
-- name: dns | Creating Forward/Reverse Zones
-  shell: |
-           source ../scripts/pdns/bin/activate
-           ../scripts/pdns.py add_zones --apihost {{ hostvars[groups['vsphere_powerdns_vms'][0]]['ansible_host'] }} --zone {{ item }} --zoneType NATIVE
-           deactivate
-  delegate_to: localhost
-  become: false
-  with_items:
-    - '{{ pri_domain_name }}.'
-    - '0.10.in-addr.arpa.'
-  when: groups['vsphere_powerdns_vms'] is defined
-
-- name: dns | Adding ESXi Hosts To {{ pri_domain_name }} Zone
-  shell: |
-           source ../scripts/pdns/bin/activate
-           ../scripts/pdns.py add_records --apihost {{ hostvars[groups['vsphere_powerdns_vms'][0]]['ansible_host'] }} --zone {{ pri_domain_name }}. --name {{ hostvars[item]['inventory_hostname_short'] }} --content {{ hostvars[item]['ansible_host'] }} --recordType A
-           deactivate
-  delegate_to: localhost
-  become: false
-  register: _pdns_records
-  with_items: "{{ groups['vsphere_hosts'] }}"
-  when: groups['vsphere_powerdns_vms'] is defined
-
-- debug: var=_pdns_records

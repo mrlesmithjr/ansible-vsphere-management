@@ -23,6 +23,7 @@
 
 - include: network.yml
   tags:
+    - vsphere_management
     - vsphere_network
 
 - include: ssh.yml

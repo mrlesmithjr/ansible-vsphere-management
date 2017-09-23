@@ -1,0 +1,52 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Creating PDNS Nameserver Group
+      add_host:
+        groups: pdns_nameservers
+        name: "{{ hostvars[item]['inventory_hostname_short'] }}.{{ pri_domain_name }}."
+      with_items: "{{ groups['vsphere_powerdns_vms'] }}"
+
+    - name: Setting DNS Nameservers
+      set_fact:
+        _pdns_nameservers: "{{ groups['pdns_nameservers']|to_json }}"
+
+    - name: Add Zone
+      uri:
+        url: "{{ pdns_api_url }}/servers/localhost/zones"
+        method: POST
+        body:
+          name: "{{ item }}."
+          dnssec: false
+          kind: "Native"
+          masters: []
+          nameservers: "{{ _pdns_nameservers }}"
+          soa_edit_api: "INCEPTION-INCREMENT"
+        body_format: json
+        headers:
+          X-API-Key: "{{ pdns_webserver_password }}"
+        status_code: 201, 422
+      with_items: "{{ pdns_zones }}"
+
+    - name: Add Records
+      uri:
+        url: "{{ pdns_api_url }}/servers/localhost/zones/{{ pri_domain_name }}."
+        method: PATCH
+        body:
+          rrsets:
+            - name: "{{ hostvars[item]['inventory_hostname_short'] }}.{{ pri_domain_name }}."
+              type: "A"
+              changetype: "REPLACE"
+              ttl: 86400
+              priority: 0
+              records:
+                - content: "{{ hostvars[item]['ansible_host'] }}"
+                  disabled: false
+                  set-ptr: true
+        body_format: json
+        headers:
+          X-API-Key: "{{ pdns_webserver_password }}"
+        status_code: 201, 204
+      with_items: "{{ groups['all'] }}"
+      when: hostvars[item]['ansible_host'] is defined

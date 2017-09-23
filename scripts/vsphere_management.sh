@@ -9,3 +9,5 @@ ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_p
 ansible-playbook -i inventory/ playbooks/vsphere_powerdns.yml
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_dns
+
+ansible-playbook -i inventory/ playbooks/pdns.yml
