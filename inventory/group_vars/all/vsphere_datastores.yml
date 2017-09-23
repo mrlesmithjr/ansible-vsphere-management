@@ -1,0 +1,6 @@
+---
+vsphere_datastores:
+  - name: Datastore_1
+    type: NFS
+    path: /TANK/NFS/vSphere/Datastore_1
+    host: 10.0.101.50

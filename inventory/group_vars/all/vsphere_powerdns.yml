@@ -1,0 +1,10 @@
+---
+vsphere_powerdns_vms:
+  cpus: 1
+  datastore: Datastore_1
+  deploy: true
+  memory_mb: 1024
+  naming: pdns
+  network_name: VSS-VLAN-101
+  vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  vm_count: 3

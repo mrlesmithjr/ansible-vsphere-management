@@ -1,0 +1,10 @@
+---
+pdns_api_url: "http://{{ hostvars[groups['vsphere_powerdns_vms'][0]]['ansible_host'] }}:{{ pdns_webserver_port }}/api/v1"
+
+pdns_webserver_password: 'changeme'
+
+pdns_webserver_port: 8081
+
+pdns_zones:
+  - '{{ pri_domain_name }}'
+  - 0.10.in-addr.arpa
