@@ -1,7 +1,7 @@
 ---
 - name: dns | Setting DNS Servers
   set_fact:
-    vsphere_dns_nameservers: "{{ vsphere_dns_servers|map(attribute='ip')|join(',') }}"
+    vsphere_dns_nameservers: "{{ vsphere_dns_servers|join(',') }}"
   when: >
         ((groups['vsphere_powerdns_vms'] is not defined or
         groups['vsphere_powerdns_vms'] is defined) and

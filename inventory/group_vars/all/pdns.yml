@@ -1,5 +1,37 @@
 ---
-pdns_api_url: "http://{{ hostvars[groups['vsphere_powerdns_vms'][0]]['ansible_host'] }}:{{ pdns_webserver_port }}/api/v1"
+pdns_api_vip: "{{ vsphere_lb_vips[0] }}"
+
+pdns_load_balanced: true
+
+pdns_records:
+  - hostname: db
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: A
+  - hostname: dns_01
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_dns_vips[0] }}"
+    type: A
+  - hostname: dns_02
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_dns_vips[1] }}"
+    type: A
+  - hostname: ipam
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: A
+  - hostname: pdns_api
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: A
+  - hostname: ntp_01
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_ntp_vips[0] }}"
+    type: A
+  - hostname: ntp_02
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_ntp_vips[1] }}"
+    type: A
 
 pdns_webserver_password: 'changeme'
 

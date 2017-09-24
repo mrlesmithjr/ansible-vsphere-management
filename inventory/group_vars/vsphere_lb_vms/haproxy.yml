@@ -58,7 +58,7 @@ haproxy_configs:
       - name: weight
         value: 100
     enabled: true
-    frontend_bind_address: "{{ haproxy_lb_vip }}"
+    frontend_bind_address: "{{ pdns_api_vip }}"
     frontend_bind_port: "{{ pdns_webserver_port }}"
     frontend_name: pdns-api-in
     mode: http

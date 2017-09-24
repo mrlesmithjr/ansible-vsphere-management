@@ -38,7 +38,12 @@ vsphere_bootstrap_vms_wait_for_ssh: true
 
 # Only define these if not using PowerDNS for DNS
 vsphere_dns_servers: []
-  # - 10.10.10.1
+  # - "{{ vsphere_dns_vips[0] }}"
+  # - "{{ vsphere_dns_vips[1] }}"
+
+vsphere_dns_vips: []
+  # - 10.0.101.101
+  # - 10.0.101.102
 
 # Define this on a host_vars or group_vars level. Because we look for hostvars
 # variable the default variable defined here does not apply.
@@ -47,20 +52,6 @@ vsphere_enable_software_iscsi: false
 vsphere_enable_ssh: false
 
 vsphere_hosts_update: true
-
-vsphere_lb_dns_records: []
-  # - hostname: db
-  #   domain: "{{ pri_domain_name }}"
-  #   ip: "{{ vsphere_lb_vips[0] }}"
-  #   type: A
-  # - hostname: pdns_api
-  #   domain: "{{ pri_domain_name }}"
-  #   ip: "{{ vsphere_lb_vips[0] }}"
-  #   type: A
-  # - hostname: ipam
-  #   domain: "{{ pri_domain_name }}"
-  #   ip: "{{ vsphere_lb_vips[0] }}"
-  #   type: A
 
 vsphere_lb_vips: []
   # - 10.0.101.100
@@ -84,10 +75,12 @@ vsphere_lb_vms_inventory_file: ../inventory/vsphere_lb_vms.inv
 vsphere_maintenance_mode: false
 
 vsphere_ntp_servers: []
-  # - ip: "{{ vsphere_ntp_vips[0] }}"
-  #   hostname: ntp_01.{{ pri_domain_name }}
-  # - ip: "{{ vsphere_ntp_vips[1] }}"
-  #   hostname: ntp_02.{{ pri_domain_name }}
+  # - "{{ vsphere_ntp_vips[0] }}"
+  # - "{{ vsphere_ntp_vips[1] }}"
+
+vsphere_ntp_vips: []
+  # - 10.0.101.103
+  # - 10.0.101.104
 
 vsphere_powerdns_vms: []
   # cpus: 1

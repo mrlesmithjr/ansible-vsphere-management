@@ -1,18 +1,4 @@
 ---
-vsphere_lb_dns_records:
-  - hostname: db
-    domain: "{{ pri_domain_name }}"
-    ip: "{{ vsphere_lb_vips[0] }}"
-    type: A
-  - hostname: pdns_api
-    domain: "{{ pri_domain_name }}"
-    ip: "{{ vsphere_lb_vips[0] }}"
-    type: A
-  - hostname: ipam
-    domain: "{{ pri_domain_name }}"
-    ip: "{{ vsphere_lb_vips[0] }}"
-    type: A
-
 vsphere_lb_vms_inventory_file: ../inventory/vsphere_lb_vms.inv
 
 vsphere_lb_vms:

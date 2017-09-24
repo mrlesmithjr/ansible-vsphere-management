@@ -4,7 +4,7 @@
     $vmHost="{{ hostvars[item]['ansible_host'] }}"
     Connect-VIServer -Server $vmHost
     $CurrentNtpServers=@($(Get-VMHostNtpServer -Server $vmHost))
-    $NewNtpServers=@($("{{ vsphere_ntp_servers|map(attribute='ip')|join('", "') }}"))
+    $NewNtpServers=@($("{{ vsphere_ntp_servers|join('", "') }}"))
     Foreach ($i in $NewNtpServers){
       if ($CurrentNtpServers -notcontains $i) {
         Add-VmHostNtpServer -Server $vmHost -NtpServer $i -Confirm:$false

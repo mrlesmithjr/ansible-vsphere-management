@@ -1,7 +1,6 @@
 ---
 pri_domain_name: etsbv.internal
+
 vsphere_dns_servers:
-  - ip: "{{ vsphere_dns_vips[0] }}"
-    hostname: dns_01.{{ pri_domain_name }}
-  - ip: "{{ vsphere_dns_vips[1] }}"
-    hostname: dns_02.{{ pri_domain_name }}
+  - "{{ vsphere_dns_vips[0] }}"
+  - "{{ vsphere_dns_vips[1] }}"
