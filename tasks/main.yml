@@ -5,6 +5,8 @@
   tags:
     - vsphere_bootstrap_vms
     - vsphere_dns
+    - vsphere_lb
+    - vsphere_lb_vms
     - vsphere_management
     - vsphere_network
     - vsphere_powerdns_vms
@@ -17,6 +19,8 @@
   tags:
     - vsphere_bootstrap_vms
     - vsphere_dns
+    - vsphere_lb
+    - vsphere_lb_vms
     - vsphere_management
     - vsphere_network
     - vsphere_powerdns_vms
@@ -66,6 +70,15 @@
   tags:
     - vsphere_bootstrap_vms
   when: vsphere_bootstrap_vms is defined
+
+- include: lb_vms.yml
+  tags:
+    - vsphere_lb
+    - vsphere_lb_vms
+  when: >
+        vsphere_lb_vms is defined and
+        (vsphere_lb_vms['deploy'] is defined and
+        vsphere_lb_vms['deploy'])
 
 - include: powerdns_vms.yml
   tags:

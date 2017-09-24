@@ -48,6 +48,37 @@ vsphere_enable_ssh: false
 
 vsphere_hosts_update: true
 
+vsphere_lb_dns_records: []
+  # - hostname: db
+  #   domain: "{{ pri_domain_name }}"
+  #   ip: "{{ vsphere_lb_vips[0] }}"
+  #   type: A
+  # - hostname: pdns_api
+  #   domain: "{{ pri_domain_name }}"
+  #   ip: "{{ vsphere_lb_vips[0] }}"
+  #   type: A
+  # - hostname: ipam
+  #   domain: "{{ pri_domain_name }}"
+  #   ip: "{{ vsphere_lb_vips[0] }}"
+  #   type: A
+
+vsphere_lb_vips: []
+  # - 10.0.101.100
+
+vsphere_lb_vms: []
+  # cpus: 1
+  # datastore: Datastore_1
+  # deploy: false
+  # memory_mb: 512
+  # naming: lb
+  # network_name: VSS-VLAN-101
+  # vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  # vm_count: 2
+
+vsphere_lb_generate_inventory: true
+
+vsphere_lb_vms_inventory_file: ../inventory/vsphere_lb_vms.inv
+
 # Currently this needs to be defined per host in host_vars because of the way
 # we iterate through the list of hosts in vsphere_management_hosts_group
 vsphere_maintenance_mode: false

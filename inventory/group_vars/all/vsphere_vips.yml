@@ -5,6 +5,9 @@ vsphere_dns_vips:
   - 10.0.101.101
   - 10.0.101.102
 
+vsphere_lb_vips:
+  - 10.0.101.100
+
 vsphere_ntp_vips:
   - 10.0.101.103
   - 10.0.101.104

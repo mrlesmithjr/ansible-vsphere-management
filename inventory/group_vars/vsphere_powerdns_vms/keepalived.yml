@@ -9,7 +9,7 @@ keepalived_router_info:
     #     weight: 2
     # Define inventory_hostname of node to be considered Master
     master_node: "{{ groups['vsphere_powerdns_vms'][0] }}"
-    router_id: 50
+    router_id: 51
     router_pri_backup: 100
     router_pri_master: 150
     vip_int: "{{ ansible_primary_interface }}"
@@ -23,7 +23,7 @@ keepalived_router_info:
     #     interval: 2
     #     weight: 2
     master_node: "{{ groups['vsphere_powerdns_vms'][1] }}"
-    router_id: 51
+    router_id: 52
     router_pri_backup: 100
     router_pri_master: 150
     vip_int: "{{ ansible_primary_interface }}"

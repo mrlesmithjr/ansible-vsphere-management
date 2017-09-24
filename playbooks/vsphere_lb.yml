@@ -1,0 +1,27 @@
+---
+- hosts: vsphere_lb_vms
+  tasks:
+    - name: Gathering Info
+      setup:
+      register: _vsphere_lb_vms_info
+      tags:
+        - vsphere_lb_vms_info
+
+    - name: Updating Inventory For vsphere_lb_vms
+      template:
+        src: ../templates/lb_vms.inv.j2
+        dest: "{{ vsphere_lb_vms_inventory_file }}"
+      become: false
+      delegate_to: localhost
+      tags:
+        - vsphere_lb_vms_info
+
+- hosts: vsphere_lb_vms
+  roles:
+    - role: ansible-change-hostname
+    - role: ansible-etc-hosts
+    - role: ansible-sshd
+      become: true
+    - role: ansible-keepalived
+    - role: ansible-haproxy
+    - role: ansible-ntp

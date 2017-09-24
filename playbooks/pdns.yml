@@ -96,3 +96,25 @@
         status_code: 201, 204
       with_items: "{{ vsphere_ntp_servers }}"
       when: vsphere_ntp_servers is defined
+
+    - name: Add vsphere_lb_dns_records
+      uri:
+        url: "{{ pdns_api_url }}/servers/localhost/zones/{{ item.domain }}."
+        method: PATCH
+        body:
+          rrsets:
+            - name: "{{ item['hostname'] }}.{{ item['domain'] }}."
+              type: "{{ item['type'] }}"
+              changetype: "REPLACE"
+              ttl: 86400
+              priority: 0
+              records:
+                - content: "{{ item['ip'] }}"
+                  disabled: false
+                  set-ptr: true
+        body_format: json
+        headers:
+          X-API-Key: "{{ pdns_webserver_password }}"
+        status_code: 201, 204
+      with_items: "{{ vsphere_lb_dns_records }}"
+      when: vsphere_lb_dns_records is defined
