@@ -4,12 +4,12 @@
 - include: set_facts.yml
   tags:
     - vsphere_bootstrap_vms
+    - vsphere_ddi_vms
     - vsphere_dns
     - vsphere_lb
     - vsphere_lb_vms
     - vsphere_management
     - vsphere_network
-    - vsphere_powerdns_vms
 
 - include: invalid_certs.yml
   tags:
@@ -18,12 +18,12 @@
 - include: creds.yml
   tags:
     - vsphere_bootstrap_vms
+    - vsphere_ddi_vms
     - vsphere_dns
     - vsphere_lb
     - vsphere_lb_vms
     - vsphere_management
     - vsphere_network
-    - vsphere_powerdns_vms
 
 - include: network.yml
   tags:
@@ -71,6 +71,11 @@
     - vsphere_bootstrap_vms
   when: vsphere_bootstrap_vms is defined
 
+- include: ddi_vms.yml
+  tags:
+    - vsphere_ddi_vms
+  when: vsphere_ddi_vms is defined
+
 - include: lb_vms.yml
   tags:
     - vsphere_lb
@@ -79,15 +84,6 @@
         vsphere_lb_vms is defined and
         (vsphere_lb_vms['deploy'] is defined and
         vsphere_lb_vms['deploy'])
-
-- include: powerdns_vms.yml
-  tags:
-    - vsphere_dns
-    - vsphere_powerdns_vms
-  when: >
-        vsphere_powerdns_vms is defined and
-        (vsphere_powerdns_vms['deploy'] is defined and
-        vsphere_powerdns_vms['deploy'])
 
 - include: dns.yml
   tags:

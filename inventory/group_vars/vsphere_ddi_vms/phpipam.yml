@@ -1,0 +1,3 @@
+---
+phpipam_db_cluster: true
+phpipam_primary: "{{ groups['vsphere_ddi_vms'][0] }}"

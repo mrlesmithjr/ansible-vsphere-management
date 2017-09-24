@@ -1,7 +1,8 @@
 ---
 vsphere_ntp_servers:
-  - "{{ vsphere_ntp_vips[0] }}"
-  - "{{ vsphere_ntp_vips[1] }}"
+  - "{{ vsphere_dns_servers[0] }}"
+  - "{{ vsphere_dns_servers[1] }}"
+  - "{{ vsphere_dns_servers[2] }}"
 
 # Defines your primary domain name (FQDN)
 ntp_pri_domain_name: "{{ pri_domain_name }}"
@@ -10,3 +11,4 @@ ntp_pri_domain_name: "{{ pri_domain_name }}"
 ntp_servers:
  - "{{ vsphere_ntp_servers[0] }}"
  - "{{ vsphere_ntp_servers[1] }}"
+ - "{{ vsphere_ntp_servers[2] }}"

@@ -18,21 +18,21 @@ ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_m
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_bootstrap_vms
 
-ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_powerdns_vms
+ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_ddi_vms
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_lb_vms
 
-ansible-playbook -i inventory/ playbooks/vsphere_powerdns.yml --tags vsphere_powerdns_vms_info
+ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_info
 
-ansible-playbook -i inventory/ playbooks/vsphere_powerdns.yml
+ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml
 
 ansible-playbook -i inventory/ playbooks/vsphere_lb.yml
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_dns
 
-ansible-playbook -i inventory/ playbooks/vsphere_powerdns.yml --tags vsphere_powerdns_vms_info
+ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_info
 

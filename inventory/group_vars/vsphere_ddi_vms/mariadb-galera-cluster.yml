@@ -1,6 +1,6 @@
 ---
 # galera_cluster_bind_address: 0.0.0.0
 galera_cluster_bind_interface: '{{ ansible_primary_interface }}'
-galera_cluster_name: vsphere_powerdns
-galera_cluster_nodes_group: vsphere_powerdns_vms
+galera_cluster_name: vsphere_ddi
+galera_cluster_nodes_group: vsphere_ddi_vms
 mariadb_pri_domain_name: '{{ pri_domain_name }}'

@@ -1,3 +1,0 @@
----
-phpipam_db_cluster: true
-phpipam_primary: "{{ groups['vsphere_powerdns_vms'][0] }}"

@@ -2,5 +2,6 @@
 pri_domain_name: etsbv.internal
 
 vsphere_dns_servers:
-  - "{{ vsphere_dns_vips[0] }}"
-  - "{{ vsphere_dns_vips[1] }}"
+  - 10.0.102.10
+  - 10.0.102.11
+  - 10.0.102.12

@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  author: Larry Smith Jr.
+  description: An [Ansible](https://www.ansible.com) role to configure network interfaces
+
+  license: license (MIT)
+
+  min_ansible_version: 1.2
+
+  platforms:
+  - name: EL
+    versions:
+    - 6
+    - 7
+  - name: Ubuntu
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - all
+
+  categories:
+  - networking
+  - system
+dependencies: []

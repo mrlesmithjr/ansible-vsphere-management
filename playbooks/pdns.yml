@@ -4,7 +4,7 @@
   tasks:
     - name: Setting pdns_api_url
       set_fact:
-        pdns_api_url: "http://{{ hostvars[groups['vsphere_powerdns_vms'][0]]['ansible_host'] }}:{{ pdns_webserver_port }}/api/v1"
+        pdns_api_url: "http://{{ hostvars[groups['vsphere_ddi_vms'][0]]['ansible_host'] }}:{{ pdns_webserver_port }}/api/v1"
       when: not pdns_load_balanced
 
     - name: Setting pdns_api_url
@@ -17,7 +17,7 @@
         groups: pdns_nameservers
         name: "{{ hostvars[item]['inventory_hostname_short'] }}.{{ pri_domain_name }}."
       changed_when: false
-      with_items: "{{ groups['vsphere_powerdns_vms'] }}"
+      with_items: "{{ groups['vsphere_ddi_vms'] }}"
 
     - name: Setting DNS Nameservers
       set_fact:
