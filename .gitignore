@@ -1,6 +1,7 @@
 *.retry
 inventory/group_vars/all/accounts.yml
 inventory/vsphere_bootstrap_vms.inv
+inventory/vsphere_lb_vms.inv
 inventory/vsphere_powerdns_vms.inv
 logs/
 vsphere_bootstrap_vms.json
