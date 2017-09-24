@@ -9,13 +9,24 @@ vsphere_datastores: []
 
 # Defines initial bootstrap vms to deploy from OVA/OVF. Currently this OVF
 # needs to reside on the Windows host which powercli is being ran against.
+#
+# If a static IP address is desired define the following
+# (Enter shorthand cidr for netmask_cidr, i.e. 24 for 255.255.255.0):
+##
+## ip: x.x.x.x
+## netmask_cidr: x
+## gateway: x.x.x.x
+##
 vsphere_bootstrap_vms: []
   # - vm_name: bootstrap_vm_1
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.101
   #   memory_mb: 512
-  #   network_name: VSS-VLAN-101
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
   # - vm_name: bootstrap_vm_2
   #   cpus: 2

@@ -4,8 +4,11 @@ vsphere_bootstrap_vms: []
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.101
   #   memory_mb: 512
-  #   network_name: VSS-VLAN-101
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
   # - vm_name: bootstrap_vm_2
   #   cpus: 2

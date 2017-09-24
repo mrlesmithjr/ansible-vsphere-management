@@ -1,4 +1,3 @@
 ---
 ansible_user: "{{ vsphere_bootstrap_user_info['username'] }}"
 ansible_password: "{{ vsphere_bootstrap_user_info['password'] }}"
-ansible_primary_interface: ens160

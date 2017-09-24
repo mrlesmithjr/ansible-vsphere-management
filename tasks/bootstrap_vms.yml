@@ -9,7 +9,10 @@
     hostname: "{{ item['vm_name'] }}"
     cpus: "{{ item['cpus'] }}"
     datastore: "{{ item['datastore'] }}"
+    ip: "{{ item['ip']|default(omit) }}"
+    gateway: "{{ item['gateway']|default(omit) }}"
     memory_mb: "{{ item['memory_mb'] }}"
+    netmask_cidr: "{{ item['netmask_cidr']|default(omit) }}"
     network_name: "{{ item['network_name'] }}"
     vapp_source_path: "{{ item['vapp_source_path'] }}"
   changed_when: false

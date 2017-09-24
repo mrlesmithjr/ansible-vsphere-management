@@ -16,8 +16,8 @@ $vms=($vmServer | Get-VM).Name
 if ($vms -notcontains $vmName) {
   foreach ($vm in $vms) {
     $vm=$vmServer | Get-VM $vm
-    $vmView=$_vm | Get-View
-    $vmUuid=$_vmView.Config.Uuid
+    $vmView=$vm | Get-View
+    $vmUuid=$vmView.Config.Uuid
     if ($vmInventoryUuid -eq $vmUuid) {
       $vm | Set-VM -Name $vmName -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
     }
@@ -114,14 +114,16 @@ else {
   }
   until ($vmToolsStatus -eq 'toolsOk')
 }
-$SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
-$SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
-$SecureCreds=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SecureBootStrapUser,$SecureBootStrapPassword
-$vm=$vmServer | Get-VM $vmName
-$vmView=$vm | Get-View
-$vmPowerState=$vm.PowerState
-$vmToolsStatus=$vmView.Guest.ToolsStatus
-if ($vmPowerState -eq 'PoweredOn' -and $vmToolsStatus -eq 'toolsOk') {
+{%   endfor %}
+
+{%   for vm in groups['vsphere_bootstrap_vms_deploy'] %}
+  $SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
+  $SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
+  $SecureCreds=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SecureBootStrapUser,$SecureBootStrapPassword
+  $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
+  $vmServer=Get-VMHost -Server $vmHost
+  $vm=$vmServer | Get-VM $vmName
+  $vmView=$vm | Get-View
   $vmGuestFamily=$vm.Guest.GuestFamily
   $vmHostName=$vm.Guest.HostName
   if ($vmGuestFamily -eq 'linuxGuest') {
@@ -136,10 +138,19 @@ if ($vmPowerState -eq 'PoweredOn' -and $vmToolsStatus -eq 'toolsOk') {
       }
       until ($vmToolsStatus -eq 'toolsOk')
     }
+{%     if hostvars[vm]['ip'] is defined and hostvars[vm]['ip'] != None %}
+    $vm=$vmServer | Get-VM $vmName
+    $vmIPs=$vm.Guest.IPAddress
+    $vmGateway="{{ hostvars[vm]['gateway'] }}"
+    $vmIP="{{ hostvars[vm]['ip'] }}"
+    $vmIPNetmaskCidr="{{ hostvars[vm]['netmask_cidr'] }}"
+    $vmInt="{{ ansible_primary_interface }}"
+    if ($vmIPs -notcontains $vmIP) {
+      $vm | Invoke-VMScript -GuestCredential $SecureCreds -ScriptType Bash "sudo ip addr flush dev $vmInt && sudo ip addr add $vmIP/$vmIPNetmaskCidr dev $vmInt && sudo ip route add default via $vmGateway dev $vmInt && sudo sh -c 'echo nameserver 8.8.8.8 > /etc/resolv.conf'" | Out-File -Append {{ vsphere_management_log }}
+    }
+{%     endif %}
   }
-}
 {%   endfor %}
-
 Disconnect-VIServer * -Confirm:$false
 
 {% endif %}
