@@ -24,7 +24,7 @@
   win_shell: $Password=ConvertTo-SecureString -String "{{ vsphere_bootstrap_user_info['password'] }}" -AsPlainText -Force | ConvertFrom-SecureString | Out-File {{ vsphere_bootstrap_vms_secure_password_file }}
   no_log: true
 
-- name: bootstrap_vms | Generating lb_vms.ps1 Powershell Script
+- name: lb_vms | Generating lb_vms.ps1 Powershell Script
   win_template:
     src: lb_vms.ps1.j2
     dest: c:\tmp\lb_vms.ps1
