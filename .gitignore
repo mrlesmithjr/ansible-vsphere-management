@@ -1,9 +1,10 @@
 *.retry
 inventory/group_vars/all/accounts.yml
-inventory/vsphere_bootstrap_vms.inv
-inventory/vsphere_ddi_vms.inv
-inventory/vsphere_lb_vms.inv
 logs/
+vsphere_bootstrap_vms.inv
 vsphere_bootstrap_vms.json
+vsphere_ddi_vms.inv
 vsphere_ddi_vms.json
+vsphere_dhcp_vms.inv
+vsphere_lb_vms.inv
 vsphere_lb_vms.json
