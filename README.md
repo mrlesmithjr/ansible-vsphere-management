@@ -11,6 +11,7 @@
   - [Environment Deployment](#environment-deployment)
   - [Bootstrap VMs](#bootstrap-vms)
   - [DDI VMs](#ddi-vms)
+    - [Autostart DDI VMs](#autostart-ddi-vms)
     - [Defining DDI VMs](#defining-ddi-vms)
     - [Defining DNS Records](#defining-dns-records)
     - [Future DDI Functionality](#future-ddi-functionality)
@@ -173,6 +174,11 @@ in order to auto register DHCP clients.
 > `Packer` to build the `OVF` but not 100% sure at this point. This seems like a
 > viable solution as I could include the build template and the scripting. But time
 > will tell.
+
+### Autostart DDI VMs
+
+The DDI VMs are set to autostart on host bootup with priories defined. This will
+likely change a bit once vCenter is in place.
 
 ### Defining DDI VMs
 
