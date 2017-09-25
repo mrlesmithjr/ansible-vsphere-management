@@ -8,7 +8,12 @@
     - [Software iSCSI](#software-iscsi)
   - [Deployment Host](#deployment-host)
     - [Spinning It Up](#spinning-it-up)
+  - [Environment Deployment](#environment-deployment)
   - [Bootstrap VMs](#bootstrap-vms)
+  - [DDI VMs](#ddi-vms)
+    - [Defining DDI VMs](#defining-ddi-vms)
+    - [Defining DNS Records](#defining-dns-records)
+    - [Future DDI Functionality](#future-ddi-functionality)
   - [Role Variables](#role-variables)
   - [Dependencies](#dependencies)
   - [Example Playbook](#example-playbook)
@@ -126,6 +131,14 @@ After all provisioning is complete use remote desktop and connect to `192.168.25
 and on the desktop double click `extend-trial.cmd` to extend the trial license,
 otherwise the server will shutdown every 30 minutes or so. And then reboot.
 
+## Environment Deployment
+
+Currently there is a script which will provision everything after the [Deployment Host](#deployment_host)
+is deployed. The script is [vsphere_management.sh](scripts/vsphere_management.sh).
+This script will likely include the [Deployment Host](#deployment_host) deployment
+at some point as well seeing as this deployment initially includes the Windows
+Vagrant box to do all of the deployments.
+
 ## Bootstrap VMs
 
 When spinning up a new environment you may want to spin up some initial VMs for
@@ -140,7 +153,410 @@ deploy these bootstrap vms.
 > viable solution as I could include the build template and the scripting. But time
 > will tell.
 
+## DDI VMs
+
+The option to spin up a multi-node DDI cluster is available.
+[DHCP](https://www.isc.org/downloads/dhcp/), [DNS](https://www.powerdns.com/),
+[IPAM](https://phpipam.net/), and NTP functionality exists on these VMs if deployed.
+The VMs by default should be assigned an IP address in order to bootstrap the environment
+for IP services where these constructs do not exist. The idea is that you would
+be deploying from scratch an environment which needs this functionality provided
+in an automated fashion. When these VMs spin up everything is automated from
+beginning to end including DNS record registrations. Dynamic DNS is also enabled
+in order to auto register DHCP clients.
+
+> Note: Currently all of these services run on the DDI nodes and may eventually
+> be separated out.
+>
+> Note: The `Ubuntu` based `OVF` template is **NOT** included in this repo. I am
+> still evaluating a solution around this. My instinct at the moment is to use
+> `Packer` to build the `OVF` but not 100% sure at this point. This seems like a
+> viable solution as I could include the build template and the scripting. But time
+> will tell.
+
+### Defining DDI VMs
+
+Below is an example of the current DDI VM definitions in `inventory/group_vars/all/vsphere_ddi.yml`:
+
+```yaml
+vsphere_ddi_vms:
+  - vm_name: "ddi_00.{{ vsphere_pri_domain_name }}"
+    cpus: 1
+    deploy: true
+    datastore: Datastore_1
+    gateway: 10.0.102.1
+    ip: "{{ vsphere_dns_servers[0] }}"
+    memory_mb: 1024
+    netmask: 255.255.255.0
+    netmask_cidr: 24
+    network_name: VSS-VLAN-102
+    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  - vm_name: "ddi_01.{{ vsphere_pri_domain_name }}"
+    cpus: 1
+    deploy: true
+    datastore: Datastore_1
+    gateway: 10.0.102.1
+    ip: "{{ vsphere_dns_servers[1] }}"
+    memory_mb: 1024
+    netmask: 255.255.255.0
+    netmask_cidr: 24
+    network_name: VSS-VLAN-102
+    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  - vm_name: "ddi_02.{{ vsphere_pri_domain_name }}"
+    cpus: 1
+    deploy: true
+    datastore: Datastore_1
+    gateway: 10.0.102.1
+    ip: "{{ vsphere_dns_servers[2] }}"
+    memory_mb: 1024
+    netmask: 255.255.255.0
+    netmask_cidr: 24
+    network_name: VSS-VLAN-102
+    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+```
+
+### Defining DNS Records
+
+Below is an example of the current DNS record definitions in `inventory/group_vars/all/pdns.yml`:
+
+> NOTE: When creating a `CNAME` record type take not of the `.` at the end of the
+> `content` variable. This is **REQUIRED** to ensure Canonical naming standards
+> otherwise the record creation will fail.
+
+```yaml
+pdns_records:
+  - hostname: lb
+    content: "{{ vsphere_lb_vips[0] }}"
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: A
+  - hostname: db
+    content: "lb.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: CNAME
+  - hostname: dns_00
+    content: "ddi_00.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_dns_servers[0] }}"
+    type: CNAME
+  - hostname: dns_01
+    content: "ddi_01.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_dns_servers[1] }}"
+    type: CNAME
+  - hostname: dns_02
+    content: "ddi_02.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_dns_servers[2] }}"
+    type: CNAME
+  - hostname: ipam
+    content: "lb.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: CNAME
+  - hostname: nas01
+    content: 10.0.101.50
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: 10.0.101.50
+    type: A
+  - hostname: nas02
+    content: 10.0.101.51
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: 10.0.101.51
+    type: A
+  - hostname: ntp_00
+    content: "ddi_00.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_ntp_servers[0] }}"
+    type: CNAME
+  - hostname: ntp_01
+    content: "ddi_01.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_ntp_servers[1] }}"
+    type: CNAME
+  - hostname: ntp_02
+    content: "ddi_02.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_ntp_servers[2] }}"
+    type: CNAME
+  - hostname: pdns_api
+    content: "lb.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: CNAME
+```
+
+### Future DDI Functionality
+
+In the future the option to use `Windows` DNS and DHCP may be an option but not
+in the current state.
+
 ## Role Variables
+
+```yaml
+---
+# defaults file for ansible-vsphere-management
+
+vsphere_datastores: []
+  # - name: Datastore_1
+  #   type: NFS
+  #   path: /TANK/NFS/vSphere/Datastore_1
+  #   host: 10.0.101.50
+
+# Defines initial bootstrap vms to deploy from OVA/OVF. Currently this OVF
+# needs to reside on the Windows host which powercli is being ran against.
+#
+# If a static IP address is desired define the following
+# (Enter shorthand cidr for netmask_cidr, i.e. 24 for 255.255.255.0):
+##
+## ip: x.x.x.x
+## netmask_cidr: x
+## gateway: x.x.x.x
+##
+vsphere_bootstrap_vms: []
+  # - vm_name: "bootstrap_vm_1.{{ vsphere_pri_domain_name }}"
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.101
+  #   memory_mb: 512
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  # - vm_name: "bootstrap_vm_2.{{ vsphere_pri_domain_name }}"
+  #   cpus: 2
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   memory_mb: 1024
+  #   network_name: VSS-VLAN-101
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+
+vsphere_bootstrap_generate_inventory: true
+
+vsphere_bootstrap_vms_inventory_file: ../inventory/vsphere_bootstrap_vms.inv
+
+vsphere_bootstrap_vms_json_output_file: ../inventory/vsphere_bootstrap_vms.json
+
+# This file will contain the encrypted password to use with the boostrap_vms.ps1 script
+vsphere_bootstrap_vms_secure_password_file: c:\tmp\pwd.txt
+
+vsphere_bootstrap_vms_wait_for_ssh: true
+
+vsphere_ddi_vms: []
+  # - vm_name: "ddi_00.{{ vsphere_pri_domain_name }}"
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: "{{ vsphere_dns_servers[0] }}"
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  # - vm_name: "ddi_01.{{ vsphere_pri_domain_name }}"
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: "{{ vsphere_dns_servers[1] }}"
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  # - vm_name: "ddi_02.{{ vsphere_pri_domain_name }}"
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: "{{ vsphere_dns_servers[2] }}"
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+
+vsphere_ddi_generate_inventory: true
+
+vsphere_ddi_vms_inventory_file: ../inventory/vsphere_ddi_vms.inv
+
+vsphere_ddi_vms_json_output_file: ../inventory/vsphere_ddi_vms.json
+
+vsphere_ddi_vms_wait_for_ssh: true
+
+vsphere_dhcp_generate_inventory: true
+
+vsphere_dhcp_servers_inventory_file: ../inventory/vsphere_dhcp_vms.inv
+
+# Only define these if not using PowerDNS for DNS
+vsphere_dns_servers:
+  - 10.0.102.10
+  - 10.0.102.11
+  - 10.0.102.12
+
+vsphere_dns_vips: []
+  # - 10.0.101.101
+  # - 10.0.101.102
+
+# Define this on a host_vars or group_vars level. Because we look for hostvars
+# variable the default variable defined here does not apply.
+vsphere_enable_software_iscsi: false
+
+vsphere_enable_ssh: false
+
+vsphere_hosts_update: true
+
+vsphere_lb_vips: []
+  # - 10.0.101.100
+
+vsphere_lb_vms: []
+  # - vm_name: "lb_00.{{ vsphere_pri_domain_name }}"
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.20
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  # - vm_name: "lb_01.{{ vsphere_pri_domain_name }}"
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.21
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+
+vsphere_lb_generate_inventory: true
+
+vsphere_lb_vms_inventory_file: ../inventory/vsphere_lb_vms.inv
+
+vsphere_lb_vms_json_output_file: ../inventory/vsphere_lb_vms.json
+
+vsphere_lb_vms_wait_for_ssh: true
+
+# Currently this needs to be defined per host in host_vars because of the way
+# we iterate through the list of hosts in vsphere_management_hosts_group
+vsphere_maintenance_mode: false
+
+vsphere_ntp_servers: []
+  # - 10.0.102.10
+  # - 10.0.102.11
+  # - 10.0.102.12
+
+vsphere_pri_domain_name: example.org
+
+vsphere_reboot_after_updates: false
+
+vsphere_template_vm: []
+  # cpus: 1
+  # deploy: true
+  # datastore: Datastore_1
+  # disk_gb: 72
+  # guest_id: ubuntu64Guest
+  # iso: /ISOs/ubuntu-16.04.3-server-amd64.iso
+  # memory_mb: 1024
+  # network_name: VSS-VLAN-101
+  # vm_name: ubuntu_16.04_template
+
+vsphere_updates: []
+  # - build: 4192238
+  #   path: /vmfs/volumes/Datastore_1/ESXi600-201608001
+  #   version: 6.0.0
+  # - build: 5050593
+  #   path: /vmfs/volumes/Datastore_1/update-from-esxi6.0-6.0_update03
+  #   version: 6.0.0
+  # # - build: 5050593
+  # #   path: /vmfs/volumes/Datastore_1/VMware-ESXi-6.0.0-Update3-5224934-HPE-600.10.1.0.73-Jul2017-depot
+  # #   version: 6.0.0
+  # - build: 5572656
+  #   path: /vmfs/volumes/Datastore_1/ESXi600-201706001
+  #   version: 6.0.0
+
+vsphere_user_info:
+  username: root
+  password: VMw@re1
+
+vsphere_validate_certs: false
+
+vsphere_vswitches: []
+  # - name: vSwitch0
+  #   load_balancing_policy: LoadBalanceSrcId
+  #   active_nics:
+  #     - vmnic0
+  #     - vmnic1
+  #   standby_nics: []
+  #   unused_nics: []
+  #   portgroups:
+  #     - name: Management Network
+  #       inherit_failover_order: true
+  #       vlan_id: 101
+  #     - name: VSS-VLAN-101
+  #       inherit_failover_order: true
+  #       vlan_id: 101
+  #     - name: VSS-VLAN-102
+  #       inherit_failover_order: true
+  #       vlan_id: 102
+  #     - name: VSS-VLAN-201
+  #       inherit_failover_order: true
+  #       vlan_id: 201
+  #   # vmkernel_ports:
+  #   #   - name: vmk0
+  #   #     enable_ft: false
+  #   #     enable_mgmt: true
+  #   #     enable_vmotion: false
+  #   #     enable_vsan: false
+  #   #     ip_address: '{{ ansible_host }}'
+  #   #     portgroup_name: Management Network
+  #   #     subnet_mask: 255.255.255.0
+  #   #     vland_id: 101
+  #   #     vswitch_name: vSwitch0
+  # - name: vSwitch1
+  #   active_nics:
+  #     - vmnic2
+  #     - vmnic3
+  #     - vmnic4
+  #     - vmnic5
+  #   standby_nics: []
+  #   unused_nics: []
+  #   portgroups: []
+  #     # - name: VSS-VLAN-101
+  #     #   inherit_failover_order: true
+  #     #   vlan_id: 101
+  #     # - name: VSS-VLAN-102
+  #     #   inherit_failover_order: true
+  #     #   vlan_id: 102
+  #     # - name: VSS-VLAN-201
+  #     #   inherit_failover_order: true
+  #     #   vlan_id: 201
+
+vsphere_vswitches_management_network: Management Network
+
+# Add documentation on usage
+vsphere_vswitches_quarantine_unmanaged_portgroups: false
+
+# Add documentation on usage
+vsphere_vswitches_quarantine_vswitch: Quarantine
+
+# Add documentation on usage
+vsphere_vswitches_remove_unmanaged_portgroups: false
+
+# Add documentation on usage
+vsphere_vswitches_remove_unmanaged_vswitches: false
+
+vsphere_management_invalid_certs_action: Ignore
+
+vsphere_management_hosts_group: vsphere_hosts
+```
 
 ## Dependencies
 
