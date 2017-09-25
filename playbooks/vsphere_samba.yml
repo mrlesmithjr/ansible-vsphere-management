@@ -1,0 +1,51 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Creating vsphere_samba_vms Dynamic Group
+      add_host:
+        groups: vsphere_samba_vms
+        hostname: "{{ item['vm_name'] }}"
+        cpus: "{{ item['cpus'] }}"
+        datastore: "{{ item['datastore'] }}"
+        ip: "{{ item['ip']|default(omit) }}"
+        gateway: "{{ item['gateway']|default(omit) }}"
+        memory_mb: "{{ item['memory_mb'] }}"
+        netmask: "{{ item['netmask']|default(omit) }}"
+        netmask_cidr: "{{ item['netmask_cidr']|default(omit) }}"
+        network_name: "{{ item['network_name'] }}"
+        vapp_source_path: "{{ item['vapp_source_path'] }}"
+      changed_when: false
+      tags:
+        - vsphere_samba_vms_info
+      with_items: "{{ vsphere_samba_vms }}"
+      when: item['deploy']
+
+- hosts: vsphere_samba_vms
+  tasks:
+    - name: Gathering Info
+      setup:
+      register: _vsphere_samba_vms_info
+      tags:
+        - vsphere_samba_vms_info
+
+    - name: Updating Inventory For vsphere_samba_vms
+      template:
+        src: ../templates/samba_vms.inv.j2
+        dest: "{{ vsphere_samba_vms_inventory_file }}"
+      become: false
+      delegate_to: localhost
+      tags:
+        - vsphere_samba_vms_info
+
+- hosts: vsphere_samba_vms
+  roles:
+    - role: ansible-config-interfaces
+    - role: ansible-change-hostname
+    - role: ansible-etc-hosts
+    - role: ansible-sshd
+      become: true
+    - role: ansible-ntp
+    - role: ansible-samba
+      become: true

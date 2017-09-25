@@ -13,3 +13,5 @@ vsphere_samba_vms:
     netmask_cidr: 24
     network_name: VSS-VLAN-102
     vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+
+vsphere_samba_vms_inventory_file: ../inventory/vsphere_samba_vms.inv
