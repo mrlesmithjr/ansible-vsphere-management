@@ -24,7 +24,7 @@
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     change_hostname_to: "{{ hostvars[item]['inventory_hostname_short'] }}"
-    domainname: "{{ pri_domain_name }}"
+    domainname: "{{ vsphere_pri_domain_name }}"
     dns_servers: "{{ vsphere_dns_nameservers }}"
     validate_certs: "{{ vsphere_validate_certs }}"
   delegate_to: localhost

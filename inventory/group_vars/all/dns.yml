@@ -5,3 +5,5 @@ vsphere_dns_servers:
   - 10.0.102.10
   - 10.0.102.11
   - 10.0.102.12
+
+vsphere_pri_domain_name: "{{ pri_domain_name }}"

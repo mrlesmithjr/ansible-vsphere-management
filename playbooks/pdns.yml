@@ -79,7 +79,7 @@
               ttl: 86400
               priority: 0
               records:
-                - content: "{{ item['ip'] }}"
+                - content: "{{ item['content'] }}"
                   disabled: false
                   set-ptr: true
         body_format: json

@@ -2,7 +2,7 @@
 vsphere_lb_vms_inventory_file: ../inventory/vsphere_lb_vms.inv
 
 vsphere_lb_vms:
-  - vm_name: lb_00
+  - vm_name: "lb_00.{{ vsphere_pri_domain_name }}"
     cpus: 1
     deploy: true
     datastore: Datastore_1
@@ -13,7 +13,7 @@ vsphere_lb_vms:
     netmask_cidr: 24
     network_name: VSS-VLAN-102
     vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  - vm_name: lb_01
+  - vm_name: "lb_01.{{ vsphere_pri_domain_name }}"
     cpus: 1
     deploy: true
     datastore: Datastore_1

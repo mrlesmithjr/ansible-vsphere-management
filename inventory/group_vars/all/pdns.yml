@@ -4,57 +4,73 @@ pdns_api_vip: "{{ vsphere_lb_vips[0] }}"
 pdns_load_balanced: true
 
 pdns_records:
+  - hostname: lb
+    content: "{{ vsphere_lb_vips[0] }}"
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_lb_vips[0] }}"
+    type: A
   - hostname: db
-    domain: "{{ pri_domain_name }}"
+    content: "lb.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_lb_vips[0] }}"
-    type: A
+    type: CNAME
   - hostname: dns_00
-    domain: "{{ pri_domain_name }}"
+    content: "ddi_00.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_dns_servers[0] }}"
-    type: A
+    type: CNAME
   - hostname: dns_01
-    domain: "{{ pri_domain_name }}"
+    content: "ddi_01.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_dns_servers[1] }}"
-    type: A
+    type: CNAME
   - hostname: dns_02
-    domain: "{{ pri_domain_name }}"
+    content: "ddi_02.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_dns_servers[2] }}"
-    type: A
+    type: CNAME
   - hostname: ipam
-    domain: "{{ pri_domain_name }}"
+    content: "lb.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_lb_vips[0] }}"
-    type: A
+    type: CNAME
   - hostname: nas01
-    domain: "{{ pri_domain_name }}"
+    content: 10.0.101.50
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: 10.0.101.50
     type: A
   - hostname: nas02
-    domain: "{{ pri_domain_name }}"
+    content: 10.0.101.51
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: 10.0.101.51
     type: A
   - hostname: ntp_00
-    domain: "{{ pri_domain_name }}"
+    content: "ddi_00.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_ntp_servers[0] }}"
-    type: A
+    type: CNAME
   - hostname: ntp_01
-    domain: "{{ pri_domain_name }}"
+    content: "ddi_01.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_ntp_servers[1] }}"
-    type: A
+    type: CNAME
   - hostname: ntp_02
-    domain: "{{ pri_domain_name }}"
+    content: "ddi_02.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_ntp_servers[2] }}"
-    type: A
+    type: CNAME
   - hostname: pdns_api
-    domain: "{{ pri_domain_name }}"
+    content: "lb.{{ vsphere_pri_domain_name }}."
+    domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_lb_vips[0] }}"
-    type: A
+    type: CNAME
 
 pdns_webserver_password: 'changeme'
 
 pdns_webserver_port: 8081
 
 pdns_zones:
-  - '{{ pri_domain_name }}'
+  - '{{ vsphere_pri_domain_name }}'
   - 1.168.192.in-addr.arpa
   - 24.16.172.in-addr.arpa
   - 101.0.10.in-addr.arpa

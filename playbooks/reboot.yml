@@ -30,6 +30,7 @@
     - name: Pausing For 30 Seconds
       pause:
         seconds: 30
+      when: _rebooting_host['changed']
 
     - name: Marking Post Deployment Reboot As Completed
       file:

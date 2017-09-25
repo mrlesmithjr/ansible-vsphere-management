@@ -18,7 +18,7 @@ vsphere_datastores: []
 ## gateway: x.x.x.x
 ##
 vsphere_bootstrap_vms: []
-  # - vm_name: bootstrap_vm_1
+  # - vm_name: "bootstrap_vm_1.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
@@ -28,7 +28,7 @@ vsphere_bootstrap_vms: []
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: bootstrap_vm_2
+  # - vm_name: "bootstrap_vm_2.{{ vsphere_pri_domain_name }}"
   #   cpus: 2
   #   deploy: true
   #   datastore: Datastore_1
@@ -48,7 +48,7 @@ vsphere_bootstrap_vms_secure_password_file: c:\tmp\pwd.txt
 vsphere_bootstrap_vms_wait_for_ssh: true
 
 vsphere_ddi_vms: []
-  # - vm_name: ddi_00
+  # - vm_name: "ddi_00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
@@ -59,7 +59,7 @@ vsphere_ddi_vms: []
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: ddi_01
+  # - vm_name: "ddi_01.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
@@ -70,7 +70,7 @@ vsphere_ddi_vms: []
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: ddi_02
+  # - vm_name: "ddi_02.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
@@ -116,7 +116,7 @@ vsphere_lb_vips: []
   # - 10.0.101.100
 
 vsphere_lb_vms: []
-  # - vm_name: lb_00
+  # - vm_name: "lb_00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
@@ -127,7 +127,7 @@ vsphere_lb_vms: []
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: lb_01
+  # - vm_name: "lb_01.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
@@ -155,6 +155,8 @@ vsphere_ntp_servers: []
   # - 10.0.102.10
   # - 10.0.102.11
   # - 10.0.102.12
+
+vsphere_pri_domain_name: example.org
 
 vsphere_reboot_after_updates: false
 
