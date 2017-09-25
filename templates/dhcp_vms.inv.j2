@@ -1,0 +1,8 @@
+{% if groups['vsphere_dhcp_vms'] is defined %}
+[vsphere_dhcp_vms]
+{% for host in groups['vsphere_dhcp_vms'] %}
+{{ hostvars[host]['inventory_hostname'] }} ansible_host={{ hostvars[host]['ansible_host'] }} hw_product_uuid={{ hostvars[host]['hw_product_uuid'] }}
+{% endfor %}
+{% elif groups['vsphere_dhcp_vms'] is not defined %}
+[vsphere_dhcp_vms]
+{% endif %}

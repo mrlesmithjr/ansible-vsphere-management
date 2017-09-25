@@ -17,6 +17,8 @@
         network_name: "{{ item['network_name'] }}"
         vapp_source_path: "{{ item['vapp_source_path'] }}"
       changed_when: false
+      tags:
+        - vsphere_ddi_vms_info
       with_items: "{{ vsphere_ddi_vms }}"
       when: item['deploy']
 
@@ -51,3 +53,10 @@
     - role: ansible-apache2
     - role: ansible-phpipam
       become: true
+
+- hosts: vsphere_dhcp_vms
+  roles:
+    - role: ansible-isc-dhcp
+      become: true
+      tags:
+        - vsphere_dhcp

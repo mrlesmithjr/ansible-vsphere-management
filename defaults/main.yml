@@ -90,6 +90,10 @@ vsphere_ddi_vms_json_output_file: ../inventory/vsphere_ddi_vms.json
 
 vsphere_ddi_vms_wait_for_ssh: true
 
+vsphere_dhcp_generate_inventory: true
+
+vsphere_dhcp_servers_inventory_file: ../inventory/vsphere_dhcp_vms.inv
+
 # Only define these if not using PowerDNS for DNS
 vsphere_dns_servers:
   - 10.0.102.10

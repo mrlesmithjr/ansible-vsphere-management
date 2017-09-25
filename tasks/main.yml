@@ -5,6 +5,7 @@
   tags:
     - vsphere_bootstrap_vms
     - vsphere_ddi_vms
+    - vsphere_dhcp_vms
     - vsphere_dns
     - vsphere_lb
     - vsphere_lb_vms
@@ -19,6 +20,7 @@
   tags:
     - vsphere_bootstrap_vms
     - vsphere_ddi_vms
+    - vsphere_dhcp_vms
     - vsphere_dns
     - vsphere_lb
     - vsphere_lb_vms
@@ -74,6 +76,13 @@
 - include: ddi_vms.yml
   tags:
     - vsphere_ddi_vms
+    - vsphere_dhcp_vms
+  when: vsphere_ddi_vms is defined
+
+- include: dhcp_vms.yml
+  tags:
+    - vsphere_ddi_vms
+    - vsphere_dhcp_vms
   when: vsphere_ddi_vms is defined
 
 - include: lb_vms.yml

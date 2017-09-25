@@ -20,6 +20,8 @@ ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_b
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_ddi_vms
 
+ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_dhcp_vms
+
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_lb_vms
 
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_info
