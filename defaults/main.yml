@@ -177,7 +177,7 @@ vsphere_samba_vms: []
 
 vsphere_samba_generate_inventory: true
 
-vsphere_samba_vms_inventory_file: ../inventory/vsphere_lb_vms.inv
+vsphere_samba_vms_inventory_file: ../inventory/vsphere_samba_vms.inv
 
 vsphere_samba_vms_json_output_file: ../inventory/vsphere_samba_vms.json
 
