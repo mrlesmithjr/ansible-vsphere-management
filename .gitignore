@@ -6,3 +6,4 @@ inventory/vsphere_lb_vms.inv
 logs/
 vsphere_bootstrap_vms.json
 vsphere_ddi_vms.json
+vsphere_lb_vms.json
