@@ -11,6 +11,7 @@
     - vsphere_lb_vms
     - vsphere_management
     - vsphere_network
+    - vsphere_samba_vms
 
 - include: invalid_certs.yml
   tags:
@@ -26,6 +27,7 @@
     - vsphere_lb_vms
     - vsphere_management
     - vsphere_network
+    - vsphere_samba_vms
 
 - include: network.yml
   tags:
@@ -90,6 +92,13 @@
     - vsphere_lb
     - vsphere_lb_vms
   when: vsphere_lb_vms is defined
+
+- include: samba_vms.yml
+  tags:
+    - vsphere_samba_vms
+  when: >
+        vsphere_samba_vms is defined and
+        vsphere_samba_domain
 
 - include: dns.yml
   tags:

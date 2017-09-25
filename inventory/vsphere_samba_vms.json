@@ -1,0 +1,445 @@
+{
+    "samba_00.lab.etsbv.internal": {
+        "AlternateGuestName": "",
+        "Annotation": "Ubuntu 16.04.3 Xenial x64 Template to use as OVF deployments.",
+        "BootOptions": {
+            "BootDelay": 0,
+            "BootOrder": null,
+            "BootRetryDelay": 10000,
+            "BootRetryEnabled": false,
+            "EfiSecureBootEnabled": null,
+            "EnterBIOSSetup": false,
+            "NetworkBootProtocol": "ipv4"
+        },
+        "ChangeTrackingEnabled": false,
+        "ChangeVersion": "2017-09-25T21:34:58.518827Z",
+        "ConsolePreferences": null,
+        "CpuAffinity": null,
+        "CpuAllocation": {
+            "ExpandableReservation": null,
+            "Limit": -1,
+            "OverheadLimit": null,
+            "Reservation": 0,
+            "Shares": {
+                "Level": 1,
+                "Shares": 1000
+            }
+        },
+        "CpuFeatureMask": [
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": 0,
+                "Vendor": null
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": 0,
+                "Vendor": "amd"
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": 1,
+                "Vendor": null
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": 1,
+                "Vendor": "amd"
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": -2147483648,
+                "Vendor": null
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": -2147483648,
+                "Vendor": "amd"
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": -2147483647,
+                "Vendor": null
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": -2147483647,
+                "Vendor": "amd"
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": -2147483640,
+                "Vendor": null
+            },
+            {
+                "Eax": null,
+                "Ebx": null,
+                "Ecx": null,
+                "Edx": null,
+                "Level": -2147483640,
+                "Vendor": "amd"
+            }
+        ],
+        "CpuHotAddEnabled": false,
+        "CpuHotRemoveEnabled": false,
+        "DatastoreUrl": [
+            {
+                "Name": "Datastore_1",
+                "Url": "/vmfs/volumes/ca3391a7-34f17af3/"
+            }
+        ],
+        "DefaultPowerOps": {
+            "DefaultPowerOffType": "soft",
+            "DefaultResetType": "soft",
+            "DefaultSuspendType": "hard",
+            "PowerOffType": "soft",
+            "ResetType": "soft",
+            "StandbyAction": "checkpoint",
+            "SuspendType": "hard"
+        },
+        "ExtraConfig": [
+            {
+                "Key": "nvram",
+                "Value": "samba_00.lab.etsbv.internal.nvram"
+            },
+            {
+                "Key": "pciBridge0.present",
+                "Value": "true"
+            },
+            {
+                "Key": "svga.present",
+                "Value": "true"
+            },
+            {
+                "Key": "pciBridge4.present",
+                "Value": "true"
+            },
+            {
+                "Key": "pciBridge4.virtualDev",
+                "Value": "pcieRootPort"
+            },
+            {
+                "Key": "pciBridge4.functions",
+                "Value": "8"
+            },
+            {
+                "Key": "pciBridge5.present",
+                "Value": "true"
+            },
+            {
+                "Key": "pciBridge5.virtualDev",
+                "Value": "pcieRootPort"
+            },
+            {
+                "Key": "pciBridge5.functions",
+                "Value": "8"
+            },
+            {
+                "Key": "pciBridge6.present",
+                "Value": "true"
+            },
+            {
+                "Key": "pciBridge6.virtualDev",
+                "Value": "pcieRootPort"
+            },
+            {
+                "Key": "pciBridge6.functions",
+                "Value": "8"
+            },
+            {
+                "Key": "pciBridge7.present",
+                "Value": "true"
+            },
+            {
+                "Key": "pciBridge7.virtualDev",
+                "Value": "pcieRootPort"
+            },
+            {
+                "Key": "pciBridge7.functions",
+                "Value": "8"
+            },
+            {
+                "Key": "hpet0.present",
+                "Value": "true"
+            },
+            {
+                "Key": "scsi0.pciSlotNumber",
+                "Value": "16"
+            },
+            {
+                "Key": "vmci0.pciSlotNumber",
+                "Value": "32"
+            },
+            {
+                "Key": "ethernet0.pciSlotNumber",
+                "Value": "160"
+            },
+            {
+                "Key": "virtualHW.productCompatibility",
+                "Value": "hosted"
+            },
+            {
+                "Key": "sched.swap.derivedName",
+                "Value": "/vmfs/volumes/ca3391a7-34f17af3/samba_00.lab.etsbv.internal/samba_00.lab.etsbv.internal-7ec9cbed.vswp"
+            },
+            {
+                "Key": "replay.supported",
+                "Value": "true"
+            },
+            {
+                "Key": "replay.filename",
+                "Value": ""
+            },
+            {
+                "Key": "scsi0:0.redo",
+                "Value": ""
+            },
+            {
+                "Key": "pciBridge0.pciSlotNumber",
+                "Value": "17"
+            },
+            {
+                "Key": "pciBridge4.pciSlotNumber",
+                "Value": "21"
+            },
+            {
+                "Key": "pciBridge5.pciSlotNumber",
+                "Value": "22"
+            },
+            {
+                "Key": "pciBridge6.pciSlotNumber",
+                "Value": "23"
+            },
+            {
+                "Key": "pciBridge7.pciSlotNumber",
+                "Value": "24"
+            },
+            {
+                "Key": "ethernet0.generatedAddressOffset",
+                "Value": "0"
+            },
+            {
+                "Key": "monitor.phys_bits_used",
+                "Value": "42"
+            },
+            {
+                "Key": "vmotion.checkpointFBSize",
+                "Value": "4194304"
+            },
+            {
+                "Key": "vmotion.checkpointSVGAPrimarySize",
+                "Value": "4194304"
+            },
+            {
+                "Key": "softPowerOff",
+                "Value": "false"
+            },
+            {
+                "Key": "svga.guestBackedPrimaryAware",
+                "Value": "true"
+            },
+            {
+                "Key": "vmware.tools.internalversion",
+                "Value": "2147483647"
+            },
+            {
+                "Key": "vmware.tools.requiredversion",
+                "Value": "10277"
+            },
+            {
+                "Key": "migrate.hostLogState",
+                "Value": "none"
+            },
+            {
+                "Key": "migrate.migrationId",
+                "Value": "0"
+            },
+            {
+                "Key": "migrate.hostLog",
+                "Value": "./samba_00.lab.etsbv.internal-7ec9cbed.hlog"
+            }
+        ],
+        "Files": {
+            "FtMetadataDirectory": null,
+            "LogDirectory": "[Datastore_1] samba_00.lab.etsbv.internal",
+            "SnapshotDirectory": "[Datastore_1] samba_00.lab.etsbv.internal",
+            "SuspendDirectory": "[Datastore_1] samba_00.lab.etsbv.internal",
+            "VmPathName": "[Datastore_1] samba_00.lab.etsbv.internal/samba_00.lab.etsbv.internal.vmx"
+        },
+        "Firmware": "bios",
+        "Flags": {
+            "CbrcCacheEnabled": null,
+            "DisableAcceleration": false,
+            "DiskUuidEnabled": false,
+            "EnableLogging": true,
+            "FaultToleranceType": "unset",
+            "HtSharing": "any",
+            "MonitorType": "release",
+            "RecordReplayEnabled": false,
+            "RunWithDebugInfo": false,
+            "SnapshotDisabled": false,
+            "SnapshotLocked": false,
+            "SnapshotPowerOffBehavior": "powerOff",
+            "UseToe": false,
+            "VirtualExecUsage": "hvAuto",
+            "VirtualMmuUsage": "automatic"
+        },
+        "ForkConfigInfo": {
+            "ChildForkGroupId": null,
+            "ChildType": null,
+            "ParentEnabled": false,
+            "ParentForkGroupId": null
+        },
+        "FtInfo": null,
+        "GuestAutoLockEnabled": false,
+        "GuestFullName": "Ubuntu Linux (64-bit)",
+        "GuestId": "ubuntu64Guest",
+        "GuestIntegrityInfo": null,
+        "Hardware": {
+            "Device": [
+                "VMware.Vim.VirtualIDEController",
+                "VMware.Vim.VirtualIDEController",
+                "VMware.Vim.VirtualPS2Controller",
+                "VMware.Vim.VirtualPCIController",
+                "VMware.Vim.VirtualSIOController",
+                "VMware.Vim.VirtualKeyboard",
+                "VMware.Vim.VirtualPointingDevice",
+                "VMware.Vim.VirtualMachineVideoCard",
+                "VMware.Vim.VirtualMachineVMCIDevice",
+                "VMware.Vim.VirtualLsiLogicController",
+                "VMware.Vim.VirtualCdrom",
+                "VMware.Vim.VirtualDisk",
+                "VMware.Vim.VirtualVmxnet3"
+            ],
+            "MemoryMB": 512,
+            "NumCPU": 1,
+            "NumCoresPerSocket": 1,
+            "VirtualICH7MPresent": false,
+            "VirtualSMCPresent": false
+        },
+        "HotPlugMemoryIncrementSize": 0,
+        "HotPlugMemoryLimit": 512,
+        "InitialOverhead": {
+            "InitialMemoryReservation": 38060032,
+            "InitialSwapReservation": 170577920
+        },
+        "InstanceUuid": "528d305e-cab1-1aa9-a0b5-915c024cdae1",
+        "KeyId": null,
+        "LatencySensitivity": {
+            "Level": 1,
+            "Sensitivity": null
+        },
+        "LocationId": "564d12ad-d497-bd0b-23e3-db51d705ed75",
+        "ManagedBy": null,
+        "MaxMksConnections": 40,
+        "MemoryAffinity": null,
+        "MemoryAllocation": {
+            "ExpandableReservation": null,
+            "Limit": -1,
+            "OverheadLimit": null,
+            "Reservation": 0,
+            "Shares": {
+                "Level": 1,
+                "Shares": 5120
+            }
+        },
+        "MemoryHotAddEnabled": false,
+        "MemoryReservationLockedToMax": false,
+        "MessageBusTunnelEnabled": false,
+        "MigrateEncryption": null,
+        "Modified": "/Date(0)/",
+        "Name": "samba_00.lab.etsbv.internal",
+        "NestedHVEnabled": false,
+        "NetworkShaper": null,
+        "NpivDesiredNodeWwns": null,
+        "NpivDesiredPortWwns": null,
+        "NpivNodeWorldWideName": null,
+        "NpivOnNonRdmDisks": null,
+        "NpivPortWorldWideName": null,
+        "NpivTemporaryDisabled": true,
+        "NpivWorldWideNameType": null,
+        "RepConfig": null,
+        "ScheduledHardwareUpgradeInfo": {
+            "Fault": null,
+            "ScheduledHardwareUpgradeStatus": "none",
+            "UpgradePolicy": "never",
+            "VersionKey": null
+        },
+        "SwapPlacement": "inherit",
+        "SwapStorageObjectId": null,
+        "Template": false,
+        "Tools": {
+            "AfterPowerOn": true,
+            "AfterResume": true,
+            "BeforeGuestReboot": null,
+            "BeforeGuestShutdown": true,
+            "BeforeGuestStandby": true,
+            "CustomizationKeyId": null,
+            "LastInstallInfo": {
+                "Counter": 0,
+                "Fault": null
+            },
+            "PendingCustomization": null,
+            "SyncTimeWithHost": false,
+            "ToolsInstallType": null,
+            "ToolsUpgradePolicy": "manual",
+            "ToolsVersion": 2147483647
+        },
+        "Uuid": "564d12ad-d497-bd0b-23e3-db51d705ed75",
+        "VAppConfig": null,
+        "VAssertsEnabled": false,
+        "VFlashCacheReservation": 0,
+        "VPMCEnabled": false,
+        "Version": "vmx-11",
+        "VmStorageObjectId": null,
+        "VmxConfigChecksum": [
+            97,
+            254,
+            53,
+            162,
+            236,
+            164,
+            199,
+            95,
+            227,
+            145,
+            49,
+            124,
+            185,
+            87,
+            233,
+            177,
+            175,
+            75,
+            77,
+            24
+        ]
+    }
+}
