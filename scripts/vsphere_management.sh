@@ -37,3 +37,5 @@ ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_
 ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_info
 
 ansible-playbook -i inventory/ playbooks/pdns.yml
+
+ansible-playbook -i inventory/ playbooks/reboot.yml
