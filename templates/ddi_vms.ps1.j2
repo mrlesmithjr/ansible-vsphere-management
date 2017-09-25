@@ -7,6 +7,7 @@ $DataStore="{{ hostvars[vm]['datastore'] }}"
 $NetworkName="{{ hostvars[vm]['network_name'] }}"
 $vAppSourcePath="{{ hostvars[vm]['vapp_source_path'] }}"
 $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
+$vmNameShort="{{ hostvars[vm]['inventory_hostname_short'] }}"
 
 $vmServer=Get-VMHost -Server $vmHost
 $vms=($vmServer | Get-VM).Name
@@ -151,8 +152,8 @@ if ($vmGuestFamily -eq $null) {
 }
 $vmHostName=$vm.Guest.HostName
 if ($vmGuestFamily -eq 'linuxGuest') {
-  if ($vmHostName -ne $vmName) {
-    $vm | Invoke-VMScript -GuestCredential $SecureCreds -ScriptType Bash "sudo hostnamectl set-hostname $vmName" | Out-File -Append {{ vsphere_management_log }}
+  if ($vmHostName -ne $vmNameShort) {
+    $vm | Invoke-VMScript -GuestCredential $SecureCreds -ScriptType Bash "sudo hostnamectl set-hostname $vmNameShort" | Out-File -Append {{ vsphere_management_log }}
     $vm | Restart-VMGuest -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
     do {
       $vm=$vmServer | Get-VM $vmName
