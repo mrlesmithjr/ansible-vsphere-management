@@ -2,12 +2,8 @@
 # Define VIPs to use for Keepalived for services such as dns, ntp, and etc.
 
 # vsphere_dns_vips:
-#   - 10.0.101.101
-#   - 10.0.101.102
+#   - 10.0.102.102
+#   - 10.0.102.102
 
 vsphere_lb_vips:
-  - 10.0.101.100
-
-vsphere_ntp_vips:
-  - 10.0.101.103
-  - 10.0.101.104
+  - 10.0.102.100

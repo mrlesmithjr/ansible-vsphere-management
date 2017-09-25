@@ -32,13 +32,17 @@ pdns_records:
     domain: "{{ pri_domain_name }}"
     ip: 10.0.101.51
     type: A
+  - hostname: ntp_00
+    domain: "{{ pri_domain_name }}"
+    ip: "{{ vsphere_ntp_servers[0] }}"
+    type: A
   - hostname: ntp_01
     domain: "{{ pri_domain_name }}"
-    ip: "{{ vsphere_ntp_vips[0] }}"
+    ip: "{{ vsphere_ntp_servers[1] }}"
     type: A
   - hostname: ntp_02
     domain: "{{ pri_domain_name }}"
-    ip: "{{ vsphere_ntp_vips[1] }}"
+    ip: "{{ vsphere_ntp_servers[2] }}"
     type: A
   - hostname: pdns_api
     domain: "{{ pri_domain_name }}"

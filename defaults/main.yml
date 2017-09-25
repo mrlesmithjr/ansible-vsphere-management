@@ -112,18 +112,36 @@ vsphere_lb_vips: []
   # - 10.0.101.100
 
 vsphere_lb_vms: []
-  # cpus: 1
-  # datastore: Datastore_1
-  # deploy: false
-  # memory_mb: 512
-  # naming: lb
-  # network_name: VSS-VLAN-101
-  # vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # vm_count: 2
+  # - vm_name: lb_00
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.20
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  # - vm_name: lb_01
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.21
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
 
 vsphere_lb_generate_inventory: true
 
 vsphere_lb_vms_inventory_file: ../inventory/vsphere_lb_vms.inv
+
+vsphere_lb_vms_json_output_file: ../inventory/vsphere_lb_vms.json
+
+vsphere_lb_vms_wait_for_ssh: true
 
 # Currently this needs to be defined per host in host_vars because of the way
 # we iterate through the list of hosts in vsphere_management_hosts_group
@@ -133,10 +151,6 @@ vsphere_ntp_servers: []
   # - 10.0.102.10
   # - 10.0.102.11
   # - 10.0.102.12
-
-vsphere_ntp_vips: []
-  # - 10.0.101.103
-  # - 10.0.101.104
 
 vsphere_reboot_after_updates: false
 

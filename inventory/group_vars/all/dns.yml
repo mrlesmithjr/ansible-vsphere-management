@@ -1,5 +1,5 @@
 ---
-pri_domain_name: etsbv.internal
+pri_domain_name: lab.etsbv.internal
 
 vsphere_dns_servers:
   - 10.0.102.10

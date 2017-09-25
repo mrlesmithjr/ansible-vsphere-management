@@ -5,12 +5,16 @@
     - name: Setting pdns_api_url
       set_fact:
         pdns_api_url: "http://{{ hostvars[groups['vsphere_ddi_vms'][0]]['ansible_host'] }}:{{ pdns_webserver_port }}/api/v1"
-      when: not pdns_load_balanced
+      when: >
+            not pdns_load_balanced or
+            groups['vsphere_lb_vms'] is not defined
 
     - name: Setting pdns_api_url
       set_fact:
         pdns_api_url: "http://{{ pdns_api_vip }}:{{ pdns_webserver_port }}/api/v1"
-      when: pdns_load_balanced
+      when: >
+            pdns_load_balanced and
+            vsphere_lb_vms is defined
 
     - name: Creating PDNS Nameserver Group
       add_host:

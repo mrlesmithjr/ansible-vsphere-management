@@ -8,7 +8,7 @@ haproxy_configs:
     backend_name: phpipam-hosts
     backend_servers_bind_port: 80
     backend_servers: "{{ groups['vsphere_ddi_vms'] }}"
-    balance: roundrobin
+    balance: source
     default_server_options:
       - name: maxconn
         value: 256
@@ -49,7 +49,7 @@ haproxy_configs:
     backend_name: pdns-api-hosts
     backend_servers_bind_port: "{{ pdns_webserver_port }}"
     backend_servers: "{{ groups['vsphere_ddi_vms'] }}"
-    balance: roundrobin
+    balance: source
     default_server_options:
       - name: maxconn
         value: 256

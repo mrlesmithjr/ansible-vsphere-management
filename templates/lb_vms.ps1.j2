@@ -1,25 +1,109 @@
+{% if groups['vsphere_lb_vms_deploy'] is defined %}
 $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
-$DataStore="{{ vsphere_lb_vms['datastore'] }}"
-$NetworkName="{{ vsphere_lb_vms['network_name'] }}"
-$vAppSourcePath="{{ vsphere_lb_vms['vapp_source_path'] }}"
-
 Connect-VIServer -Server $vmHost | Out-Null
+
+{%   for vm in groups['vsphere_lb_vms_deploy'] %}
+$DataStore="{{ hostvars[vm]['datastore'] }}"
+$NetworkName="{{ hostvars[vm]['network_name'] }}"
+$vAppSourcePath="{{ hostvars[vm]['vapp_source_path'] }}"
+$vmName="{{ hostvars[vm]['inventory_hostname'] }}"
 
 $vmServer=Get-VMHost -Server $vmHost
 $vms=($vmServer | Get-VM).Name
 
-{% for vm in groups['vsphere_lb_vms_deploy'] %}
-$vmName="{{ hostvars[vm]['inventory_hostname'] }}"
+{%     if hostvars[vm]['hw_product_uuid'] is defined %}
+  $vmInventoryUuid="{{ hostvars[vm]['hw_product_uuid'] }}"
 if ($vms -notcontains $vmName) {
-  $deployVM=$vmServer | Import-VApp -Datastore $DataStore -Source $vAppSourcePath -Name $vmName -DiskStorageFormat Thin -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  foreach ($vm in $vms) {
+    $vm=$vmServer | Get-VM $vm
+    $vmView=$vm | Get-View
+    $vmUuid=$vmView.Config.Uuid
+    if ($vmInventoryUuid -eq $vmUuid) {
+      $vm | Set-VM -Name $vmName -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+    }
+  }
+}
+$vms=($vmServer | Get-VM).Name
+{%     endif %}
+
+if ($vms -contains $vmName) {
+  $vm=$vmServer | Get-VM $vmName
+  $vmView=$vm | Get-View
+  $vmUuid=$vmView.Config.Uuid
+{%   if hostvars[vm]['hw_product_uuid'] is defined %}
+  $vmInventoryUuid="{{ hostvars[vm]['hw_product_uuid'] }}"
+  if ($vmInventoryUuid -eq $vmUuid) {
+    $vmUuidMatches=$true
+  }
+  else {
+    $vmUuidMatches=$false
+  }
+{%   elif hostvars[vm]['hw_product_uuid'] is not defined %}
+    $vmUuidMatches=$true
+{%   endif %}
+  if ($vmUuidMatches) {
+    $vm=($vmServer | Get-VM $vmName)
+    $vmPowerState=$vm.PowerState
+    $vmNetwork=($vm | Get-NetworkAdapter).NetworkName
+    if ($vmNetwork -ne $NetworkName) {
+      if ($vmPowerState -eq 'PoweredOn'){
+        "VM Is Not On Correct Network...Moving From $vmNetwork To $NetworkName" | Out-File -Append {{ vsphere_management_log }}
+        $vm | Get-NetworkAdapter | Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Connected:$false -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        $vm | Get-NetworkAdapter | Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Connected:$true -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+      }
+      else {
+        $vm | Get-NetworkAdapter | Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+      }
+    }
+    $vmCPU=$vm.NumCpu
+    if ($vmCPU -ne {{ hostvars[vm]['cpus'] }}) {
+      if ($vmPowerState -eq 'PoweredOn') {
+        $vm | Shutdown-VMGuest -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        do {
+          $vm=$vmServer | Get-VM $vmName
+          $vmPowerState=$vm.PowerState
+          sleep 3
+        } until ($vmPowerState -eq 'PoweredOff')
+      }
+      $vm | set-VM -NumCpu {{ hostvars[vm]['cpus'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+    }
+    $vm=$vmServer | Get-VM $vmName
+    $vmPowerState=$vm.PowerState
+    $vmMemory=$vm.MemoryMB
+    if ($vmMemory -ne {{ hostvars[vm]['memory_mb'] }}) {
+      if ($vmPowerState -eq 'PoweredOn') {
+        $vm | Shutdown-VMGuest -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+        do {
+          $vm=$vmServer | Get-VM $vmName
+          $vmPowerState=$vm.PowerState
+          sleep 3
+        } until ($vmPowerState -eq 'PoweredOff')
+      }
+      $vm | Set-VM -MemoryMB {{ hostvars[vm]['memory_mb'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+    }
+    $vm=$vmServer | Get-VM $vmName
+    $vmPowerState=$vm.PowerState
+    if ($vmPowerState -ne 'PoweredOn') {
+      $vm | Start-VM -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+    }
+    do {
+      $vmView=$vm | Get-View
+      $vmToolsStatus=$vmView.Guest.ToolsStatus
+      sleep 3
+    }
+    until ($vmToolsStatus -eq 'toolsOk')
+  }
+}
+else {
+  $deployBootstrapVM=($vmServer | Import-VApp -Datastore $DataStore -Source $vAppSourcePath -Name $vmName -DiskStorageFormat Thin -Confirm:$false) | Out-File -Append {{ vsphere_management_log }}
   $vm=$vmServer | Get-VM $vmName
   $vmCPU=$vm.NumCpu
-  if ($vmCPU -ne {{ vsphere_lb_vms['cpus'] }}) {
-    $vm | set-VM -NumCpu {{ vsphere_lb_vms['cpus'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  if ($vmCPU -ne {{ hostvars[vm]['cpus'] }}) {
+    $vm | set-VM -NumCpu {{ hostvars[vm]['cpus'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   }
   $vmMemory=$vm.MemoryMB
-  if ($vmMemory -ne {{ vsphere_lb_vms['memory_mb'] }}) {
-    $vm | Set-VM -MemoryMB {{ vsphere_lb_vms['memory_mb'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  if ($vmMemory -ne {{ hostvars[vm]['memory_mb'] }}) {
+    $vm | Set-VM -MemoryMB {{ hostvars[vm]['memory_mb'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   }
   $vm | Get-NetworkAdapter| Set-NetworkAdapter -NetworkName $NetworkName -StartConnected:$true -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   $vm | Start-VM -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
@@ -30,27 +114,16 @@ if ($vms -notcontains $vmName) {
   }
   until ($vmToolsStatus -eq 'toolsOk')
 }
-else {
+{%   endfor %}
+
+{%   for vm in groups['vsphere_lb_vms_deploy'] %}
+  $SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
+  $SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
+  $SecureCreds=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SecureBootStrapUser,$SecureBootStrapPassword
+  $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
+  $vmServer=Get-VMHost -Server $vmHost
   $vm=$vmServer | Get-VM $vmName
-  $vmPowerState=$vm.PowerState
-  if ($vmPowerState -ne 'PoweredOn') {
-    $vm | Start-VM -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
-  }
-  do {
-    $vmView=$vm | Get-View
-    $vmToolsStatus=$vmView.Guest.ToolsStatus
-    sleep 3
-  }
-  until ($vmToolsStatus -eq 'toolsOk')
-}
-$SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
-$SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
-$SecureCreds=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SecureBootStrapUser,$SecureBootStrapPassword
-$vm=$vmServer | Get-VM $vmName
-$vmView=$vm | Get-View
-$vmPowerState=$vm.PowerState
-$vmToolsStatus=$vmView.Guest.ToolsStatus
-if ($vmPowerState -eq 'PoweredOn' -and $vmToolsStatus -eq 'toolsOk') {
+  $vmView=$vm | Get-View
   $vmGuestFamily=$vm.Guest.GuestFamily
   $vmHostName=$vm.Guest.HostName
   if ($vmGuestFamily -eq 'linuxGuest') {
@@ -65,8 +138,19 @@ if ($vmPowerState -eq 'PoweredOn' -and $vmToolsStatus -eq 'toolsOk') {
       }
       until ($vmToolsStatus -eq 'toolsOk')
     }
+{%     if hostvars[vm]['ip'] is defined and hostvars[vm]['ip'] != None %}
+    $vm=$vmServer | Get-VM $vmName
+    $vmIPs=$vm.Guest.IPAddress
+    $vmGateway="{{ hostvars[vm]['gateway'] }}"
+    $vmIP="{{ hostvars[vm]['ip'] }}"
+    $vmIPNetmaskCidr="{{ hostvars[vm]['netmask_cidr'] }}"
+    $vmInt="{{ ansible_primary_interface }}"
+    if ($vmIPs -notcontains $vmIP) {
+      $vm | Invoke-VMScript -GuestCredential $SecureCreds -ScriptType Bash "sudo ip addr flush dev $vmInt && sudo ip addr add $vmIP/$vmIPNetmaskCidr dev $vmInt && sudo ip route add default via $vmGateway dev $vmInt && sudo sh -c 'echo nameserver 8.8.8.8 > /etc/resolv.conf'" | Out-File -Append {{ vsphere_management_log }}
+    }
+{%     endif %}
   }
-}
-{% endfor %}
-
+{%   endfor %}
 Disconnect-VIServer * -Confirm:$false
+
+{% endif %}

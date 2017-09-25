@@ -135,6 +135,7 @@
     port: 22
     search_regex: OpenSSH
     delay: 10
+    timeout: 600
   vars:
     ansible_connection: local
   with_items: "{{ groups['vsphere_ddi_vms'] }}"

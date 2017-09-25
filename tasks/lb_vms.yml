@@ -3,19 +3,28 @@
   set_fact:
     vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
 
-- name: lb_vms | Creating Dynamic Inventory For lb_vms
+- name: lb_vms | Creating lb_vms_deploy Dynamic Group
   add_host:
-    hostname: "{{ vsphere_lb_vms['naming'] + '_0' + item }}"
     groups: vsphere_lb_vms_deploy
+    hostname: "{{ item['vm_name'] }}"
+    cpus: "{{ item['cpus'] }}"
+    datastore: "{{ item['datastore'] }}"
+    ip: "{{ item['ip']|default(omit) }}"
+    gateway: "{{ item['gateway']|default(omit) }}"
+    memory_mb: "{{ item['memory_mb'] }}"
+    netmask: "{{ item['netmask']|default(omit) }}"
+    netmask_cidr: "{{ item['netmask_cidr']|default(omit) }}"
+    network_name: "{{ item['network_name'] }}"
+    vapp_source_path: "{{ item['vapp_source_path'] }}"
   changed_when: false
-  with_sequence: start=1 end={{ vsphere_lb_vms['vm_count'] }}
-  when: vsphere_lb_vms is defined
+  with_items: "{{ vsphere_lb_vms }}"
+  when: item['deploy']
 
 - name: lb_vms | Generating Secure Password
   win_shell: $Password=ConvertTo-SecureString -String "{{ vsphere_bootstrap_user_info['password'] }}" -AsPlainText -Force | ConvertFrom-SecureString | Out-File {{ vsphere_bootstrap_vms_secure_password_file }}
   no_log: true
 
-- name: lb_vms | Generating lb_vms.ps1 Powershell Script
+- name: bootstrap_vms | Generating lb_vms.ps1 Powershell Script
   win_template:
     src: lb_vms.ps1.j2
     dest: c:\tmp\lb_vms.ps1
@@ -26,6 +35,27 @@
   failed_when: _lb_vms_script_execution['stderr_lines'] != []
   register: _lb_vms_script_execution
 
+- debug: var=_lb_vms_script_execution
+
+- name: lb_vms | Capturing JSON Formatted Info
+  win_shell: |
+    $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+    Connect-VIServer -Server $vmHost | Out-Null
+    $vmServer=(Get-VMHost -Server $vmHost)
+    (($vmServer | Get-VM {{ hostvars[item]['inventory_hostname'] }} | Get-View).Config) | ConvertTo-Json
+    Disconnect-VIServer * -Confirm:$false | Out-Null
+  register: _vsphere_lb_vm_configs
+  with_items: "{{ groups['vsphere_lb_vms_deploy'] }}"
+  when: groups['vsphere_lb_vms_deploy'] is defined
+
+- name: lb_vms | Generating Nicely Formatted JSON Info
+  template:
+    src: lb_vms.json.j2
+    dest: "{{ vsphere_lb_vms_json_output_file }}"
+  delegate_to: localhost
+  become: false
+  when: _vsphere_lb_vm_configs['changed']
+
 - name: lb_vms | Waiting For All IP Addresses To Be Captured
   vmware_guest_facts:
     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
@@ -33,7 +63,7 @@
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
     validate_certs: false
-    name: "{{ hostvars[item]['inventory_hostname'] }}"
+    name: "{{ item['vm_name'] }}"
     folder: /ha-datacenter/vm
   delegate_to: localhost
   register: _vsphere_lb_vm_facts
@@ -42,10 +72,8 @@
   retries: 30
   delay: 2
   failed_when: false
-  with_items: "{{ groups['vsphere_lb_vms_deploy'] }}"
-  when: groups['vsphere_lb_vms_deploy'] is defined
-
-- debug: var=_vsphere_lb_vm_facts
+  with_items: "{{ vsphere_lb_vms }}"
+  when: item['deploy']
 
 - name: lb_vms | Creating Initial VM Snapshot
   vmware_guest_snapshot:
@@ -76,10 +104,43 @@
         not item['failed']) or
         item['failed'] is not defined
 
+- name: lb_vms | Creating Dynamic Inventory For vsphere_lb_vms_failed
+  add_host:
+    hostname: "{{ item['instance']['hw_name'] }}"
+    ansible_host: "{{ item['instance']['ipv4']|default(omit) }}"
+    hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
+    groups: vsphere_lb_vms_failed
+  changed_when: false
+  with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
+  when: >
+        item['failed'] is defined and
+        item['failed']
+
 - name: lb_vms | Displaying IP Addresses For Each VM
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
   with_items: "{{ groups['vsphere_lb_vms'] }}"
   when: >
+        groups['vsphere_lb_vms'] is defined and
+        (groups['vsphere_lb_vms_deploy'] is defined and
+        hostvars[item]['inventory_hostname'] in groups['vsphere_lb_vms_deploy'])
+
+- name: lb_vms | Displaying Failed VMs
+  debug: msg="{{ hostvars[item]['inventory_hostname'] }} Failed and has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['vsphere_lb_vms_failed'] }}"
+  when: groups['vsphere_lb_vms_failed'] is defined
+
+- name: lb_vms | Waiting for SSH
+  wait_for:
+    host: "{{ hostvars[item]['ansible_host'] }}"
+    port: 22
+    search_regex: OpenSSH
+    delay: 10
+    timeout: 600
+  vars:
+    ansible_connection: local
+  with_items: "{{ groups['vsphere_lb_vms'] }}"
+  when: >
+        vsphere_lb_vms_wait_for_ssh and
         groups['vsphere_lb_vms'] is defined and
         (groups['vsphere_lb_vms_deploy'] is defined and
         hostvars[item]['inventory_hostname'] in groups['vsphere_lb_vms_deploy'])
