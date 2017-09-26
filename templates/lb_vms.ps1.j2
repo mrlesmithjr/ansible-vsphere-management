@@ -133,6 +133,7 @@ $SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
 $SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
 $SecureCreds=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SecureBootStrapUser,$SecureBootStrapPassword
 $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
+$vmNameShort="{{ hostvars[vm]['inventory_hostname_short'] }}"
 $vmServer=Get-VMHost -Server $vmHost
 $vm=$vmServer | Get-VM $vmName
 $vmAutoStart=($vm | Get-VMStartPolicy)
