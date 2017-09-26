@@ -2,12 +2,6 @@
 # Defines if interfaces should be configured as defined
 config_network_interfaces: true
 
-# Defines all dns servers to configure
-dns_nameservers:
-  - "{{ vsphere_dns_servers[0] }}"
-  - "{{ vsphere_dns_servers[1] }}"
-  - "{{ vsphere_dns_servers[2] }}"
-
 # Defines non Open vSwitch network interfaces
 network_interfaces:
   - name: "{{ ansible_primary_interface }}"

@@ -1,4 +1,10 @@
 ---
+# These define the IP addresses for the DDI VMs
+vsphere_ddi_vm_ips:
+  - 10.0.102.10
+  - 10.0.102.11
+  - 10.0.102.12
+
 vsphere_ddi_vms_inventory_file: ../inventory/vsphere_ddi_vms.inv
 
 vsphere_ddi_vms:
@@ -7,8 +13,8 @@ vsphere_ddi_vms:
     deploy: true
     datastore: Datastore_1
     gateway: 10.0.102.1
-    ip: "{{ vsphere_dns_servers[0] }}"
-    memory_mb: 1024
+    ip: "{{ vsphere_ddi_vm_ips[0] }}"
+    memory_mb: 2048
     netmask: 255.255.255.0
     netmask_cidr: 24
     network_name: VSS-VLAN-102
@@ -18,8 +24,8 @@ vsphere_ddi_vms:
     deploy: true
     datastore: Datastore_1
     gateway: 10.0.102.1
-    ip: "{{ vsphere_dns_servers[1] }}"
-    memory_mb: 1024
+    ip: "{{ vsphere_ddi_vm_ips[1] }}"
+    memory_mb: 2048
     netmask: 255.255.255.0
     netmask_cidr: 24
     network_name: VSS-VLAN-102
@@ -29,8 +35,8 @@ vsphere_ddi_vms:
     deploy: true
     datastore: Datastore_1
     gateway: 10.0.102.1
-    ip: "{{ vsphere_dns_servers[2] }}"
-    memory_mb: 1024
+    ip: "{{ vsphere_ddi_vm_ips[2] }}"
+    memory_mb: 2048
     netmask: 255.255.255.0
     netmask_cidr: 24
     network_name: VSS-VLAN-102
