@@ -1,5 +1,5 @@
 ---
-- hosts: vsphere_ddi_vms:vsphere_lb_vms
+- hosts: vsphere_samba_vms:vsphere_ddi_vms:vsphere_lb_vms
   serial: 1
   tasks:
     - name: Checking If Post Deployment Reboot Completed

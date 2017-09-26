@@ -1,0 +1,3 @@
+---
+vsphere_ad_dns_domain_name: "{{ vsphere_ad_netbios_name|lower }}.{{ vsphere_pri_domain_name }}"
+vsphere_ad_netbios_name: "LAB-AD"

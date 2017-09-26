@@ -1,15 +1,15 @@
 ---
 # defaults file for ansible-samba
 pri_domain_name: example.org
-samba_ad_info:
-  ad_dc_hostname: "{{ ansible_hostname }}"
-  ad_dns_domain_name: "{{ pri_domain_name }}"
-  adminpass: P@55w0rd
-  allow_dns_updates: disabled
-  backend_dns: internal
-  dns_forwarder: 8.8.8.8
-  kerberos_realm: '{{ pri_domain_name }}'
-  netbios_domain_name: "{{ samba_netbios_domain_name[0]|upper }}"
+samba_ad_info: []
+  # ad_dc_hostname: "{{ ansible_hostname }}"
+  # ad_dns_domain_name: "{{ pri_domain_name }}"
+  # adminpass: P@55w0rd
+  # allow_dns_updates: disabled
+  # backend_dns: internal
+  # dns_forwarder: 8.8.8.8
+  # kerberos_realm: '{{ pri_domain_name }}'
+  # netbios_domain_name: "{{ samba_netbios_domain_name[0]|upper }}"
 
 # Allow users who've been granted usershare privileges
 # to create public shares, not just authenticated ones
