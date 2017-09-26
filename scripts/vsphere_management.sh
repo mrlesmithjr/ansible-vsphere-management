@@ -19,6 +19,8 @@ fi
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_management
 
+ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_samba_vms
+
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_bootstrap_vms
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_dnsdist_vms
@@ -31,11 +33,15 @@ ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_l
 
 ansible-playbook -i inventory/ playbooks/vsphere_dnsdist.yml --tags vsphere_dnsdist_vms_info
 
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
+
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_dnsdist.yml
+
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml
 
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml
 
@@ -44,6 +50,8 @@ ansible-playbook -i inventory/ playbooks/vsphere_lb.yml
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_dns
 
 ansible-playbook -i inventory/ playbooks/vsphere_dnsdist.yml --tags vsphere_dnsdist_vms_info
+
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_info
 
