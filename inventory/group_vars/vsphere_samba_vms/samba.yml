@@ -6,7 +6,7 @@ samba_ad_info:
   ad_dns_domain_name: "{{ vsphere_pri_domain_name }}"
   adminpass: P@55w0rd
   # backend_dns:
-  dns_forwarder: 8.8.8.8
+  dns_forwarder: "{{ vsphere_dns_servers|join(' ')}}"
   # domain_admin_pass:
   kerberos_realm: "{{ vsphere_pri_domain_name }}"
   netbios_domain_name: "{{ _vsphere_pri_domain_name[0]|upper }}"
@@ -42,14 +42,14 @@ samba_server_role: active directory domain controller
 
 # Defines root folder for samba shares to be created
 samba_share_path: /mnt/samba/shares
-samba_shares:
-  - name: netlogon
-    browsable: "yes"
-    folder_perms: "0755"
-    group: nogroup
-    guest_ok: "yes"
-    read_only: "yes"
-    writable: "yes"
+samba_shares: []
+  # - name: netlogon
+  #   browsable: "yes"
+  #   folder_perms: "0755"
+  #   group: nogroup
+  #   guest_ok: "yes"
+  #   read_only: "yes"
+  #   writable: "yes"
 
 # Define users to create
 samba_users: []
