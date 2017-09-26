@@ -11,8 +11,8 @@
     - restart smbd
     - restart samba-ad-dc
   with_items:
-    - 'etc/krb5.conf'
-    - 'etc/samba/smb.conf'
+    - etc/krb5.conf
+    - etc/samba/smb.conf
 
 - name: config_samba | checking if domain created
   stat:

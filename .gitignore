@@ -1,4 +1,5 @@
 *.retry
+.galaxy_install_info
 inventory/group_vars/all/accounts.yml
 logs/
 vsphere_bootstrap_vms.inv
