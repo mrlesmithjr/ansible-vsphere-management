@@ -157,6 +157,7 @@ if ($dpg -ne $ManagementNetwork) {
   }
   else {
     "$dpg Does Not Exist so creating it On $vmhost" | Out-File -Append {{ vsphere_management_log }}
+    $dpgvs=$DesiredVswitch
     New-VirtualPortGroup -Server $vmHost -VirtualSwitch $dpgvs -Name $dpg -VLanId $pgVlanId -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   }
 }
