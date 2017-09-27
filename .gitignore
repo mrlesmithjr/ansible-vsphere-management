@@ -6,5 +6,7 @@ vsphere_bootstrap_vms.json
 vsphere_ddi_vms.inv
 vsphere_ddi_vms.json
 vsphere_dhcp_vms.inv
+vsphere_dnsdist_vms.inv
+vsphere_dnsdist_vms.json
 vsphere_lb_vms.inv
 vsphere_lb_vms.json

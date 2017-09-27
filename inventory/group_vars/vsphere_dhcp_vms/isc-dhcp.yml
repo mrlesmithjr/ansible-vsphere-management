@@ -48,7 +48,6 @@ isc_dhcp_failover_info:
 isc_dhcp_name_servers:
   - "{{ vsphere_dns_servers[0] }}"
   - "{{ vsphere_dns_servers[1] }}"
-  - "{{ vsphere_dns_servers[2] }}"
 
 # Defines ntp servers for clients to poll
 isc_dhcp_ntp_servers:

@@ -14,20 +14,15 @@ pdns_records:
     domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_lb_vips[0] }}"
     type: CNAME
-  - hostname: dns_00
-    content: "ddi_00.{{ vsphere_pri_domain_name }}."
+  - hostname: dns-00
+    content: "dnsdist-00.{{ vsphere_pri_domain_name }}."
     domain: "{{ vsphere_pri_domain_name }}"
-    ip: "{{ vsphere_dns_servers[0] }}"
+    ip: "{{ vsphere_dnsdist_vm_ips[0] }}"
     type: CNAME
-  - hostname: dns_01
-    content: "ddi_01.{{ vsphere_pri_domain_name }}."
+  - hostname: dns-01
+    content: "dnsdist-01.{{ vsphere_pri_domain_name }}."
     domain: "{{ vsphere_pri_domain_name }}"
-    ip: "{{ vsphere_dns_servers[1] }}"
-    type: CNAME
-  - hostname: dns_02
-    content: "ddi_02.{{ vsphere_pri_domain_name }}."
-    domain: "{{ vsphere_pri_domain_name }}"
-    ip: "{{ vsphere_dns_servers[2] }}"
+    ip: "{{ vsphere_dnsdist_vm_ips[1] }}"
     type: CNAME
   - hostname: ipam
     content: "lb.{{ vsphere_pri_domain_name }}."
@@ -44,22 +39,22 @@ pdns_records:
     domain: "{{ vsphere_pri_domain_name }}"
     ip: 10.0.101.51
     type: A
-  - hostname: ntp_00
-    content: "ddi_00.{{ vsphere_pri_domain_name }}."
+  - hostname: ntp-00
+    content: "ddi-00.{{ vsphere_pri_domain_name }}."
     domain: "{{ vsphere_pri_domain_name }}"
-    ip: "{{ vsphere_ntp_servers[0] }}"
+    ip: "{{ vsphere_ddi_vm_ips[0] }}"
     type: CNAME
-  - hostname: ntp_01
-    content: "ddi_01.{{ vsphere_pri_domain_name }}."
+  - hostname: ntp-01
+    content: "ddi-01.{{ vsphere_pri_domain_name }}."
     domain: "{{ vsphere_pri_domain_name }}"
-    ip: "{{ vsphere_ntp_servers[1] }}"
+    ip: "{{ vsphere_ddi_vm_ips[1] }}"
     type: CNAME
-  - hostname: ntp_02
-    content: "ddi_02.{{ vsphere_pri_domain_name }}."
+  - hostname: ntp-02
+    content: "ddi-02.{{ vsphere_pri_domain_name }}."
     domain: "{{ vsphere_pri_domain_name }}"
-    ip: "{{ vsphere_ntp_servers[2] }}"
+    ip: "{{ vsphere_ddi_vm_ips[2] }}"
     type: CNAME
-  - hostname: pdns_api
+  - hostname: pdns-api
     content: "lb.{{ vsphere_pri_domain_name }}."
     domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_lb_vips[0] }}"

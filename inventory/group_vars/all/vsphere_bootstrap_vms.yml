@@ -1,6 +1,6 @@
 ---
 vsphere_bootstrap_vms: []
-  # - vm_name: bootstrap_vm_1
+  # - vm_name: bootstrap-vm-1
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
