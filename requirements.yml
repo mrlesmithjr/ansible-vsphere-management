@@ -10,6 +10,7 @@
 - src: https://github.com/mrlesmithjr/ansible-ntp.git
 - src: https://github.com/mrlesmithjr/ansible-phpipam.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-authoritative.git
+- src: https://github.com/mrlesmithjr/ansible-powerdns-dnsdist.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-recursor.git
 - src: https://github.com/mrlesmithjr/ansible-sshd.git
 - src: https://github.com/mrlesmithjr/ansible-windows-powercli.git

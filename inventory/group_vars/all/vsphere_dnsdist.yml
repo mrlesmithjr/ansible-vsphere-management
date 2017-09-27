@@ -1,0 +1,31 @@
+---
+# These define the IP addresses for the DNSDist VMs
+vsphere_dnsdist_vm_ips:
+  - 10.0.102.40
+  - 10.0.102.41
+
+vsphere_dnsdist_vms_inventory_file: ../inventory/vsphere_dnsdist_vms.inv
+
+vsphere_dnsdist_vms:
+  - vm_name: "dnsdist_00.{{ vsphere_pri_domain_name }}"
+    cpus: 1
+    deploy: true
+    datastore: Datastore_1
+    gateway: 10.0.102.1
+    ip: "{{ vsphere_dnsdist_vm_ips[0] }}"
+    memory_mb: 1024
+    netmask: 255.255.255.0
+    netmask_cidr: 24
+    network_name: VSS-VLAN-102
+    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  - vm_name: "dnsdist_01.{{ vsphere_pri_domain_name }}"
+    cpus: 1
+    deploy: true
+    datastore: Datastore_1
+    gateway: 10.0.102.1
+    ip: "{{ vsphere_dnsdist_vm_ips[1] }}"
+    memory_mb: 1024
+    netmask: 255.255.255.0
+    netmask_cidr: 24
+    network_name: VSS-VLAN-102
+    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
