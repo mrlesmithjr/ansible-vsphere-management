@@ -3,24 +3,25 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [ansible-vsphere-management](#ansible-vsphere-management)
-  - [Requirements](#requirements)
-    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-    - [Software iSCSI](#software-iscsi)
-  - [Deployment Host](#deployment-host)
-    - [Spinning It Up](#spinning-it-up)
-  - [Environment Deployment](#environment-deployment)
-  - [Bootstrap VMs](#bootstrap-vms)
-  - [DNSDist VMs](#dnsdist-vms)
-  - [DDI VMs](#ddi-vms)
-    - [Autostart DDI VMs](#autostart-ddi-vms)
-    - [Defining DDI VMs](#defining-ddi-vms)
-    - [Defining DNS Records](#defining-dns-records)
-    - [Future DDI Functionality](#future-ddi-functionality)
-  - [Role Variables](#role-variables)
-  - [Dependencies](#dependencies)
-  - [Example Playbook](#example-playbook)
-  - [License](#license)
-  - [Author Information](#author-information)
+    - [Requirements](#requirements)
+        - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+        - [Software iSCSI](#software-iscsi)
+    - [Deployment Host](#deployment-host)
+        - [Spinning It Up](#spinning-it-up)
+    - [Environment Deployment](#environment-deployment)
+    - [Defining Environmental Variables](#defining-environmental-variables)
+    - [Bootstrap VMs](#bootstrap-vms)
+    - [DNSDist VMs](#dnsdist-vms)
+    - [DDI VMs](#ddi-vms)
+        - [Autostart DDI VMs](#autostart-ddi-vms)
+        - [Defining DDI VMs](#defining-ddi-vms)
+        - [Defining DNS Records](#defining-dns-records)
+        - [Future DDI Functionality](#future-ddi-functionality)
+    - [Role Variables](#role-variables)
+    - [Dependencies](#dependencies)
+    - [Example Playbook](#example-playbook)
+    - [License](#license)
+    - [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -141,6 +142,18 @@ This script will likely include the [Deployment Host](#deployment_host) deployme
 at some point as well seeing as this deployment initially includes the Windows
 Vagrant box to do all of the deployments.
 
+## Defining Environmental Variables
+
+> Note: This is a work in progress
+
+As this project proceeds the common variables will begin to be consolidated into `inventory/groups_vars/all/environment.yml`. This will allow for environmental specific variables to be defined in a central location. These will be defined and feed into additional variables. This makes management of specific environments much easier.
+
+```yaml
+---
+# vSphere core services for vms
+vsphere_vm_services_subnet: 10.0.102
+```
+
 ## Bootstrap VMs
 
 When spinning up a new environment you may want to spin up some initial VMs for
@@ -204,42 +217,42 @@ Below is an example of the current DDI VM definitions in `inventory/group_vars/a
 ---
 # These define the IP addresses for the DDI VMs
 vsphere_ddi_vm_ips:
-  - 10.0.102.10
-  - 10.0.102.11
-  - 10.0.102.12
+  - "{{ vsphere_vm_services_subnet }}.10"
+  - "{{ vsphere_vm_services_subnet }}.11"
+  - "{{ vsphere_vm_services_subnet }}.12"
 
 vsphere_ddi_vms_inventory_file: ../inventory/vsphere_ddi_vms.inv
 
 vsphere_ddi_vms:
-  - vm_name: "ddi_00.{{ vsphere_pri_domain_name }}"
+  - vm_name: "ddi-00.{{ vsphere_pri_domain_name }}"
     cpus: 1
     deploy: true
     datastore: Datastore_1
-    gateway: 10.0.102.1
+    gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_ddi_vm_ips[0] }}"
-    memory_mb: 1024
+    memory_mb: 2048
     netmask: 255.255.255.0
     netmask_cidr: 24
     network_name: VSS-VLAN-102
     vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  - vm_name: "ddi_01.{{ vsphere_pri_domain_name }}"
+  - vm_name: "ddi-01.{{ vsphere_pri_domain_name }}"
     cpus: 1
     deploy: true
     datastore: Datastore_1
-    gateway: 10.0.102.1
+    gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_ddi_vm_ips[1] }}"
-    memory_mb: 1024
+    memory_mb: 2048
     netmask: 255.255.255.0
     netmask_cidr: 24
     network_name: VSS-VLAN-102
     vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  - vm_name: "ddi_02.{{ vsphere_pri_domain_name }}"
+  - vm_name: "ddi-02.{{ vsphere_pri_domain_name }}"
     cpus: 1
     deploy: true
     datastore: Datastore_1
-    gateway: 10.0.102.1
+    gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_ddi_vm_ips[2] }}"
-    memory_mb: 1024
+    memory_mb: 2048
     netmask: 255.255.255.0
     netmask_cidr: 24
     network_name: VSS-VLAN-102

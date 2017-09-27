@@ -1,8 +1,8 @@
 ---
 # These define the IP addresses for the DNSDist VMs
 vsphere_dnsdist_vm_ips:
-  - 10.0.102.40
-  - 10.0.102.41
+  - "{{ vsphere_vm_services_subnet }}.40"
+  - "{{ vsphere_vm_services_subnet }}.41"
 
 vsphere_dnsdist_vms_inventory_file: ../inventory/vsphere_dnsdist_vms.inv
 
@@ -11,7 +11,7 @@ vsphere_dnsdist_vms:
     cpus: 1
     deploy: true
     datastore: Datastore_1
-    gateway: 10.0.102.1
+    gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_dnsdist_vm_ips[0] }}"
     memory_mb: 1024
     netmask: 255.255.255.0
@@ -22,7 +22,7 @@ vsphere_dnsdist_vms:
     cpus: 1
     deploy: true
     datastore: Datastore_1
-    gateway: 10.0.102.1
+    gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_dnsdist_vm_ips[1] }}"
     memory_mb: 1024
     netmask: 255.255.255.0
