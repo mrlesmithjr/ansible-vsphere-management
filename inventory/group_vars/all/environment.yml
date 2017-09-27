@@ -1,0 +1,3 @@
+---
+# vSphere core services for vms
+vsphere_vm_services_subnet: 10.0.102

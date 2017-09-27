@@ -2,4 +2,4 @@
 # Define VIPs to use for Keepalived for services such as dns, ntp, and etc.
 
 vsphere_lb_vips:
-  - 10.0.102.100
+  - "{{ vsphere_vm_services_subnet }}.100"

@@ -4,8 +4,8 @@ vsphere_bootstrap_vms: []
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
-  #   ip: 10.0.102.101
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
+  #   ip: "{{ vsphere_vm_services_subnet }}.101"
   #   memory_mb: 512
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102

@@ -66,21 +66,21 @@ isc_dhcp_options:
 
 # Defines dhcp scopes to create
 isc_dhcp_scopes:
-  - subnet: 10.0.102.0
+  - subnet: "{{ vsphere_vm_services_subnet }}.0"
     default_lease_time: '{{ isc_dhcp_default_lease_time }}'
     max_lease_time: '{{ isc_dhcp_max_lease_time }}'
     netmask: 255.255.255.0
     # Define scope specific options to configure
     options:
       - name: routers
-        value: 10.0.102.1
+        value: "{{ vsphere_vm_services_subnet }}.1"
       - name: subnet-mask
         value: 255.255.255.0
       - name: broadcast-address
-        value: 10.0.102.255
+        value: "{{ vsphere_vm_services_subnet }}.255"
       - name: domain-name-servers
         value: '{{ isc_dhcp_name_servers|join (", ") }}'
-    range: 10.0.102.128 10.0.102.224
+    range: "{{ vsphere_vm_services_subnet }}.128 {{ vsphere_vm_services_subnet }}.224"
 
 # Defines primary domain name for environment
 isc_dhcp_pri_domain_name: "{{ pri_domain_name }}"

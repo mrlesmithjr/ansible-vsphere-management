@@ -18,17 +18,17 @@ vsphere_datastores: []
 ## gateway: x.x.x.x
 ##
 vsphere_bootstrap_vms: []
-  # - vm_name: "bootstrap_vm_1.{{ vsphere_pri_domain_name }}"
+  # - vm_name: bootstrap-vm-1
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
-  #   ip: 10.0.102.101
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
+  #   ip: "{{ vsphere_vm_services_subnet }}.101"
   #   memory_mb: 512
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: "bootstrap_vm_2.{{ vsphere_pri_domain_name }}"
+  # - vm_name: bootstrap_vm_2
   #   cpus: 2
   #   deploy: true
   #   datastore: Datastore_1
@@ -49,40 +49,40 @@ vsphere_bootstrap_vms_wait_for_ssh: true
 
 # These define the IP addresses for the DDI VMs
 vsphere_ddi_vm_ips: []
-  # - 10.0.102.10
-  # - 10.0.102.11
-  # - 10.0.102.12
+  # - "{{ vsphere_vm_services_subnet }}.10"
+  # - "{{ vsphere_vm_services_subnet }}.11"
+  # - "{{ vsphere_vm_services_subnet }}.12"
 
 vsphere_ddi_vms: []
-  # - vm_name: "ddi_00.{{ vsphere_pri_domain_name }}"
+  # - vm_name: "ddi-00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
   #   ip: "{{ vsphere_ddi_vm_ips[0] }}"
-  #   memory_mb: 1024
+  #   memory_mb: 2048
   #   netmask: 255.255.255.0
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: "ddi_01.{{ vsphere_pri_domain_name }}"
+  # - vm_name: "ddi-01.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
   #   ip: "{{ vsphere_ddi_vm_ips[1] }}"
-  #   memory_mb: 1024
+  #   memory_mb: 2048
   #   netmask: 255.255.255.0
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: "ddi_02.{{ vsphere_pri_domain_name }}"
+  # - vm_name: "ddi-02.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
   #   ip: "{{ vsphere_ddi_vm_ips[2] }}"
-  #   memory_mb: 1024
+  #   memory_mb: 2048
   #   netmask: 255.255.255.0
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
@@ -107,26 +107,26 @@ vsphere_dns_servers: []
 
 # These define the IP addresses for the DNSDist VMs
 vsphere_dnsdist_vm_ips: []
-  # - 10.0.102.40
-  # - 10.0.102.41
+  # - "{{ vsphere_vm_services_subnet }}.40"
+  # - "{{ vsphere_vm_services_subnet }}.41"
 
 vsphere_dnsdist_vms: []
-  # - vm_name: "dnsdist_00.{{ vsphere_pri_domain_name }}"
+  # - vm_name: "dnsdist-00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
   #   ip: "{{ vsphere_dnsdist_vm_ips[0] }}"
   #   memory_mb: 1024
   #   netmask: 255.255.255.0
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: "dnsdist_01.{{ vsphere_pri_domain_name }}"
+  # - vm_name: "dnsdist-01.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
   #   ip: "{{ vsphere_dnsdist_vm_ips[1] }}"
   #   memory_mb: 1024
   #   netmask: 255.255.255.0
@@ -154,23 +154,23 @@ vsphere_lb_vips: []
   # - 10.0.101.100
 
 vsphere_lb_vms: []
-  # - vm_name: "lb_00.{{ vsphere_pri_domain_name }}"
+  # - vm_name: "lb-00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
-  #   ip: 10.0.102.20
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
+  #   ip: "{{ vsphere_vm_services_subnet }}.20"
   #   memory_mb: 1024
   #   netmask: 255.255.255.0
   #   netmask_cidr: 24
   #   network_name: VSS-VLAN-102
   #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
-  # - vm_name: "lb_01.{{ vsphere_pri_domain_name }}"
+  # - vm_name: "lb-01.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
   #   deploy: true
   #   datastore: Datastore_1
-  #   gateway: 10.0.102.1
-  #   ip: 10.0.102.21
+  #   gateway: "{{ vsphere_vm_services_subnet }}.1"
+  #   ip: "{{ vsphere_vm_services_subnet }}.21"
   #   memory_mb: 1024
   #   netmask: 255.255.255.0
   #   netmask_cidr: 24
