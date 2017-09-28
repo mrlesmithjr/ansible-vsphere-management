@@ -9,7 +9,7 @@
   service:
     name: "samba-ad-dc"
     state: restarted
-
+    
 - name: restart smbd
   service:
     name: "smbd"
