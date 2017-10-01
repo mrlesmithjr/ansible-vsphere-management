@@ -19,6 +19,8 @@ fi
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_management
 
+ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_samba_vms
+
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_bootstrap_vms
 
 ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_dnsdist_vms
@@ -31,11 +33,16 @@ ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_l
 
 ansible-playbook -i inventory/ playbooks/vsphere_dnsdist.yml --tags vsphere_dnsdist_vms_info
 
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
+
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_dnsdist.yml
+
+# This phase does not install Samba or build domain...
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags samba_phase_1
 
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml
 
@@ -45,6 +52,8 @@ ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_d
 
 ansible-playbook -i inventory/ playbooks/vsphere_dnsdist.yml --tags vsphere_dnsdist_vms_info
 
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
+
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml --tags vsphere_ddi_vms_info
 
 ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_info
@@ -52,3 +61,11 @@ ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_in
 ansible-playbook -i inventory/ playbooks/pdns.yml
 
 ansible-playbook -i inventory/ playbooks/reboot.yml
+
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
+
+# This phase will actually install Samba and build domain.
+# This needs to occur after reboot to ensure interfaces, dns, and everything
+# else in environment is up and functional.
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags samba_phase_2
+

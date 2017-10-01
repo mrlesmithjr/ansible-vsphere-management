@@ -198,6 +198,29 @@ vsphere_pri_domain_name: example.org
 
 vsphere_reboot_after_updates: false
 
+vsphere_samba_domain: false
+
+vsphere_samba_vms: []
+  # - vm_name: "samba_00.{{ vsphere_pri_domain_name }}"
+  #   cpus: 1
+  #   deploy: true
+  #   datastore: Datastore_1
+  #   gateway: 10.0.102.1
+  #   ip: 10.0.102.20
+  #   memory_mb: 1024
+  #   netmask: 255.255.255.0
+  #   netmask_cidr: 24
+  #   network_name: VSS-VLAN-102
+  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+
+vsphere_samba_generate_inventory: true
+
+vsphere_samba_vms_inventory_file: ../inventory/vsphere_samba_vms.inv
+
+vsphere_samba_vms_json_output_file: ../inventory/vsphere_samba_vms.json
+
+vsphere_samba_vms_wait_for_ssh: true
+
 vsphere_template_vm: []
   # cpus: 1
   # deploy: true
