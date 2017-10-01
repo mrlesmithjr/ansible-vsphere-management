@@ -62,6 +62,8 @@ ansible-playbook -i inventory/ playbooks/pdns.yml
 
 ansible-playbook -i inventory/ playbooks/reboot.yml
 
+ansible-playbook -i inventory/ playbooks/ssh_key_distribution.yml
+
 ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
 
 # This phase will actually install Samba and build domain.
