@@ -7,6 +7,7 @@ $DataStore="{{ hostvars[vm]['datastore'] }}"
 $NetworkName="{{ hostvars[vm]['network_name'] }}"
 $vAppSourcePath="{{ hostvars[vm]['vapp_source_path'] }}"
 $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
+$vmNameShort="{{ hostvars[vm]['inventory_hostname_short'] }}"
 
 $vmServer=Get-VMHost -Server $vmHost
 $vms=($vmServer | Get-VM).Name
@@ -121,6 +122,20 @@ if ($vmServerAutoStartPolicy.Enabled -eq $false) {
   $vmServerAutoStartPolicy | Set-VMHostStartPolicy -Enabled $true
 }
 
+{%   if groups['vsphere_dnsdist_vms'] is defined %}
+  $loopCount={{ groups['vsphere_dnsdist_vms'] | length }}
+{%   elif groups['vsphere_dnsdist_vms'] is not defined defined %}
+  $loopCount=0
+{%   endif %}
+
+{%   if groups['vsphere_ddi_vms'] is defined %}
+  $loopCount=$loopCount + {{ groups['vsphere_ddi_vms'] | length }}
+{%   endif %}
+
+{%   if groups['vsphere_lb_vms'] is defined %}
+  $loopCount=$loopCount + {{ groups['vsphere_lb_vms'] | length }}
+{%   endif %}
+
 {%   for vm in groups['vsphere_samba_vms_deploy'] %}
 $SecureBootStrapUser="{{ vsphere_bootstrap_user_info['username'] }}"
 $SecureBootStrapPassword=Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
@@ -132,6 +147,10 @@ $vm=$vmServer | Get-VM $vmName
 $vmAutoStart=($vm | Get-VMStartPolicy)
 if ($vmAutoStart.StartAction -ne 'PowerOn') {
   $vmAutoStart | Set-VMStartPolicy -StartAction PowerOn -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+}
+$vmStartOrder={{ loop.index }} + $loopCount
+if ($vmAutoStart.StartOrder -ne $vmStartOrder) {
+  $vmAutoStart | Set-VMStartPolicy -StartOrder $vmStartOrder -WaitForHeartBeat $false -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 }
 if ($vmAutoStart.StopAction -ne 'GuestShutDown'){
   $vmAutoStart | Set-VMStartPolicy -StopAction GuestShutDown -Confirm:$false | Out-File -Append {{ vsphere_management_log }}

@@ -41,7 +41,8 @@ ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_in
 
 ansible-playbook -i inventory/ playbooks/vsphere_dnsdist.yml
 
-ansible-playbook -i inventory/ playbooks/vsphere_samba.yml
+# This phase does not install Samba or build domain...
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags samba_phase_1
 
 ansible-playbook -i inventory/ playbooks/vsphere_ddi.yml
 
@@ -60,3 +61,11 @@ ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_in
 ansible-playbook -i inventory/ playbooks/pdns.yml
 
 ansible-playbook -i inventory/ playbooks/reboot.yml
+
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
+
+# This phase will actually install Samba and build domain.
+# This needs to occur after reboot to ensure interfaces, dns, and everything
+# else in environment is up and functional.
+ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags samba_phase_2
+

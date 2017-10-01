@@ -58,6 +58,12 @@ pdns_dnsdist_downstream_servers:
     pool: "{{ vsphere_pri_domain_name }}"
   - address: "{{ vsphere_dnsdist_dns_servers[2] }}"
     pool: "{{ vsphere_pri_domain_name }}"
+  - address: "{{ vsphere_samba_vm_ips[0] }}"
+    pool: "{{ vsphere_ad_dns_domain_name }}"
+  - address: "{{ vsphere_samba_vm_ips[1] }}"
+    pool: "{{ vsphere_ad_dns_domain_name }}"
+  - address: "{{ vsphere_samba_vm_ips[2] }}"
+    pool: "{{ vsphere_ad_dns_domain_name }}"
   - address: 10.10.10.1
     pool: etsbv.internal
 
@@ -77,6 +83,9 @@ pdns_dnsdist_enable_webserver: true
 pdns_dnsdist_local_address: 0.0.0.0
 
 pdns_dnsdist_pool_rules:
+  - query:
+      - "{{ vsphere_ad_dns_domain_name }}."
+    pool: "{{ vsphere_ad_dns_domain_name }}"
   - query:
       - "{{ vsphere_pri_domain_name }}."
     pool: "{{ vsphere_pri_domain_name }}"
