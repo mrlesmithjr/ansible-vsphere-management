@@ -24,7 +24,7 @@
   win_shell: $Password=ConvertTo-SecureString -String "{{ vsphere_bootstrap_user_info['password'] }}" -AsPlainText -Force | ConvertFrom-SecureString | Out-File {{ vsphere_bootstrap_vms_secure_password_file }}
   no_log: true
 
-- name: bootstrap_vms | Generating dnsdist_vms.ps1 Powershell Script
+- name: dnsdist_vms | Generating dnsdist_vms.ps1 Powershell Script
   win_template:
     src: dnsdist_vms.ps1.j2
     dest: c:\tmp\dnsdist_vms.ps1
@@ -73,7 +73,30 @@
   delay: 2
   failed_when: false
   with_items: "{{ vsphere_dnsdist_vms }}"
-  when: item['deploy']
+  when: >
+        item['deploy'] and
+        item['ip'] is not defined
+
+- name: dnsdist_vms | Waiting For All IP Addresses To Be Captured
+  vmware_guest_facts:
+    hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+    username: "{{ vsphere_user_info['username'] }}"
+    password: "{{ vsphere_user_info['password'] }}"
+    datacenter: ha-datacenter
+    validate_certs: false
+    name: "{{ item['vm_name'] }}"
+    folder: /ha-datacenter/vm
+  delegate_to: localhost
+  register: _vsphere_dnsdist_vm_facts
+  until: >
+         (_vsphere_dnsdist_vm_facts['instance']['ipv4'] == item['ip'])
+  retries: 30
+  delay: 2
+  failed_when: false
+  with_items: "{{ vsphere_dnsdist_vms }}"
+  when: >
+        item['deploy'] and
+        item['ip'] is defined
 
 - name: dnsdist_vms | Creating Initial VM Snapshot
   vmware_guest_snapshot:
