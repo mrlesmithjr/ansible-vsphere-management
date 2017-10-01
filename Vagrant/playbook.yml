@@ -11,6 +11,15 @@
         name: NET-Framework-Core
         state: present
 
+    - name: Install Windows RSAT Tools
+      win_feature:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - RSAT-AD-PowerShell
+        - RSAT-AD-AdminCenter
+        - RSAT-DNS-Server
+
     - name: Rebooting Server
       win_reboot:
         shutdown_timeout: 3600

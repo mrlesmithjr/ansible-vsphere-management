@@ -4,7 +4,7 @@ config_network_interfaces: true
 
 # Defines all dns servers to configure
 dns_nameservers:
-  - 127.0.0.1
+  # - 127.0.0.1
   - "{{ vsphere_dns_servers[0] }}"
   - "{{ vsphere_dns_servers[1] }}"
   # - "{{ vsphere_dns_servers[2] }}"
