@@ -3,25 +3,26 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [ansible-vsphere-management](#ansible-vsphere-management)
-    - [Requirements](#requirements)
-        - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-        - [Software iSCSI](#software-iscsi)
-    - [Deployment Host](#deployment-host)
-        - [Spinning It Up](#spinning-it-up)
-    - [Environment Deployment](#environment-deployment)
-    - [Defining Environmental Variables](#defining-environmental-variables)
-    - [Bootstrap VMs](#bootstrap-vms)
-    - [DNSDist VMs](#dnsdist-vms)
-    - [DDI VMs](#ddi-vms)
-        - [Autostart DDI VMs](#autostart-ddi-vms)
-        - [Defining DDI VMs](#defining-ddi-vms)
-        - [Defining DNS Records](#defining-dns-records)
-        - [Future DDI Functionality](#future-ddi-functionality)
-    - [Role Variables](#role-variables)
-    - [Dependencies](#dependencies)
-    - [Example Playbook](#example-playbook)
-    - [License](#license)
-    - [Author Information](#author-information)
+  - [Requirements](#requirements)
+    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+    - [Software iSCSI](#software-iscsi)
+  - [Deployment Host](#deployment-host)
+    - [Spinning It Up](#spinning-it-up)
+  - [Environment Deployment](#environment-deployment)
+  - [Defining Environmental Variables](#defining-environmental-variables)
+  - [Bootstrap VMs](#bootstrap-vms)
+  - [DNSDist VMs](#dnsdist-vms)
+  - [DDI VMs](#ddi-vms)
+    - [Autostart DDI VMs](#autostart-ddi-vms)
+    - [Defining DDI VMs](#defining-ddi-vms)
+    - [Defining DNS Records](#defining-dns-records)
+    - [Future DDI Functionality](#future-ddi-functionality)
+  - [Samba based Active Directory](#samba-based-active-directory)
+  - [Role Variables](#role-variables)
+  - [Dependencies](#dependencies)
+  - [Example Playbook](#example-playbook)
+  - [License](#license)
+  - [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -60,8 +61,8 @@ Because most of the tasks in this repo use the `win_shell` module a `Windows 201
 host is required. The plus side to this is that I have already created the `Ansible`
 roles to properly prep this host to get up and running quickly as well as a playbook.
 
--   [ansible-windows-powercli](https://github.com/mrlesmithjr/ansible-windows-powercli)
--   [ansible-windows-remote-desktop](https://github.com/mrlesmithjr/ansible-windows-remote-desktop)
+- [ansible-windows-powercli](https://github.com/mrlesmithjr/ansible-windows-powercli)
+- [ansible-windows-remote-desktop](https://github.com/mrlesmithjr/ansible-windows-remote-desktop)
 
 ```yaml
 ---
@@ -331,6 +332,23 @@ pdns_records:
 In the future the option to use `Windows` DNS and DHCP may be an option but not
 in the current state.
 
+## Samba based Active Directory
+
+Currently we will spin up `3` Samba based Active Directory servers. One will be
+the PDC and the other 2 will function as BDCs. This functionality will provide
+`NT Domain` services for the environment without the requirement of running a
+`Windows` based domain. We have setup `rsync` cron jobs which run on the BDCs
+and their sole purpose is to sync `SysVol` information from the PDC. This will
+ensure that if the PDC were to go down then all login scripts and GPO policies
+are synced to the the BDCs. The caveat with this method currently is that if
+any polices or scripts are defined on the BDCs they will disappear on the next
+rsync cron job. This job is scheduled to run every 5 minutes.
+
+>Note: When creating any login scripts or GPO policies to ensure that you have
+>selected the PDC as the Domain Controller. This is the default behavior when
+>launching GPO Manager, but please ensure to do this. More information can be
+>found on this [here](https://wiki.samba.org/index.php/Rsync_based_SysVol_replication_workaround).
+
 ## Role Variables
 
 > Note: Update this once more complete. Too many changes to keep accurate.
@@ -353,7 +371,7 @@ MIT
 
 Larry Smith Jr.
 
--   [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
--   [EverythingShouldBeVirtual](http://www.everythingshouldbevirtual.com)
--   [mrlesmithjr.com](http://mrlesmithjr.com)
--   mrlesmithjr [at] gmail.com
+- [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
+- [EverythingShouldBeVirtual](http://www.everythingshouldbevirtual.com)
+- [mrlesmithjr.com](http://mrlesmithjr.com)
+- mrlesmithjr [at] gmail.com
