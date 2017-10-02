@@ -71,3 +71,46 @@
       become: true
       tags:
         - samba_phase_2
+
+- hosts: vsphere_samba_vms
+  tasks:
+    - name: Setting Up SysVol Replication
+      block:
+
+        - name: Installing Packages Required To Setup SysVol Sync
+          apt:
+            name: "{{ item }}"
+            state: present
+          become: true
+          with_items:
+            - rsync
+            - unison
+
+        - name: Setup sudoers
+          lineinfile:
+            path: /etc/sudoers
+            regexp: "^{{ vsphere_bootstrap_user_info['username'] }} ALL=NOPASSWD: /usr/bin/rsync *"
+            line: "{{ vsphere_bootstrap_user_info['username'] }} ALL=NOPASSWD: /usr/bin/rsync *"
+            state: present
+            validate: /usr/sbin/visudo -cf %s
+          become: true
+
+        - name: Configuring SysVol Replication Script
+          template:
+            src: templates/samba_ad_sysvol_repl.sh.j2
+            dest: /root/samba_ad_sysvol_repl.sh
+            owner: root
+            group: root
+            mode: u=rwx,g=rwx,o=rw
+          become: true
+          when: inventory_hostname != samba_primary_domain_controller
+
+        - name: Configuring SysVol Replication Cron Job
+          template:
+            src: templates/samba_ad_sysvol_repl.j2
+            dest: /etc/cron.d/samba_ad_sysvol_repl
+          become: true
+          when: inventory_hostname != samba_primary_domain_controller
+
+      tags:
+        - samba_sysvol_replication

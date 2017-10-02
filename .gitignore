@@ -1,7 +1,7 @@
 .galaxy_install_info
 *.retry
-.galaxy_install_info
 inventory/group_vars/all/accounts.yml
+inventory/ssh_keys_distribution.yml
 logs/
 vsphere_bootstrap_vms.inv
 vsphere_bootstrap_vms.json

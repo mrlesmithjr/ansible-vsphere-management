@@ -60,7 +60,9 @@ ansible-playbook -i inventory/ playbooks/vsphere_lb.yml --tags vsphere_lb_vms_in
 
 ansible-playbook -i inventory/ playbooks/pdns.yml
 
-ansible-playbook -i inventory/ playbooks/reboot.yml
+ansible-playbook -i inventory/ playbooks/reboot.yml --tags post_deployment_reboot
+
+ansible-playbook -i inventory/ playbooks/ssh_key_distribution.yml
 
 ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_vms_info
 
@@ -68,4 +70,7 @@ ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags vsphere_samba_
 # This needs to occur after reboot to ensure interfaces, dns, and everything
 # else in environment is up and functional.
 ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags samba_phase_2
+
+# We need to reboot the Samba hosts after building AD to ensure everything is up clean and working
+ansible-playbook -i inventory/ playbooks/reboot.yml --tags post_samba_deployment_reboot
 
