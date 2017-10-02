@@ -1,23 +1,20 @@
 # Global parameters
 {% if samba_create_domain_controller is defined and samba_create_domain_controller %}
 [global]
-        workgroup = {{ samba_ad_info.netbios_domain_name|upper }}
-        realm = {{ samba_ad_info.kerberos_realm|upper }}
-        netbios name = {{ ansible_hostname|upper|truncate(15, True, '') }}
-        server role = {{ samba_server_role }}
         dns forwarder = {{ samba_ad_info.dns_forwarder }}
-        server services = rpc, nbt, wrepl, ldap, cldap, kdc, drepl, winbind, ntp_signd, kcc, dnsupdate, dns, smb
-        dcerpc endpoint servers = epmapper, wkssvc, rpcecho, samr, netlogon, lsarpc, spoolss, drsuapi, dssetup, unixinfo, browser, eventlog6, backupkey, dnsserver, winreg, srvsvc
-        allow dns updates = {{ samba_ad_info.allow_dns_updates }}
         idmap_ldb:use rfc2307 = yes
+        netbios name = {{ ansible_hostname|upper|truncate(15, True, '') }}
+        realm = {{ samba_ad_info.kerberos_realm|upper }}
+        server role = {{ samba_server_role }}
+        workgroup = {{ samba_ad_info.netbios_domain_name|upper }}
 
 [netlogon]
-        path = /var/lib/samba/sysvol/{{ samba_ad_info.kerberos_realm|lower }}/scripts
-        read only = No
+	path = /var/lib/samba/sysvol/{{ samba_ad_info.kerberos_realm|lower }}/scripts
+	read only = No
 
 [sysvol]
-        path = /var/lib/samba/sysvol
-        read only = No
+	path = /var/lib/samba/sysvol
+	read only = No
 {% elif (samba_create_domain_controller is defined and not samba_create_domain_controller) or samba_create_domain_controller is not defined %}
 #======================= Global Settings =======================
 
