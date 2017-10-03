@@ -7,13 +7,13 @@ vsphere_bootstrap_vms: []
   #   gateway: "{{ vsphere_vm_services_subnet }}.1"
   #   ip: "{{ vsphere_vm_services_subnet }}.101"
   #   memory_mb: 512
-  #   netmask_cidr: 24
-  #   network_name: VSS-VLAN-102
-  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  #   netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
+  #   network_name: "{{ vsphere_vm_services_vswitch }}"
+  #   vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
   # - vm_name: bootstrap_vm_2
   #   cpus: 2
   #   deploy: true
   #   datastore: Datastore_1
   #   memory_mb: 1024
-  #   network_name: VSS-VLAN-101
-  #   vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+  #   network_name: "{{ vsphere_vm_services_vswitch }}"
+  #   vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"

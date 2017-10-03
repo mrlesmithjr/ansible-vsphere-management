@@ -14,10 +14,10 @@ vsphere_samba_vms:
     gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_samba_vm_ips[0] }}"
     memory_mb: 512
-    netmask: 255.255.255.0
-    netmask_cidr: 24
-    network_name: VSS-VLAN-102
-    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+    netmask: "{{ vsphere_vm_services_subnet_mask }}"
+    netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
+    network_name: "{{ vsphere_vm_services_vswitch }}"
+    vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
   - vm_name: "samba-dc-01.{{ vsphere_pri_domain_name }}"
     cpus: 1
     deploy: true
@@ -25,10 +25,10 @@ vsphere_samba_vms:
     gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_samba_vm_ips[1] }}"
     memory_mb: 512
-    netmask: 255.255.255.0
-    netmask_cidr: 24
-    network_name: VSS-VLAN-102
-    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+    netmask: "{{ vsphere_vm_services_subnet_mask }}"
+    netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
+    network_name: "{{ vsphere_vm_services_vswitch }}"
+    vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
   - vm_name: "samba-dc-02.{{ vsphere_pri_domain_name }}"
     cpus: 1
     deploy: true
@@ -36,10 +36,10 @@ vsphere_samba_vms:
     gateway: "{{ vsphere_vm_services_subnet }}.1"
     ip: "{{ vsphere_samba_vm_ips[2] }}"
     memory_mb: 512
-    netmask: 255.255.255.0
-    netmask_cidr: 24
-    network_name: VSS-VLAN-102
-    vapp_source_path: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+    netmask: "{{ vsphere_vm_services_subnet_mask }}"
+    netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
+    network_name: "{{ vsphere_vm_services_vswitch }}"
+    vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
 
 
 vsphere_samba_vms_inventory_file: ../inventory/vsphere_samba_vms.inv
