@@ -69,13 +69,13 @@ isc_dhcp_scopes:
   - subnet: "{{ vsphere_vm_services_subnet }}.0"
     default_lease_time: '{{ isc_dhcp_default_lease_time }}'
     max_lease_time: '{{ isc_dhcp_max_lease_time }}'
-    netmask: 255.255.255.0
+    netmask: "{{ vsphere_vm_services_subnet_mask }}"
     # Define scope specific options to configure
     options:
       - name: routers
         value: "{{ vsphere_vm_services_subnet }}.1"
       - name: subnet-mask
-        value: 255.255.255.0
+        value: "{{ vsphere_vm_services_subnet_mask }}"
       - name: broadcast-address
         value: "{{ vsphere_vm_services_subnet }}.255"
       - name: domain-name-servers

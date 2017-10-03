@@ -18,11 +18,20 @@ samba_allow_guests: "yes"
 # Defines if you are building an Active Directory domain controller
 samba_create_domain_controller: false
 
+# Defines if groups defined in samba_domain_groups list should be created
+samba_create_domain_groups: false
+
 # Defines if users defined in samba_domain_users list should be created
 samba_create_domain_users: false
 
 # Define Ansible group which contains your Samba domain controllers
 samba_domain_controllers_group: samba_domain_controllers
+
+samba_domain_groups: []
+  # - name: ad-test-group1
+  #   members:
+  #     - test01
+  #     - test02
 
 samba_domain_users: []
   # - name: test01

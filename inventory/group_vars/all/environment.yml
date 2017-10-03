@@ -1,3 +1,9 @@
 ---
 # vSphere core services for vms
 vsphere_vm_services_subnet: 10.0.102
+
+vsphere_vm_services_subnet_mask: 255.255.255.0
+
+vsphere_vm_services_subnet_mask_cidr: 24
+
+vsphere_vm_services_vswitch: VSS-VLAN-102

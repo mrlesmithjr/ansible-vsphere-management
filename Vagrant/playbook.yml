@@ -11,6 +11,11 @@
         name: NET-Framework-Core
         state: present
 
+    - name: Install Windows GPMC
+      win_feature:
+        name: GPMC
+        state: present
+
     - name: Install Windows RSAT Tools
       win_feature:
         name: "{{ item }}"
