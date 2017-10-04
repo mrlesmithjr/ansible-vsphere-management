@@ -3,6 +3,7 @@
 
 - include: set_facts.yml
   tags:
+    - vsphere_ad_domain
     - vsphere_bootstrap_vms
     - vsphere_ddi_vms
     - vsphere_dhcp_vms
@@ -20,6 +21,7 @@
 
 - include: creds.yml
   tags:
+    - vsphere_ad_domain
     - vsphere_bootstrap_vms
     - vsphere_ddi_vms
     - vsphere_dhcp_vms
@@ -110,3 +112,9 @@
 - include: dns.yml
   tags:
     - vsphere_dns
+
+- include: ad_domain.yml
+  tags:
+    - vsphere_ad_domain
+  when: vsphere_hosts_join_domain
+

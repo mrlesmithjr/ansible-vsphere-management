@@ -2,7 +2,7 @@
 samba_ad_info:
   ad_dc_hostname: "{{ ansible_hostname }}"
   ad_dns_domain_name: "{{ vsphere_ad_dns_domain_name }}"
-  adminpass: P@55w0rd
+  adminpass: "{{ vsphere_samba_ad_password }}"
   allow_dns_updates: nonsecure
   backend_dns: internal
   dns_forwarder: "{{ vsphere_dns_servers[0] }}"
@@ -12,13 +12,16 @@ samba_ad_info:
 # Defines if you are building an Active Directory domain controller
 samba_create_domain_controller: true
 
-# Define Ansible group which contains your Samba domain controllers
-samba_domain_controllers_group: vsphere_samba_vms
+# Defines if groups defined in samba_domain_groups list should be created
+samba_create_domain_groups: true
+
+# Defines if users defined in samba_domain_users list should be created
+samba_create_domain_users: true
 
 samba_netbios_domain_name: "{{ vsphere_ad_netbios_name|upper }}"
 
 # Define which Ansible host should be considered the primary domain controller
-samba_primary_domain_controller: "{{ groups[samba_domain_controllers_group][0] }}"
+samba_primary_domain_controller: "{{ vsphere_ad_primary_domain_controller }}"
 
 # Defines server role
 # (standalone server or active directory domain controller)
