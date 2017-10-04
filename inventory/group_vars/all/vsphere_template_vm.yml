@@ -2,7 +2,7 @@
 vsphere_template_vm: []
   # cpus: 1
   # deploy: true
-  # datastore: Datastore_1
+  # datastore: "{{ vsphere_vm_services_datastore }}"
   # disk_gb: 72
   # guest_id: ubuntu64Guest
   # iso: /ISOs/ubuntu-16.04.3-server-amd64.iso
