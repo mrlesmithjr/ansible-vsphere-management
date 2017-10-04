@@ -4,6 +4,7 @@
 
 - [ansible-vsphere-management](#ansible-vsphere-management)
   - [Requirements](#requirements)
+    - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
     - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
     - [Software iSCSI](#software-iscsi)
   - [Deployment Host](#deployment-host)
@@ -18,6 +19,10 @@
     - [Defining DNS Records](#defining-dns-records)
     - [Future DDI Functionality](#future-ddi-functionality)
   - [Samba based Active Directory](#samba-based-active-directory)
+    - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
+    - [vSphere Host(s)](#vsphere-hosts)
+      - [Host Domain Membership](#host-domain-membership)
+      - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
   - [Role Variables](#role-variables)
   - [Dependencies](#dependencies)
   - [Example Playbook](#example-playbook)
@@ -54,6 +59,42 @@ work in progress so do not expect perfection.
 > grow allowing for more flexibility.
 
 ## Requirements
+
+### inventory/group_vars/all/accounts.yml
+
+This file is intentionally added to `.gitignore` to ensure that passwords do not
+leak. We will eventually use `ansible-vault` to encrypt this file as well in
+order to add additional security measures in place. You must create this file
+manually and it should look similar to below:
+
+```yaml
+---
+samba_domain_groups:
+  - name: vSphere-Admins
+    members:
+      - administrator
+      - vSphere-Admin
+
+samba_domain_users:
+  - name: vSphere-Admin
+    password: P@55w0rd
+
+vsphere_bootstrap_user_info:
+  username: ubuntu
+  password: ubuntu
+
+# roles can be NoAccess, Anonymous, View, ReadOnly, Admin
+vsphere_domain_access:
+  - name: "{{ vsphere_ad_netbios_name|upper }}\\vSphere-Admins"
+    role: Admin
+
+vsphere_samba_ad_password: P@55w0rd
+vsphere_samba_ad_user: administrator
+
+vsphere_user_info:
+  username: root
+  password: VMw@re1
+```
 
 ### Windows 2012R2/2016 Host
 
@@ -348,6 +389,46 @@ rsync cron job. This job is scheduled to run every 5 minutes.
 >selected the PDC as the Domain Controller. This is the default behavior when
 >launching GPO Manager, but please ensure to do this. More information can be
 >found on this [here](https://wiki.samba.org/index.php/Rsync_based_SysVol_replication_workaround).
+
+### Creating Samba AD Users and Groups
+
+In order to create Samba AD users and groups the info below must be defined. This
+is also a pre-requisite to [Host User Roles Domain Permissions](#host-user-roles-domain-permissions).
+
+```yaml
+samba_domain_groups:
+  - name: vSphere-Admins
+    members:
+      - administrator
+      - vSphere-Admin
+
+samba_domain_users:
+  - name: vSphere-Admin
+    password: P@55w0rd
+```
+
+### vSphere Host(s)
+
+#### Host Domain Membership
+
+We have added the ability to manage hosts Active Directory Domain membership and
+host role permissions. If `vsphere_hosts_join_domain: true` then the host(s) will
+be added to the `vsphere_ad_dns_domain_name` Active Directory domain. If
+`vsphere_hosts_join_domain: false` then any host that is a member of `vsphere_ad_dns_domain_name`
+will leave the domain.
+
+#### Host User Roles Domain Permissions
+
+We have also added the ability to manage the hosts user roles domain permissions.
+If the host is joined to the domain then any groups defined as below will be added
+to the correct host role.
+
+```yaml
+# roles can be NoAccess, Anonymous, View, ReadOnly, Admin
+vsphere_domain_access:
+  - name: "{{ vsphere_ad_netbios_name|upper }}\\vSphere-Admins"
+    role: Admin
+```
 
 ## Role Variables
 
