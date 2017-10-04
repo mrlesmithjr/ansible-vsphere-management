@@ -38,11 +38,11 @@ isc_dhcp_failover_info:
   # Defines failover address for dhcp failover setup
   failover_address: "{{ hostvars[inventory_hostname]['ansible_' + ansible_primary_interface]['ipv4']['address'] }}"
   # Define Ansible inventory group that nodes belong to
-  failover_group: vsphere_dhcp_vms
+  failover_group: "{{ vsphere_dhcp_vms_group }}"
   # Define the node in which should be considered the primary
-  primary: "{{ groups['vsphere_dhcp_vms'][0] }}"
+  primary: "{{ groups[vsphere_dhcp_vms_group][0] }}"
   # Define the node in which should be considered the secondary
-  secondary: "{{ groups['vsphere_dhcp_vms'][1] }}"
+  secondary: "{{ groups[vsphere_dhcp_vms_group][1] }}"
 
 # Defines dns servers to assign to dhcp clients
 isc_dhcp_name_servers:
