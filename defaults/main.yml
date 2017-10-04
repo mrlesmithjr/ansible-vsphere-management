@@ -1,6 +1,14 @@
 ---
 # defaults file for ansible-vsphere-management
 
+_vsphere_ad_netbios_name: "{{ pri_domain_name.split('.') }}"
+vsphere_ad_dns_domain_name: "{{ vsphere_ad_netbios_name|lower }}.{{ vsphere_pri_domain_name }}"
+vsphere_ad_netbios_name: "{{ _vsphere_ad_netbios_name[0] }}"
+vsphere_ad_password: "{{ vsphere_samba_ad_password }}"
+vsphere_ad_user: "{{ vsphere_samba_ad_user }}"
+
+vsphere_ad_domain_secure_password_file: c:\tmp\ad_domain_pwd.txt
+
 vsphere_datastores: []
   # - name: Datastore_1
   #   type: NFS
@@ -149,6 +157,9 @@ vsphere_enable_software_iscsi: false
 vsphere_enable_ssh: false
 
 vsphere_hosts_update: true
+
+# Defines if hosts should be joined to domain
+vsphere_hosts_join_domain: false
 
 vsphere_lb_vips: []
   # - 10.0.101.100

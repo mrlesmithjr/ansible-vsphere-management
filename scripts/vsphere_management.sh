@@ -74,3 +74,4 @@ ansible-playbook -i inventory/ playbooks/vsphere_samba.yml --tags samba_phase_2
 # We need to reboot the Samba hosts after building AD to ensure everything is up clean and working
 ansible-playbook -i inventory/ playbooks/reboot.yml --tags post_samba_deployment_reboot
 
+ansible-playbook -i inventory/ playbooks/vsphere_management.yml --tags vsphere_management --tags vsphere_ad_domain
