@@ -18,4 +18,4 @@
     dest: "{{ vsphere_dhcp_servers_inventory_file }}"
   become: false
   delegate_to: localhost
-  when: vsphere_dhcp_generate_inventory
+  when: vsphere_vms_generate_inventory

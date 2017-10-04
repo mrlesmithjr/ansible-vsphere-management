@@ -3,31 +3,32 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [ansible-vsphere-management](#ansible-vsphere-management)
-  - [Requirements](#requirements)
-    - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
-    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-    - [Software iSCSI](#software-iscsi)
-  - [Deployment Host](#deployment-host)
-    - [Spinning It Up](#spinning-it-up)
-  - [Environment Deployment](#environment-deployment)
-  - [Defining Environmental Variables](#defining-environmental-variables)
-  - [Bootstrap VMs](#bootstrap-vms)
-  - [DNSDist VMs](#dnsdist-vms)
-  - [DDI VMs](#ddi-vms)
-    - [Autostart DDI VMs](#autostart-ddi-vms)
-    - [Defining DDI VMs](#defining-ddi-vms)
-    - [Defining DNS Records](#defining-dns-records)
-    - [Future DDI Functionality](#future-ddi-functionality)
-  - [Samba based Active Directory](#samba-based-active-directory)
-    - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
-    - [vSphere Host(s)](#vsphere-hosts)
-      - [Host Domain Membership](#host-domain-membership)
-      - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
-  - [Role Variables](#role-variables)
-  - [Dependencies](#dependencies)
-  - [Example Playbook](#example-playbook)
-  - [License](#license)
-  - [Author Information](#author-information)
+    - [Requirements](#requirements)
+        - [inventory/hosts.0.inv](#inventoryhosts0inv)
+        - [inventory/group_vars/all/accounts.yml](#inventorygroupvarsallaccountsyml)
+        - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+        - [Software iSCSI](#software-iscsi)
+    - [Deployment Host](#deployment-host)
+        - [Spinning It Up](#spinning-it-up)
+    - [Environment Deployment](#environment-deployment)
+    - [Defining Environmental Variables](#defining-environmental-variables)
+    - [Bootstrap VMs](#bootstrap-vms)
+    - [DNSDist VMs](#dnsdist-vms)
+    - [DDI VMs](#ddi-vms)
+        - [Autostart DDI VMs](#autostart-ddi-vms)
+        - [Defining DDI VMs](#defining-ddi-vms)
+        - [Defining DNS Records](#defining-dns-records)
+        - [Future DDI Functionality](#future-ddi-functionality)
+    - [Samba based Active Directory](#samba-based-active-directory)
+        - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
+        - [vSphere Host(s)](#vsphere-hosts)
+            - [Host Domain Membership](#host-domain-membership)
+            - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
+    - [Role Variables](#role-variables)
+    - [Dependencies](#dependencies)
+    - [Example Playbook](#example-playbook)
+    - [License](#license)
+    - [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -59,6 +60,20 @@ work in progress so do not expect perfection.
 > grow allowing for more flexibility.
 
 ## Requirements
+
+### inventory/hosts.0.inv
+
+Adjust `inventory/hosts.0.inv` to include your Windows `powecli_host` and update
+`vsphere_hosts` to include your ESXi hosts.
+
+```yaml
+[powercli_host]
+node0
+
+[vsphere_hosts]
+esxi-01.etsbv.internal ansible_host=10.0.101.61
+esxi-02.etsbv.internal ansible_host=10.0.101.62
+```
 
 ### inventory/group_vars/all/accounts.yml
 

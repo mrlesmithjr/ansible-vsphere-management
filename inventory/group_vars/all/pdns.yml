@@ -60,12 +60,12 @@ pdns_records:
     ip: "{{ vsphere_lb_vips[0] }}"
     type: CNAME
 
-pdns_webserver_password: 'changeme'
+pdns_webserver_password: changeme
 
 pdns_webserver_port: 8081
 
 pdns_zones:
-  - '{{ vsphere_pri_domain_name }}'
+  - "{{ vsphere_pri_domain_name }}"
   - 1.168.192.in-addr.arpa
   - 24.16.172.in-addr.arpa
   - 101.0.10.in-addr.arpa

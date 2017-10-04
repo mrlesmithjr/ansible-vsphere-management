@@ -7,7 +7,7 @@ haproxy_configs:
     backend_checks: true
     backend_name: phpipam-hosts
     backend_servers_bind_port: 80
-    backend_servers: "{{ groups['vsphere_ddi_vms'] }}"
+    backend_servers: "{{ groups[vsphere_ddi_vms_group] }}"
     balance: source
     default_server_options:
       - name: maxconn
@@ -29,9 +29,9 @@ haproxy_configs:
     backend_checks: true
     backend_name: pdns-db-cluster-hosts
     backend_backups: true
-    backend_backups_primary: "{{ groups['vsphere_ddi_vms'][0] }}"
+    backend_backups_primary: "{{ groups[vsphere_ddi_vms_group][0] }}"
     backend_servers_bind_port: 3306
-    backend_servers: "{{ groups['vsphere_ddi_vms'] }}"
+    backend_servers: "{{ groups[vsphere_ddi_vms_group] }}"
     balance: source
     default_server_options:
       - name: inter
@@ -48,7 +48,7 @@ haproxy_configs:
     backend_checks: true
     backend_name: pdns-api-hosts
     backend_servers_bind_port: "{{ pdns_webserver_port }}"
-    backend_servers: "{{ groups['vsphere_ddi_vms'] }}"
+    backend_servers: "{{ groups[vsphere_ddi_vms_group] }}"
     balance: source
     default_server_options:
       - name: maxconn
@@ -75,4 +75,4 @@ haproxy_pri_domain_name: '{{ pri_domain_name }}'
 haproxy_load_balancer_ha: true
 
 # Defines the primary host when in HA mode
-haproxy_load_balancer_ha_primary: "{{ groups['vsphere_lb_vms'][0] }}"
+haproxy_load_balancer_ha_primary: "{{ groups[vsphere_lb_vms_group][0] }}"

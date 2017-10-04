@@ -4,8 +4,6 @@ dns_nameservers:
   - "{{ vsphere_dns_servers[0] }}"
   - "{{ vsphere_dns_servers[1] }}"
 
-pri_domain_name: lab.etsbv.internal
-
 # These should be defined as the DNSDist VM IPs
 vsphere_dns_servers:
   - "{{ vsphere_dnsdist_vm_ips[0] }}"
