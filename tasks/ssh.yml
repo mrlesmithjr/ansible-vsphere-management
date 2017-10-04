@@ -9,7 +9,7 @@
     }
     Disconnect-VIServer * -Confirm:$false
   with_items: "{{ groups[vsphere_management_hosts_group] }}"
-  when: vsphere_enable_ssh
+  when: vsphere_hosts_enable_ssh
 
 - name: ssh | Disabling SSH Service
   win_shell: |
@@ -21,4 +21,4 @@
     }
     Disconnect-VIServer * -Confirm:$false
   with_items: "{{ groups[vsphere_management_hosts_group] }}"
-  when: not vsphere_enable_ssh
+  when: not vsphere_hosts_enable_ssh

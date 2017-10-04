@@ -174,4 +174,4 @@
     dest: "{{ vsphere_ddi_vms_inventory_file }}"
   become: false
   delegate_to: localhost
-  when: vsphere_ddi_generate_inventory
+  when: vsphere_vms_generate_inventory
