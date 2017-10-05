@@ -14,10 +14,13 @@
     - vsphere_management
     - vsphere_network
     - vsphere_samba_vms
+    - vsphere_ssh
+    - vsphere_vms
 
 - include: invalid_certs.yml
   tags:
     - vsphere_management
+    - vsphere_ssh
 
 - include: creds.yml
   tags:
@@ -32,6 +35,8 @@
     - vsphere_management
     - vsphere_network
     - vsphere_samba_vms
+    - vsphere_ssh
+    - vsphere_vms
 
 - include: network.yml
   tags:
@@ -41,6 +46,7 @@
 - include: ssh.yml
   tags:
     - vsphere_management
+    - vsphere_ssh
 
 - include: ntp.yml
   tags:
@@ -77,37 +83,43 @@
 - include: bootstrap_vms.yml
   tags:
     - vsphere_bootstrap_vms
+    - vsphere_vms
   when: vsphere_bootstrap_vms is defined
 
-- include: samba_vms.yml
+- include: dnsdist_vms.yml
   tags:
-    - vsphere_samba_vms
-  when: >
-        vsphere_samba_vms is defined and
-        vsphere_samba_domain
+    - vsphere_dnsdist_vms
+    - vsphere_vms
+  when: vsphere_dnsdist_vms is defined
 
 - include: ddi_vms.yml
   tags:
     - vsphere_ddi_vms
     - vsphere_dhcp_vms
+    - vsphere_vms
   when: vsphere_ddi_vms is defined
-
-- include: dnsdist_vms.yml
-  tags:
-    - vsphere_dnsdist_vms
-  when: vsphere_dnsdist_vms is defined
 
 - include: dhcp_vms.yml
   tags:
     - vsphere_ddi_vms
     - vsphere_dhcp_vms
+    - vsphere_vms
   when: vsphere_ddi_vms is defined
 
 - include: lb_vms.yml
   tags:
     - vsphere_lb
     - vsphere_lb_vms
+    - vsphere_vms
   when: vsphere_lb_vms is defined
+
+- include: samba_vms.yml
+  tags:
+    - vsphere_samba_vms
+    - vsphere_vms
+  when: >
+        vsphere_samba_vms is defined and
+        vsphere_samba_domain
 
 - include: dns.yml
   tags:
@@ -117,4 +129,3 @@
   tags:
     - vsphere_ad_domain
   when: vsphere_hosts_join_domain
-

@@ -66,8 +66,6 @@ pdns_webserver_port: 8081
 
 pdns_zones:
   - "{{ vsphere_pri_domain_name }}"
-  - 1.168.192.in-addr.arpa
-  - 24.16.172.in-addr.arpa
-  - 101.0.10.in-addr.arpa
-  - 102.0.10.in-addr.arpa
-  - 201.0.10.in-addr.arpa
+  - 168.192.in-addr.arpa
+  - 16.172.in-addr.arpa
+  - 10.in-addr.arpa
