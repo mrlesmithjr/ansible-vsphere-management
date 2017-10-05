@@ -12,8 +12,6 @@
     - [Spinning It Up](#spinning-it-up)
   - [Environment Deployment](#environment-deployment)
     - [Deployment Script Functions](#deployment-script-functions)
-      - [Deploy Everything](#deploy-everything)
-      - [Only Do A Specific Function](#only-do-a-specific-function)
   - [Defining Environmental Variables](#defining-environmental-variables)
   - [Bootstrap VMs](#bootstrap-vms)
   - [DNSDist VMs](#dnsdist-vms)
@@ -203,34 +201,84 @@ of the deployments.
 
 ### Deployment Script Functions
 
-> Note: We have started building in functions into the provisioning [script](scripts/vsphere_management.sh) in order to provide the functionality
-> to call a certain set of provisioning tasks rather than running the whole script
-> from beginning to end or having to comment out portions of the script.
+> Note: We have started building in functions into the provisioning [script](scripts/vsphere_management.sh) in order to provide the functionality to call a certain set of provisioning
+> tasks rather than running the whole script from beginning to end or having to
+> comment out portions of the script.
 
-#### Deploy Everything
+The deployment script has now become the main method to deloy. We have now
+included help for the script usage. Which you can use to help understand how to
+use the script.
 
 ```bash
-./scripts/vsphere_management.sh
+vsphere_management.sh --help
 ```
 
-#### Only Do A Specific Function
+```bash
+vSphere Management Script
 
-Some of the current available functions are:
+This script is for managing your vSphere environment in a holistic fashion.
 
--   vsphere_ad_domain
--   vsphere_management
--   vsphere_vms
--   vsphere_vms_info
--   vsphere_ddi
--   vsphere_dns
--   vsphere_dnsdist
--   vsphere_lb
--   vsphere_pdns
--   vsphere_post_deployment_reboot
--   vsphere_post_samba_deployment_reboot
--   vsphere_samba_phase_1
--   vsphere_samba_phase_2
--   vsphere_ssh_key_distribution
+Twitter:	https://www.twitter.com/mrlesmithjr
+Blog:		http://www.everythingshouldbevirtual.com
+Blog:		http://mrlesmithjr.com
+Email:		mrlesmithjr@gmail.com
+
+This script requires one of the following arguments to be passed in order to perform a task.
+
+Usage:
+
+vsphere_management.sh [arguments]
+
+
+arguments:
+	cleanup					Cleans up generated inventory, JSON data, and SSH key data
+	deploy_all				Deploys whole environment
+	vsphere_ad_domain			Manages vSphere hosts AD membership
+	vsphere_ddi_vms				Manages DDI VMs
+	vsphere_disable_ssh			Disables vSphere hosts SSH
+	vsphere_enable_ssh			Enables vSphere hosts SSH
+	vsphere_dns				Manages vSphere hosts DNS settings
+	vsphere_dnsdist_vms			Manages DNSDist VMs
+	vsphere_lb_vms				Manages Load Balancer VMs
+	vsphere_maintenance_mode		Manages vSphere hosts maintenance mode
+	vsphere_management			Manages ALL vSphere host settings
+	vsphere_network				Manages vSphere hosts network settings
+	vsphere_pdns				Manages PowerDNS zones, records, and etc.
+	vsphere_post_deployment_reboot		Performs a post deployment reboot (Only if not already performed)
+	vsphere_post_samba_deployment_reboot	Performs a post Samba deployment reboot (Only if not already performed)
+	vsphere_samba_phase_1			Manages Samba VMs Stage 1 tasks (Does not install Samba)
+	vsphere_samba_phase_2			Manages Samba VMs Stage 2 tasks (Installs Samba and sets up AD)
+	vsphere_samba_sysvol_replication	Manages Samba VMs AD SysVol Replication
+	vsphere_samba_vms			Manages Samba VMs (Does not perform Phase 1, 2, or SysVol Replication)
+	vsphere_ssh_key_distribution		Distributes SSH Keys between VMs (Currently only Samba VMs)
+	vsphere_vms				Manages ALL VMs (Does not perform any post provisioning tasks)
+	vsphere_vms_info			Collects info for ALL VMs and updates inventory and etc.
+
+
+All arguments support additional Ansible command line arguments to be passed. However, only the following
+support passing a --limit most of the tasks run against the power_cli_host so the task will be
+skipped as no hosts will be found that match.
+
+Usage:
+
+vsphere_management.sh [arguments] [--argument]
+
+
+Example:
+	vsphere_management.sh vsphere_maintenance_mode --extra-vars '{"vsphere_enable_software_iscsi": True}'
+
+additional arguments which support --limit to be passed:
+
+		vsphere_post_deployment_reboot
+		vsphere_post_samba_deployment_reboot
+		vsphere_samba_phase_1
+		vsphere_samba_phase_2
+		vsphere_samba_sysvol_replication
+		vsphere_ssh_key_distribution
+
+Example:
+	vsphere_management.sh vsphere_post_deployment_reboot --limit node0.vagrant.local
+```
 
 So for example, say we would like to redistribute SSH Keys. We could just run
 the following:

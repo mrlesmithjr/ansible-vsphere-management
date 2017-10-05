@@ -2,6 +2,9 @@
 - name: samba_vms | Setting Bootstrap Host
   set_fact:
     vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
+  tags:
+    - vsphere_samba_vms_info
+    - vsphere_vms_info
 
 - name: samba_vms | Creating samba_vms_deploy Dynamic Group
   add_host:
@@ -24,7 +27,7 @@
   win_shell: $Password=ConvertTo-SecureString -String "{{ vsphere_bootstrap_user_info['password'] }}" -AsPlainText -Force | ConvertFrom-SecureString | Out-File {{ vsphere_bootstrap_vms_secure_password_file }}
   no_log: true
 
-- name: bootstrap_vms | Generating samba_vms.ps1 Powershell Script
+- name: samba_vms | Generating samba_vms.ps1 Powershell Script
   win_template:
     src: samba_vms.ps1.j2
     dest: c:\tmp\samba_vms.ps1
@@ -73,6 +76,9 @@
   delay: 2
   failed_when: false
   with_items: "{{ vsphere_samba_vms }}"
+  tags:
+    - vsphere_samba_vms_info
+    - vsphere_vms_info
   when: >
         item['deploy'] and
         item['ip'] is not defined
@@ -93,6 +99,9 @@
   retries: 30
   delay: 2
   failed_when: false
+  tags:
+    - vsphere_samba_vms_info
+    - vsphere_vms_info
   with_items: "{{ vsphere_samba_vms }}"
   when: >
         item['deploy'] and
@@ -111,6 +120,9 @@
     state: present
     uuid: "{{ item['instance']['hw_product_uuid'] }}"
   delegate_to: localhost
+  tags:
+    - vsphere_samba_vms_info
+    - vsphere_vms_info
   with_items: "{{ _vsphere_samba_vm_facts['results'] }}"
   when: item['instance']['snapshots'] == []
 
@@ -121,6 +133,9 @@
     groups: vsphere_samba_vms
     hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
   changed_when: false
+  tags:
+    - vsphere_samba_vms_info
+    - vsphere_vms_info
   with_items: "{{ _vsphere_samba_vm_facts['results'] }}"
   when: >
         (item['failed'] is defined and
@@ -134,6 +149,9 @@
     hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
     groups: vsphere_samba_vms_failed
   changed_when: false
+  tags:
+    - vsphere_samba_vms_info
+    - vsphere_vms_info
   with_items: "{{ _vsphere_samba_vm_facts['results'] }}"
   when: >
         item['failed'] is defined and
@@ -174,4 +192,7 @@
     dest: "{{ vsphere_samba_vms_inventory_file }}"
   become: false
   delegate_to: localhost
+  tags:
+    - vsphere_samba_vms_info
+    - vsphere_vms_info
   when: vsphere_vms_generate_inventory

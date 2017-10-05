@@ -4,6 +4,7 @@
     vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
 
 - name: lb_vms | Creating lb_vms_deploy Dynamic Group
   add_host:
@@ -21,6 +22,7 @@
   changed_when: false
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   with_items: "{{ vsphere_lb_vms }}"
   when: item['deploy']
 
@@ -79,6 +81,7 @@
   with_items: "{{ vsphere_lb_vms }}"
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   when: >
         item['deploy'] and
         item['ip'] is not defined
@@ -101,6 +104,7 @@
   failed_when: false
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   with_items: "{{ vsphere_lb_vms }}"
   when: >
         item['deploy'] and
@@ -121,6 +125,7 @@
   delegate_to: localhost
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
   when: item['instance']['snapshots'] == []
 
@@ -133,6 +138,7 @@
   changed_when: false
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
   when: >
         (item['failed'] is defined and
@@ -149,6 +155,7 @@
   changed_when: false
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
   when: >
         (item['failed'] is defined and
@@ -167,6 +174,7 @@
   changed_when: false
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
   when: >
         item['failed'] is defined and
@@ -209,4 +217,5 @@
   delegate_to: localhost
   tags:
     - vsphere_lb_vms_info
+    - vsphere_vms_info
   when: vsphere_vms_generate_inventory
