@@ -3,32 +3,35 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [ansible-vsphere-management](#ansible-vsphere-management)
-    - [Requirements](#requirements)
-        - [inventory/hosts.0.inv](#inventoryhosts0inv)
-        - [inventory/group_vars/all/accounts.yml](#inventorygroupvarsallaccountsyml)
-        - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-        - [Software iSCSI](#software-iscsi)
-    - [Deployment Host](#deployment-host)
-        - [Spinning It Up](#spinning-it-up)
-    - [Environment Deployment](#environment-deployment)
-    - [Defining Environmental Variables](#defining-environmental-variables)
-    - [Bootstrap VMs](#bootstrap-vms)
-    - [DNSDist VMs](#dnsdist-vms)
-    - [DDI VMs](#ddi-vms)
-        - [Autostart DDI VMs](#autostart-ddi-vms)
-        - [Defining DDI VMs](#defining-ddi-vms)
-        - [Defining DNS Records](#defining-dns-records)
-        - [Future DDI Functionality](#future-ddi-functionality)
-    - [Samba based Active Directory](#samba-based-active-directory)
-        - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
-        - [vSphere Host(s)](#vsphere-hosts)
-            - [Host Domain Membership](#host-domain-membership)
-            - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
-    - [Role Variables](#role-variables)
-    - [Dependencies](#dependencies)
-    - [Example Playbook](#example-playbook)
-    - [License](#license)
-    - [Author Information](#author-information)
+  - [Requirements](#requirements)
+    - [inventory/hosts.0.inv](#inventoryhosts0inv)
+    - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
+    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+    - [Software iSCSI](#software-iscsi)
+  - [Deployment Host](#deployment-host)
+    - [Spinning It Up](#spinning-it-up)
+  - [Environment Deployment](#environment-deployment)
+    - [Deployment Script Functions](#deployment-script-functions)
+      - [Deploy Everything](#deploy-everything)
+      - [Only Do A Specific Function](#only-do-a-specific-function)
+  - [Defining Environmental Variables](#defining-environmental-variables)
+  - [Bootstrap VMs](#bootstrap-vms)
+  - [DNSDist VMs](#dnsdist-vms)
+  - [DDI VMs](#ddi-vms)
+    - [Autostart DDI VMs](#autostart-ddi-vms)
+    - [Defining DDI VMs](#defining-ddi-vms)
+    - [Defining DNS Records](#defining-dns-records)
+    - [Future DDI Functionality](#future-ddi-functionality)
+  - [Samba based Active Directory](#samba-based-active-directory)
+    - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
+    - [vSphere Host(s)](#vsphere-hosts)
+      - [Host Domain Membership](#host-domain-membership)
+      - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
+  - [Role Variables](#role-variables)
+  - [Dependencies](#dependencies)
+  - [Example Playbook](#example-playbook)
+  - [License](#license)
+  - [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -117,8 +120,8 @@ Because most of the tasks in this repo use the `win_shell` module a `Windows 201
 host is required. The plus side to this is that I have already created the `Ansible`
 roles to properly prep this host to get up and running quickly as well as a playbook.
 
-- [ansible-windows-powercli](https://github.com/mrlesmithjr/ansible-windows-powercli)
-- [ansible-windows-remote-desktop](https://github.com/mrlesmithjr/ansible-windows-remote-desktop)
+-   [ansible-windows-powercli](https://github.com/mrlesmithjr/ansible-windows-powercli)
+-   [ansible-windows-remote-desktop](https://github.com/mrlesmithjr/ansible-windows-remote-desktop)
 
 ```yaml
 ---
@@ -193,11 +196,141 @@ otherwise the server will shutdown every 30 minutes or so. And then reboot.
 
 ## Environment Deployment
 
-Currently there is a script which will provision everything after the [Deployment Host](#deployment_host)
-is deployed. The script is [vsphere_management.sh](scripts/vsphere_management.sh).
-This script will likely include the [Deployment Host](#deployment_host) deployment
-at some point as well seeing as this deployment initially includes the Windows
-Vagrant box to do all of the deployments.
+Currently there is a script which will provision everything after the [Deployment Host](#deployment_host) is deployed. The script is [vsphere_management.sh](scripts/vsphere_management.sh). This script will likely
+include the [Deployment Host](#deployment_host) deployment at some point as well
+seeing as this deployment initially includes the Windows Vagrant box to do all
+of the deployments.
+
+### Deployment Script Functions
+
+> Note: We have started building in functions into the provisioning [script](scripts/vsphere_management.sh) in order to provide the functionality
+> to call a certain set of provisioning tasks rather than running the whole script
+> from beginning to end or having to comment out portions of the script.
+
+#### Deploy Everything
+
+```bash
+./scripts/vsphere_management.sh
+```
+
+#### Only Do A Specific Function
+
+Some of the current available functions are:
+
+-   vsphere_ad_domain
+-   vsphere_management
+-   vsphere_vms
+-   vsphere_vms_info
+-   vsphere_ddi
+-   vsphere_dns
+-   vsphere_dnsdist
+-   vsphere_lb
+-   vsphere_pdns
+-   vsphere_post_deployment_reboot
+-   vsphere_post_samba_deployment_reboot
+-   vsphere_samba_phase_1
+-   vsphere_samba_phase_2
+-   vsphere_ssh_key_distribution
+
+So for example, say we would like to redistribute SSH Keys. We could just run
+the following:
+
+```bash
+./scripts/vsphere_management.sh vsphere_ssh_key_distribution
+
+...
+logs already exists
+ [WARNING]: Found both group and host with same name: samba-dc-02.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: samba-dc-00.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: samba-dc-01.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: ddi-02.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: ddi-00.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: dnsdist-01.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: ddi-01.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: lb-01.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: dnsdist-00.lab.etsbv.internal
+
+ [WARNING]: Found both group and host with same name: lb-00.lab.etsbv.internal
+
+
+PLAY [vsphere_samba_vms] *************************************************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***************************************************************************************************************************************************************************************************************************
+ok: [samba-dc-00.lab.etsbv.internal]
+ok: [samba-dc-01.lab.etsbv.internal]
+ok: [samba-dc-02.lab.etsbv.internal]
+
+TASK [Generating User(s) SSH Key] ****************************************************************************************************************************************************************************************************************
+ok: [samba-dc-02.lab.etsbv.internal] => (item=ubuntu)
+ok: [samba-dc-01.lab.etsbv.internal] => (item=ubuntu)
+ok: [samba-dc-00.lab.etsbv.internal] => (item=ubuntu)
+
+TASK [Scan And Register SSH Host Keys (hostname)] ************************************************************************************************************************************************************************************************
+ok: [samba-dc-01.lab.etsbv.internal -> localhost] => (item=samba-dc-00.lab.etsbv.internal)
+ok: [samba-dc-00.lab.etsbv.internal -> localhost] => (item=samba-dc-00.lab.etsbv.internal)
+ok: [samba-dc-02.lab.etsbv.internal -> localhost] => (item=samba-dc-00.lab.etsbv.internal)
+ok: [samba-dc-02.lab.etsbv.internal -> localhost] => (item=samba-dc-01.lab.etsbv.internal)
+ok: [samba-dc-01.lab.etsbv.internal -> localhost] => (item=samba-dc-01.lab.etsbv.internal)
+ok: [samba-dc-00.lab.etsbv.internal -> localhost] => (item=samba-dc-01.lab.etsbv.internal)
+ok: [samba-dc-02.lab.etsbv.internal -> localhost] => (item=samba-dc-02.lab.etsbv.internal)
+ok: [samba-dc-00.lab.etsbv.internal -> localhost] => (item=samba-dc-02.lab.etsbv.internal)
+ok: [samba-dc-01.lab.etsbv.internal -> localhost] => (item=samba-dc-02.lab.etsbv.internal)
+
+TASK [Scan And Register SSH Host Keys (IP)] ******************************************************************************************************************************************************************************************************
+ok: [samba-dc-01.lab.etsbv.internal -> localhost] => (item=samba-dc-00.lab.etsbv.internal)
+ok: [samba-dc-00.lab.etsbv.internal -> localhost] => (item=samba-dc-00.lab.etsbv.internal)
+ok: [samba-dc-02.lab.etsbv.internal -> localhost] => (item=samba-dc-00.lab.etsbv.internal)
+ok: [samba-dc-01.lab.etsbv.internal -> localhost] => (item=samba-dc-01.lab.etsbv.internal)
+ok: [samba-dc-02.lab.etsbv.internal -> localhost] => (item=samba-dc-01.lab.etsbv.internal)
+ok: [samba-dc-00.lab.etsbv.internal -> localhost] => (item=samba-dc-01.lab.etsbv.internal)
+ok: [samba-dc-01.lab.etsbv.internal -> localhost] => (item=samba-dc-02.lab.etsbv.internal)
+ok: [samba-dc-00.lab.etsbv.internal -> localhost] => (item=samba-dc-02.lab.etsbv.internal)
+ok: [samba-dc-02.lab.etsbv.internal -> localhost] => (item=samba-dc-02.lab.etsbv.internal)
+
+TASK [Write SSH Host Keys] ***********************************************************************************************************************************************************************************************************************
+changed: [samba-dc-00.lab.etsbv.internal]
+changed: [samba-dc-01.lab.etsbv.internal]
+changed: [samba-dc-02.lab.etsbv.internal]
+
+TASK [Capturing SSH Keys] ************************************************************************************************************************************************************************************************************************
+ok: [samba-dc-00.lab.etsbv.internal] => (item=ubuntu)
+ok: [samba-dc-01.lab.etsbv.internal] => (item=ubuntu)
+ok: [samba-dc-02.lab.etsbv.internal] => (item=ubuntu)
+
+TASK [Generating SSH Keys] ***********************************************************************************************************************************************************************************************************************
+ok: [samba-dc-00.lab.etsbv.internal -> localhost]
+
+PLAY [vsphere_samba_vms] *************************************************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***************************************************************************************************************************************************************************************************************************
+ok: [samba-dc-00.lab.etsbv.internal]
+ok: [samba-dc-01.lab.etsbv.internal]
+ok: [samba-dc-02.lab.etsbv.internal]
+
+TASK [Adding SSH Keys] ***************************************************************************************************************************************************************************************************************************
+skipping: [samba-dc-00.lab.etsbv.internal] => (item=({u'host': u'samba-dc-00.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCY4AUT/vi441NBib+MC8f1uaHIS+5kIfIoKQbKWvPd/WNFk/A9imz1MiN/vPpc3FFFrv7WxqkLGBcSNT21sflUfTStLkOGhhWL1IsbylRBFBw/mP7VNat+/dDNiUYiroYqGjq5HXCr1Xd6jll6BgBtune3hPQ5u/fdDXAD+XdHetErsW6zh0e7gNyL1IDZx4QRHNtS9qf0esiVLFKJpFvU3pix2PFvRw37/hVcsUUASZOpfVtXSOUEeX1Ifu6nCv+ev3WvUKqrDg81myHseNwTaeAFsv2dYBn28cE99cdl8m+AT1L7Zn1ucS7Dk6GsvWjlTRJuUv7VmWyoq5s6Otwd ansible-generated on samba-dc-00'}))
+ok: [samba-dc-02.lab.etsbv.internal] => (item=({u'host': u'samba-dc-00.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCY4AUT/vi441NBib+MC8f1uaHIS+5kIfIoKQbKWvPd/WNFk/A9imz1MiN/vPpc3FFFrv7WxqkLGBcSNT21sflUfTStLkOGhhWL1IsbylRBFBw/mP7VNat+/dDNiUYiroYqGjq5HXCr1Xd6jll6BgBtune3hPQ5u/fdDXAD+XdHetErsW6zh0e7gNyL1IDZx4QRHNtS9qf0esiVLFKJpFvU3pix2PFvRw37/hVcsUUASZOpfVtXSOUEeX1Ifu6nCv+ev3WvUKqrDg81myHseNwTaeAFsv2dYBn28cE99cdl8m+AT1L7Zn1ucS7Dk6GsvWjlTRJuUv7VmWyoq5s6Otwd ansible-generated on samba-dc-00'}))
+ok: [samba-dc-00.lab.etsbv.internal] => (item=({u'host': u'samba-dc-01.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDnkOKiRieDN6QKQhgpT98qROLebPtsEE9q+o0I9vrLxgjS6NRw/+s1kUmjZVZnmCe5t3z9czHeNkoPhHtsOxvBwSMlPB1+wmFbnw856p9HAV7OIFhIh3fzHeeo4kGfyRIX0NjqMBkWzEuF1AHT8ud7q0ppMv8gv53Vnr6J+YZ24nOyLNWc2k5HWmCBI32Vcti2TmSFu8GvZiPywPv0Uxi4ijEPS+taWHljBmWb7f3fEYDaQYYq20p8pCCEGiu7rVNBwvJQlUILQb/+3AKSB4mOnSrIiq516hk4szrkOkiNm9uqq0PnWdMYu9FgpHbk/EV0IwmqtZ+W93acfjeLIBaR ansible-generated on samba-dc-01'}))
+ok: [samba-dc-01.lab.etsbv.internal] => (item=({u'host': u'samba-dc-00.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCY4AUT/vi441NBib+MC8f1uaHIS+5kIfIoKQbKWvPd/WNFk/A9imz1MiN/vPpc3FFFrv7WxqkLGBcSNT21sflUfTStLkOGhhWL1IsbylRBFBw/mP7VNat+/dDNiUYiroYqGjq5HXCr1Xd6jll6BgBtune3hPQ5u/fdDXAD+XdHetErsW6zh0e7gNyL1IDZx4QRHNtS9qf0esiVLFKJpFvU3pix2PFvRw37/hVcsUUASZOpfVtXSOUEeX1Ifu6nCv+ev3WvUKqrDg81myHseNwTaeAFsv2dYBn28cE99cdl8m+AT1L7Zn1ucS7Dk6GsvWjlTRJuUv7VmWyoq5s6Otwd ansible-generated on samba-dc-00'}))
+skipping: [samba-dc-01.lab.etsbv.internal] => (item=({u'host': u'samba-dc-01.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDnkOKiRieDN6QKQhgpT98qROLebPtsEE9q+o0I9vrLxgjS6NRw/+s1kUmjZVZnmCe5t3z9czHeNkoPhHtsOxvBwSMlPB1+wmFbnw856p9HAV7OIFhIh3fzHeeo4kGfyRIX0NjqMBkWzEuF1AHT8ud7q0ppMv8gv53Vnr6J+YZ24nOyLNWc2k5HWmCBI32Vcti2TmSFu8GvZiPywPv0Uxi4ijEPS+taWHljBmWb7f3fEYDaQYYq20p8pCCEGiu7rVNBwvJQlUILQb/+3AKSB4mOnSrIiq516hk4szrkOkiNm9uqq0PnWdMYu9FgpHbk/EV0IwmqtZ+W93acfjeLIBaR ansible-generated on samba-dc-01'}))
+ok: [samba-dc-00.lab.etsbv.internal] => (item=({u'host': u'samba-dc-02.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUzJNOyEFMAcvij9y05dfVb3s4HMy8/8yh3XnFWuvj2ZMt1FZ5vEFeYp6B0CFlhVeF8MfkzGNPHS3QxUeCB+7bbCC5VWXu/Gc/swmXqNHnn1OV4WBddvGmF0z4jLz2EFJ+3iQAamCH5nGahw8UWC0mN+5uD7oERTtZVPDgZ1CjCFX1epcdSt+5XBfrh7uaEdRKI9IYnz1wMwKOwUUTutDj+VDMFvvaMlXGnAYUOtwKzSr7u1yIjMiCMzAxGI5Is0NvU64Pp3bciVW4G2DNmanP+8w8ebttiquHKR3KP0/BTFxIiJkSWifxkJJl4pxood7/oLiLCpipyGQ5pK0arW0L ansible-generated on samba-dc-02'}))
+ok: [samba-dc-02.lab.etsbv.internal] => (item=({u'host': u'samba-dc-01.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDnkOKiRieDN6QKQhgpT98qROLebPtsEE9q+o0I9vrLxgjS6NRw/+s1kUmjZVZnmCe5t3z9czHeNkoPhHtsOxvBwSMlPB1+wmFbnw856p9HAV7OIFhIh3fzHeeo4kGfyRIX0NjqMBkWzEuF1AHT8ud7q0ppMv8gv53Vnr6J+YZ24nOyLNWc2k5HWmCBI32Vcti2TmSFu8GvZiPywPv0Uxi4ijEPS+taWHljBmWb7f3fEYDaQYYq20p8pCCEGiu7rVNBwvJQlUILQb/+3AKSB4mOnSrIiq516hk4szrkOkiNm9uqq0PnWdMYu9FgpHbk/EV0IwmqtZ+W93acfjeLIBaR ansible-generated on samba-dc-01'}))
+skipping: [samba-dc-02.lab.etsbv.internal] => (item=({u'host': u'samba-dc-02.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUzJNOyEFMAcvij9y05dfVb3s4HMy8/8yh3XnFWuvj2ZMt1FZ5vEFeYp6B0CFlhVeF8MfkzGNPHS3QxUeCB+7bbCC5VWXu/Gc/swmXqNHnn1OV4WBddvGmF0z4jLz2EFJ+3iQAamCH5nGahw8UWC0mN+5uD7oERTtZVPDgZ1CjCFX1epcdSt+5XBfrh7uaEdRKI9IYnz1wMwKOwUUTutDj+VDMFvvaMlXGnAYUOtwKzSr7u1yIjMiCMzAxGI5Is0NvU64Pp3bciVW4G2DNmanP+8w8ebttiquHKR3KP0/BTFxIiJkSWifxkJJl4pxood7/oLiLCpipyGQ5pK0arW0L ansible-generated on samba-dc-02'}))
+ok: [samba-dc-01.lab.etsbv.internal] => (item=({u'host': u'samba-dc-02.lab.etsbv.internal'}, {u'user': u'ubuntu', u'key': u'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUzJNOyEFMAcvij9y05dfVb3s4HMy8/8yh3XnFWuvj2ZMt1FZ5vEFeYp6B0CFlhVeF8MfkzGNPHS3QxUeCB+7bbCC5VWXu/Gc/swmXqNHnn1OV4WBddvGmF0z4jLz2EFJ+3iQAamCH5nGahw8UWC0mN+5uD7oERTtZVPDgZ1CjCFX1epcdSt+5XBfrh7uaEdRKI9IYnz1wMwKOwUUTutDj+VDMFvvaMlXGnAYUOtwKzSr7u1yIjMiCMzAxGI5Is0NvU64Pp3bciVW4G2DNmanP+8w8ebttiquHKR3KP0/BTFxIiJkSWifxkJJl4pxood7/oLiLCpipyGQ5pK0arW0L ansible-generated on samba-dc-02'}))
+
+PLAY RECAP ***************************************************************************************************************************************************************************************************************************************
+samba-dc-00.lab.etsbv.internal : ok=9    changed=1    unreachable=0    failed=0
+samba-dc-01.lab.etsbv.internal : ok=8    changed=1    unreachable=0    failed=0
+samba-dc-02.lab.etsbv.internal : ok=8    changed=1    unreachable=0    failed=0
+```
 
 ## Defining Environmental Variables
 
@@ -207,8 +340,59 @@ As this project proceeds the common variables will begin to be consolidated into
 
 ```yaml
 ---
+pri_domain_name: lab.etsbv.internal
+
+#vSphere AD Info
+# Define Ansible group which contains your Samba domain controllers
+# Do not change this until further refactoring occurs...this comment will be removed at that time
+samba_domain_controllers_group: "{{ vsphere_samba_vms_group }}"
+vsphere_ad_netbios_name: LAB-AD
+
+#vSphere DDI VM info
+vsphere_ddi_vms_cpu: 1
+vsphere_ddi_vms_deploy: true
+vsphere_ddi_vms_memory: 2048
+# Define Ansible group which contains your DDI VMs
+# Do not change this until further refactoring occurs...this comment will be removed at that time
+vsphere_ddi_vms_group: vsphere_ddi_vms
+
+#vSphere DHCP VM info
+# Define Ansible group which contains your DHCP VMs
+# Do not change this until further refactoring occurs...this comment will be removed at that time
+vsphere_dhcp_vms_group: vsphere_dhcp_vms
+
+#vSphere DNSDist VM info
+vsphere_dnsdist_vms_cpu: 1
+vsphere_dnsdist_vms_deploy: true
+vsphere_dnsdist_vms_memory: 1024
+
+# Defines inventory directory
+vsphere_inventory_directory: ../inventory
+
+#vSphere LB VM info
+vsphere_lb_vms_cpu: 1
+vsphere_lb_vms_deploy: true
+# Define Ansible group which contains your LB VMs
+# Do not change this until further refactoring occurs...this comment will be removed at that time
+vsphere_lb_vms_group: vsphere_lb_vms
+vsphere_lb_vms_memory: 1024
+
+#vSphere Samba VM info
+vsphere_samba_vms_cpu: 1
+vsphere_samba_vms_deploy: true
+# Define Ansible group which contains your LB VMs
+# Do not change this until further refactoring occurs...this comment will be removed at that time
+vsphere_samba_vms_group: vsphere_samba_vms
+vsphere_samba_vms_memory: 512
+
+#vSphere VM Services info
+# Defines the vSphere datastore to store vm core services on
+vsphere_vm_services_datastore: Datastore_1
 # vSphere core services for vms
 vsphere_vm_services_subnet: 10.0.102
+vsphere_vm_services_subnet_mask: 255.255.255.0
+vsphere_vm_services_subnet_mask_cidr: 24
+vsphere_vm_services_vswitch: VSS-VLAN-102
 ```
 
 ## Bootstrap VMs
@@ -400,10 +584,10 @@ are synced to the the BDCs. The caveat with this method currently is that if
 any polices or scripts are defined on the BDCs they will disappear on the next
 rsync cron job. This job is scheduled to run every 5 minutes.
 
->Note: When creating any login scripts or GPO policies to ensure that you have
->selected the PDC as the Domain Controller. This is the default behavior when
->launching GPO Manager, but please ensure to do this. More information can be
->found on this [here](https://wiki.samba.org/index.php/Rsync_based_SysVol_replication_workaround).
+> Note: When creating any login scripts or GPO policies to ensure that you have
+> selected the PDC as the Domain Controller. This is the default behavior when
+> launching GPO Manager, but please ensure to do this. More information can be
+> found on this [here](https://wiki.samba.org/index.php/Rsync_based_SysVol_replication_workaround).
 
 ### Creating Samba AD Users and Groups
 
@@ -467,7 +651,7 @@ MIT
 
 Larry Smith Jr.
 
-- [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
-- [EverythingShouldBeVirtual](http://www.everythingshouldbevirtual.com)
-- [mrlesmithjr.com](http://mrlesmithjr.com)
-- mrlesmithjr [at] gmail.com
+-   [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
+-   [EverythingShouldBeVirtual](http://www.everythingshouldbevirtual.com)
+-   [mrlesmithjr.com](http://mrlesmithjr.com)
+-   mrlesmithjr [at] gmail.com
