@@ -85,6 +85,7 @@ display_usage() {
   echo -e "\tdeploy_all\t\t\t\tDeploys whole environment"
   echo -e "\tvsphere_ad_domain\t\t\tManages vSphere hosts AD membership"
   echo -e "\tvsphere_ddi_vms\t\t\t\tManages DDI VMs"
+  echo -e "\tvsphere_bootstrap_vms\t\t\tManages Bootstrap VMs"
   echo -e "\tvsphere_disable_ssh\t\t\tDisables vSphere hosts SSH"
   echo -e "\tvsphere_enable_ssh\t\t\tEnables vSphere hosts SSH"
   echo -e "\tvsphere_dns\t\t\t\tManages vSphere hosts DNS settings"
@@ -139,6 +140,13 @@ logging()
 vsphere_ad_domain()
 {
   $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_management --tags vsphere_ad_domain
+}
+
+vsphere_bootstrap_vms()
+{
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_bootstrap_vms
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_bootstrap_vms_info
+  # $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml
 }
 
 vsphere_ddi_vms()

@@ -2,6 +2,9 @@
 - name: bootstrap_vms | Setting Bootstrap Host
   set_fact:
     vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
 
 - name: bootstrap_vms | Creating bootstrap_vms_deploy Dynamic Group
   add_host:
@@ -66,13 +69,16 @@
     name: "{{ item['vm_name'] }}"
     folder: /ha-datacenter/vm
   delegate_to: localhost
-  register: _vsphere_bootstrap_vm_facts
+  register: _vsphere_bootstrap_vm_facts_dhcp
   until: >
-         (_vsphere_bootstrap_vm_facts['instance']['ipv4'] != None)
+         (_vsphere_bootstrap_vm_facts_dhcp['instance']['ipv4'] != None)
   retries: 30
   delay: 2
   failed_when: false
   with_items: "{{ vsphere_bootstrap_vms }}"
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
   when: >
         item['deploy'] and
         item['ip'] is not defined
@@ -87,13 +93,16 @@
     name: "{{ item['vm_name'] }}"
     folder: /ha-datacenter/vm
   delegate_to: localhost
-  register: _vsphere_bootstrap_vm_facts
+  register: _vsphere_bootstrap_vm_facts_static
   until: >
-         (_vsphere_bootstrap_vm_facts['instance']['ipv4'] == item['ip'])
+         (_vsphere_bootstrap_vm_facts_static['instance']['ipv4'] == item['ip'])
   retries: 30
   delay: 2
   failed_when: false
   with_items: "{{ vsphere_bootstrap_vms }}"
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
   when: >
         item['deploy'] and
         item['ip'] is defined
@@ -111,8 +120,36 @@
     state: present
     uuid: "{{ item['instance']['hw_product_uuid'] }}"
   delegate_to: localhost
-  with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
-  when: item['instance']['snapshots'] == []
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
+  with_items: "{{ _vsphere_bootstrap_vm_facts_dhcp['results'] }}"
+  when: >
+        _vsphere_bootstrap_vm_facts_dhcp is defined and
+        item['instance'] is defined and
+        item['instance']['snapshots'] == []
+
+- name: bootstrap_vms | Creating Initial VM Snapshot
+  vmware_guest_snapshot:
+    hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+    username: "{{ vsphere_user_info['username'] }}"
+    password: "{{ vsphere_user_info['password'] }}"
+    datacenter: ha-datacenter
+    validate_certs: false
+    name: "{{ item['instance']['hw_name'] }}"
+    folder: /ha-datacenter/vm
+    snapshot_name: post_deploy
+    state: present
+    uuid: "{{ item['instance']['hw_product_uuid'] }}"
+  delegate_to: localhost
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
+  with_items: "{{ _vsphere_bootstrap_vm_facts_static['results'] }}"
+  when: >
+        _vsphere_bootstrap_vm_facts_static is defined and
+        item['instance'] is defined and
+        item['instance']['snapshots'] == []
 
 - name: bootstrap_vms | Creating Dynamic Inventory For vsphere_bootstrap_vms
   add_host:
@@ -121,11 +158,34 @@
     groups: vsphere_bootstrap_vms
     hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
   changed_when: false
-  with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
+  with_items: "{{ _vsphere_bootstrap_vm_facts_dhcp['results'] }}"
   when: >
-        (item['failed'] is defined and
+        _vsphere_bootstrap_vm_facts_dhcp is defined and
+        item['instance'] is defined and
+        ((item['failed'] is defined and
         not item['failed']) or
-        item['failed'] is not defined
+        item['failed'] is not defined)
+
+- name: bootstrap_vms | Creating Dynamic Inventory For vsphere_bootstrap_vms
+  add_host:
+    hostname: "{{ item['instance']['hw_name'] }}"
+    ansible_host: "{{ item['instance']['ipv4'] }}"
+    groups: vsphere_bootstrap_vms
+    hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
+  changed_when: false
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
+  with_items: "{{ _vsphere_bootstrap_vm_facts_static['results'] }}"
+  when: >
+        _vsphere_bootstrap_vm_facts_static is defined and
+        item['instance'] is defined and
+        ((item['failed'] is defined and
+        not item['failed']) or
+        item['failed'] is not defined)
 
 - name: bootstrap_vms | Creating Dynamic Inventory For vsphere_bootstrap_vms_failed
   add_host:
@@ -134,8 +194,29 @@
     hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
     groups: vsphere_bootstrap_vms_failed
   changed_when: false
-  with_items: "{{ _vsphere_bootstrap_vm_facts['results'] }}"
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
+  with_items: "{{ _vsphere_bootstrap_vm_facts_dhcp['results'] }}"
   when: >
+        _vsphere_bootstrap_vm_facts_dhcp is defined and
+        item['instance'] is defined and
+        item['failed'] is defined and
+        item['failed']
+
+- name: bootstrap_vms | Creating Dynamic Inventory For vsphere_bootstrap_vms_failed
+  add_host:
+    hostname: "{{ item['instance']['hw_name'] }}"
+    ansible_host: "{{ item['instance']['ipv4']|default(omit) }}"
+    hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
+    groups: vsphere_bootstrap_vms_failed
+  changed_when: false
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
+  with_items: "{{ _vsphere_bootstrap_vm_facts_static['results'] }}"
+  when: >
+        _vsphere_bootstrap_vm_facts_static is defined and
         item['failed'] is defined and
         item['failed']
 
@@ -174,4 +255,7 @@
     dest: "{{ vsphere_bootstrap_vms_inventory_file }}"
   become: false
   delegate_to: localhost
+  tags:
+    - vsphere_bootstrap_vms_info
+    - vsphere_vms_info
   when: vsphere_vms_generate_inventory
