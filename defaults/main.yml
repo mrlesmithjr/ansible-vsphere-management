@@ -23,22 +23,24 @@ vsphere_ad_user: "{{ vsphere_samba_ad_user }}"
 ## netmask_cidr: x
 ## gateway: x.x.x.x
 ##
+# Defines core services bootstrap vms
+# reference vsphere_vm_services_groups as well
 vsphere_bootstrap_vms: []
-  # - vm_name: bootstrap-vm-1
-  #   cpus: 1
-  #   deploy: true
+  # - vm_name: bootstrap-vm-1.{{ vsphere_pri_domain_name }}
+  #   cpus: "{{ vsphere_bootstrap_vms_cpu }}"
+  #   deploy: "{{ vsphere_bootstrap_vms_deploy }}"
   #   datastore: "{{ vsphere_vm_services_datastore }}"
   #   gateway: "{{ vsphere_vm_services_subnet }}.1"
   #   ip: "{{ vsphere_vm_services_subnet }}.101"
-  #   memory_mb: 512
+  #   memory_mb: "{{ vsphere_bootstrap_vms_memory }}"
   #   netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
   #   network_name: "{{ vsphere_vm_services_vswitch }}"
   #   vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
-  # - vm_name: bootstrap_vm_2
-  #   cpus: 2
-  #   deploy: true
+  # - vm_name: bootstrap-vm-2.{{ vsphere_pri_domain_name }}
+  #   cpus: "{{ vsphere_bootstrap_vms_cpu }}"
+  #   deploy: "{{ vsphere_bootstrap_vms_deploy }}"
   #   datastore: "{{ vsphere_vm_services_datastore }}"
-  #   memory_mb: 1024
+  #   memory_mb: "{{ vsphere_bootstrap_vms_memory }}"
   #   network_name: "{{ vsphere_vm_services_vswitch }}"
   #   vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
 
@@ -63,6 +65,8 @@ vsphere_ddi_vm_ips: []
   # - "{{ vsphere_vm_services_subnet }}.11"
   # - "{{ vsphere_vm_services_subnet }}.12"
 
+# Defines core services ddi vms
+# reference vsphere_vm_services_groups as well
 vsphere_ddi_vms: []
   # - vm_name: "ddi-00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
@@ -107,6 +111,14 @@ vsphere_ddi_vms_json_output_file: "{{ vsphere_inventory_directory }}/vsphere_ddi
 
 vsphere_ddi_vms_wait_for_ssh: "{{ vsphere_vms_wait_for_ssh }}"
 
+# Defines if VMs defined as not defined to deploy to be destroyed
+# reference vsphere_vm_services_groups as well
+# Good for keeping environment in a defined state
+# references tasks/destroy_vms.yml
+vsphere_destroy_vms: false
+
+vsphere_destroy_vms_inventory_file: "{{ vsphere_inventory_directory }}/vsphere_destroy_vms.inv"
+
 vsphere_dhcp_servers_inventory_file: "{{ vsphere_inventory_directory }}/vsphere_dhcp_vms.inv"
 
 # Define Ansible group which contains your DHCP VMs
@@ -122,6 +134,8 @@ vsphere_dnsdist_vm_ips: []
   # - "{{ vsphere_vm_services_subnet }}.40"
   # - "{{ vsphere_vm_services_subnet }}.41"
 
+# Defines core services dnsdist vms
+# reference vsphere_vm_services_groups as well
 vsphere_dnsdist_vms: []
   # - vm_name: "dnsdist-00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
@@ -171,6 +185,8 @@ vsphere_inventory_directory: ../inventory
 vsphere_lb_vips: []
   # - 10.0.101.100
 
+# Defines core services load balancer vms
+# reference vsphere_vm_services_groups as well
 vsphere_lb_vms: []
   # - vm_name: "lb-00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
@@ -223,6 +239,8 @@ vsphere_reboot_after_updates: false
 
 vsphere_samba_domain: false
 
+# Defines core services samba vms
+# reference vsphere_vm_services_groups as well
 vsphere_samba_vms: []
   # - vm_name: "samba-dc-00.{{ vsphere_pri_domain_name }}"
   #   cpus: 1
@@ -263,6 +281,16 @@ vsphere_samba_vms_inventory_file: "{{ vsphere_inventory_directory }}/vsphere_sam
 vsphere_samba_vms_json_output_file: "{{ vsphere_inventory_directory }}/vsphere_samba_vms.json"
 
 vsphere_samba_vms_wait_for_ssh: "{{ vsphere_vms_wait_for_ssh }}"
+
+# Defines core VM service groups
+# Also used for determining which VMs should exist or not
+# Not 100% complete yet
+vsphere_vm_services_groups:
+  - "{{ vsphere_bootstrap_vms }}"
+  - "{{ vsphere_samba_vms }}"
+  - "{{ vsphere_ddi_vms }}"
+  - "{{ vsphere_dnsdist_vms }}"
+  - "{{ vsphere_lb_vms }}"
 
 vsphere_template_vm: []
   # cpus: 1

@@ -24,7 +24,7 @@
       with_items: "{{ vsphere_samba_vms }}"
       when: item['deploy']
 
-- hosts: vsphere_samba_vms
+- hosts: vsphere_samba_vms:!vsphere_destroy_vms
   tasks:
     - name: Gathering Info
       setup:
@@ -45,7 +45,7 @@
         - samba_phase_2
         - vsphere_samba_vms_info
 
-- hosts: vsphere_samba_vms
+- hosts: vsphere_samba_vms:!vsphere_destroy_vms
   roles:
     - role: ansible-config-interfaces
       tags:
@@ -64,7 +64,7 @@
       tags:
         - samba_phase_1
 
-- hosts: vsphere_samba_vms
+- hosts: vsphere_samba_vms:!vsphere_destroy_vms
   serial: 1
   roles:
     - role: ansible-samba
@@ -72,7 +72,7 @@
       tags:
         - samba_phase_2
 
-- hosts: vsphere_samba_vms
+- hosts: vsphere_samba_vms:!vsphere_destroy_vms
   tasks:
     - name: Setting Up SysVol Replication
       block:

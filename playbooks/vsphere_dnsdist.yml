@@ -22,7 +22,7 @@
       with_items: "{{ vsphere_dnsdist_vms }}"
       when: item['deploy']
 
-- hosts: vsphere_dnsdist_vms
+- hosts: vsphere_dnsdist_vms:!vsphere_destroy_vms
   tasks:
     - name: Gathering Info
       setup:
@@ -39,7 +39,7 @@
       tags:
         - vsphere_dnsdist_vms_info
 
-- hosts: vsphere_dnsdist_vms
+- hosts: vsphere_dnsdist_vms:!vsphere_destroy_vms
   roles:
     - role: ansible-config-interfaces
     - role: ansible-change-hostname

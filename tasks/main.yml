@@ -80,6 +80,17 @@
   tags:
     - vsphere_management
 
+- include: destroy_vms.yml
+  tags:
+    - vsphere_bootstrap_vms
+    - vsphere_ddi_vms
+    - vsphere_destroy_vms
+    - vsphere_dhcp_vms
+    - vsphere_dnsdist_vms
+    - vsphere_lb_vms
+    - vsphere_samba_vms
+    - vsphere_vms
+
 - include: bootstrap_vms.yml
   tags:
     - vsphere_bootstrap_vms
