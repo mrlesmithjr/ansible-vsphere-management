@@ -1,35 +1,38 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [ansible-vsphere-management](#ansible-vsphere-management)
-  - [Requirements](#requirements)
-    - [inventory/hosts.0.inv](#inventoryhosts0inv)
-    - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
-    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-    - [Software iSCSI](#software-iscsi)
-  - [Deployment Host](#deployment-host)
-    - [Spinning It Up](#spinning-it-up)
-  - [Environment Deployment](#environment-deployment)
-    - [Deployment Script Functions](#deployment-script-functions)
-  - [Defining Environmental Variables](#defining-environmental-variables)
-  - [Bootstrap VMs](#bootstrap-vms)
-  - [DNSDist VMs](#dnsdist-vms)
-  - [DDI VMs](#ddi-vms)
-    - [Autostart DDI VMs](#autostart-ddi-vms)
-    - [Defining DDI VMs](#defining-ddi-vms)
-    - [Defining DNS Records](#defining-dns-records)
-    - [Future DDI Functionality](#future-ddi-functionality)
-  - [Samba based Active Directory](#samba-based-active-directory)
-    - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
-    - [vSphere Host(s)](#vsphere-hosts)
-      - [Host Domain Membership](#host-domain-membership)
-      - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
-  - [Role Variables](#role-variables)
-  - [Dependencies](#dependencies)
-  - [Example Playbook](#example-playbook)
-  - [License](#license)
-  - [Author Information](#author-information)
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+-   [ansible-vsphere-management](#ansible-vsphere-management)
+    -   [Requirements](#requirements)
+        -   [inventory/hosts.0.inv](#inventoryhosts0inv)
+        -   [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
+        -   [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+        -   [Software iSCSI](#software-iscsi)
+    -   [Deployment Host](#deployment-host)
+        -   [Spinning It Up](#spinning-it-up)
+    -   [Environment Deployment](#environment-deployment)
+        -   [Deployment Script Functions](#deployment-script-functions)
+    -   [Destroying Core Services VMs](#destroying-core-services-vms)
+    -   [Defining Environmental Variables](#defining-environmental-variables)
+    -   [Bootstrap VMs](#bootstrap-vms)
+    -   [DNSDist VMs](#dnsdist-vms)
+    -   [DDI VMs](#ddi-vms)
+        -   [Autostart DDI VMs](#autostart-ddi-vms)
+        -   [Defining DDI VMs](#defining-ddi-vms)
+        -   [Defining DNS Records](#defining-dns-records)
+        -   [Future DDI Functionality](#future-ddi-functionality)
+    -   [Samba based Active Directory](#samba-based-active-directory)
+        -   [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
+        -   [vSphere Host(s)](#vsphere-hosts)
+            -   [Host Domain Membership](#host-domain-membership)
+            -   [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
+    -   [Role Variables](#role-variables)
+    -   [Dependencies](#dependencies)
+    -   [Example Playbook](#example-playbook)
+    -   [License](#license)
+    -   [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -50,7 +53,7 @@ as changes however, if you watch your `vSphere` host tasks you will not see thin
 change unless something was required to change. This repo will be continually a
 work in progress so do not expect perfection.
 
-> Note: As this progresses you will notice that the focus around strict policy
+> NOTE: As this progresses you will notice that the focus around strict policy
 > enforcement is growing. The reason behind that is because the goal should be
 > that mostly everything in the environment should be defined as code. If manual
 > changes occur outside of the code this can lead to an unmanaged environment.
@@ -153,7 +156,7 @@ Because we iterate over `groups[vsphere_management_hosts_group]` to capture
 `hostvars` variables. The following variable `vsphere_enable_software_iscsi`
 needs to be defined as one of the examples below.
 
-> Note: By default defining this variable only in this roles `defaults/main.yml`
+> NOTE: By default defining this variable only in this roles `defaults/main.yml`
 > does not have any effect on whether the iSCSI Software Adapter is enabled or
 > not.
 
@@ -201,7 +204,7 @@ of the deployments.
 
 ### Deployment Script Functions
 
-> Note: We have started building in functions into the provisioning [script](scripts/vsphere_management.sh) in order to provide the functionality to call a certain set of provisioning
+> NOTE: We have started building in functions into the provisioning [script](scripts/vsphere_management.sh) in order to provide the functionality to call a certain set of provisioning
 > tasks rather than running the whole script from beginning to end or having to
 > comment out portions of the script.
 
@@ -213,7 +216,7 @@ use the script.
 vsphere_management.sh --help
 ```
 
-```bash
+```raw
 vSphere Management Script
 
 This script is for managing your vSphere environment in a holistic fashion.
@@ -234,11 +237,13 @@ arguments:
 	cleanup					Cleans up generated inventory, JSON data, and SSH key data
 	deploy_all				Deploys whole environment
 	vsphere_ad_domain			Manages vSphere hosts AD membership
+	vsphere_bootstrap_vms			Manages Bootstrap VMs
 	vsphere_ddi_vms				Manages DDI VMs
+	vsphere_destroy_vms			Destroys ALL Core VM Service VMs (USE WITH CAUTION)
 	vsphere_disable_ssh			Disables vSphere hosts SSH
-	vsphere_enable_ssh			Enables vSphere hosts SSH
 	vsphere_dns				Manages vSphere hosts DNS settings
 	vsphere_dnsdist_vms			Manages DNSDist VMs
+	vsphere_enable_ssh			Enables vSphere hosts SSH
 	vsphere_lb_vms				Manages Load Balancer VMs
 	vsphere_maintenance_mode		Manages vSphere hosts maintenance mode
 	vsphere_management			Manages ALL vSphere host settings
@@ -251,6 +256,7 @@ arguments:
 	vsphere_samba_sysvol_replication	Manages Samba VMs AD SysVol Replication
 	vsphere_samba_vms			Manages Samba VMs (Does not perform Phase 1, 2, or SysVol Replication)
 	vsphere_ssh_key_distribution		Distributes SSH Keys between VMs (Currently only Samba VMs)
+	vsphere_udpates				Updates vSphere Hosts (Must be in maintenance mode)
 	vsphere_vms				Manages ALL VMs (Does not perform any post provisioning tasks)
 	vsphere_vms_info			Collects info for ALL VMs and updates inventory and etc.
 
@@ -380,9 +386,99 @@ samba-dc-01.lab.etsbv.internal : ok=8    changed=1    unreachable=0    failed=0
 samba-dc-02.lab.etsbv.internal : ok=8    changed=1    unreachable=0    failed=0
 ```
 
+## Destroying Core Services VMs
+
+> NOTE: Use with extreme caution. We can only build in so much logic to ensure that
+> you do not blow all of your VMs away. However, we feel this functionality should
+> be in place in order to ensure a desired state environment.
+
+We have built in functionality to automatically destroy VMs not defined as deploy
+when defining the Core Services. The following variable definitions would need to
+exist in order to auto destroy VMs.
+
+The first definition would need to be defined as `true` either in `defaults/main.yml`
+or in `inventory/group_vars/all/environment.yml`.
+
+```yaml
+# Defines if VMs defined as not defined to deploy to be destroyed
+# reference vsphere_vm_services_groups as well
+# Good for keeping environment in a defined state
+# references tasks/destroy_vms.yml
+vsphere_destroy_vms: false
+
+# Defines core VM service groups
+# Also used for determining which VMs should exist or not
+# Not 100% complete yet
+vsphere_vm_services_groups:
+  - "{{ vsphere_bootstrap_vms }}"
+  - "{{ vsphere_samba_vms }}"
+  - "{{ vsphere_ddi_vms }}"
+  - "{{ vsphere_dnsdist_vms }}"
+  - "{{ vsphere_lb_vms }}"
+```
+
+As you can see from the above that unless `vsphere_destroy_vms` is defined as
+`true` then your VMs will not be auto destroyed. Also, the `vsphere_vm_services_groups`
+definition is what is used as the definition of what is in scope from an auto
+destroy enforcement.
+
+However, the next measure that must be in place is the following when defining
+your VM definitions. The `deploy` definition is what defines whether the VM
+should exist or not.
+
+```yaml
+vsphere_bootstrap_vms:
+  - vm_name: bootstrap-vm-1.{{ vsphere_pri_domain_name }}
+    cpus: "{{ vsphere_bootstrap_vms_cpu }}"
+    deploy: "{{ vsphere_bootstrap_vms_deploy }}"
+    datastore: "{{ vsphere_vm_services_datastore }}"
+    gateway: "{{ vsphere_vm_services_subnet }}.1"
+    ip: "{{ vsphere_vm_services_subnet }}.101"
+    memory_mb: "{{ vsphere_bootstrap_vms_memory }}"
+    netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
+    network_name: "{{ vsphere_vm_services_vswitch }}"
+    vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
+  - vm_name: bootstrap-vm-2.{{ vsphere_pri_domain_name }}
+    cpus: "{{ vsphere_bootstrap_vms_cpu }}"
+    deploy: "{{ vsphere_bootstrap_vms_deploy }}"
+    datastore: "{{ vsphere_vm_services_datastore }}"
+    memory_mb: "{{ vsphere_bootstrap_vms_memory }}"
+    network_name: "{{ vsphere_vm_services_vswitch }}"
+    vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
+```
+
+Based on the above VM definitions we have also made the `deploy` a single definition
+by default for each Core Service VM type. The defaults are as follows which can
+be found in `inventory/group_vars/all/environment.yml`:
+
+```yaml
+vsphere_bootstrap_vms_deploy: false
+vsphere_ddi_vms_deploy: true
+vsphere_dnsdist_vms_deploy: true
+vsphere_lb_vms_deploy: true
+vsphere_samba_vms_deploy: true
+```
+
+> NOTE: You should definitely reference the section on [Defining Environmental Variables](#defining-environmental-variables)
+
+As well as if you run the following using the `vsphere_management.sh` script:
+
+```bash
+vsphere_management.sh vsphere_destroy_vms
+```
+
+You will be prompted as below:
+
+```bash
+CAUTION:	You are about to DESTROY Core Services VMs!
+		Only VMs defined as deploy: false will be affected.....
+
+You are about to DESTROY Core Services VMs!! Continue? (y/n)
+```
+
 ## Defining Environmental Variables
 
-> Note: This is a work in progress
+> NOTE: This is a work in progress
 
 As this project proceeds the common variables will begin to be consolidated into `inventory/groups_vars/all/environment.yml`. This will allow for environmental specific variables to be defined in a central location. These will be defined and feed into additional variables. This makes management of specific environments much easier.
 
@@ -396,6 +492,14 @@ pri_domain_name: lab.etsbv.internal
 samba_domain_controllers_group: "{{ vsphere_samba_vms_group }}"
 vsphere_ad_netbios_name: LAB-AD
 
+#vSphere bootstrap VM info
+vsphere_bootstrap_vms_cpu: 1
+vsphere_bootstrap_vms_deploy: false
+vsphere_bootstrap_vms_memory: 512
+# Define Ansible group which contains your DDI VMs
+# Do not change this until further refactoring occurs...this comment will be removed at that time
+vsphere_bootstrap_vms_group: vsphere_bootstrap_vms
+
 #vSphere DDI VM info
 vsphere_ddi_vms_cpu: 1
 vsphere_ddi_vms_deploy: true
@@ -403,6 +507,12 @@ vsphere_ddi_vms_memory: 2048
 # Define Ansible group which contains your DDI VMs
 # Do not change this until further refactoring occurs...this comment will be removed at that time
 vsphere_ddi_vms_group: vsphere_ddi_vms
+
+# Defines if VMs defined as not defined to deploy to be destroyed
+# reference vsphere_vm_services_groups as well
+# Good for keeping environment in a defined state
+# references tasks/destroy_vms.yml
+vsphere_destroy_vms: false
 
 #vSphere DHCP VM info
 # Define Ansible group which contains your DHCP VMs
@@ -451,7 +561,7 @@ until the process becomes more sreamlined. As of right now I am using an `Ubuntu
 based `OVF` template which is stored on my `Deployment Host` which is used to
 deploy these bootstrap vms.
 
-> Note: The `Ubuntu` based `OVF` template is **NOT** included in this repo. I am
+> NOTE: The `Ubuntu` based `OVF` template is **NOT** included in this repo. I am
 > still evaluating a solution around this. My instinct at the moment is to use
 > `Packer` to build the `OVF` but not 100% sure at this point. This seems like a
 > viable solution as I could include the build template and the scripting. But time
@@ -484,10 +594,10 @@ in an automated fashion. When these VMs spin up everything is automated from
 beginning to end including DNS record registrations. Dynamic DNS is also enabled
 in order to auto register DHCP clients.
 
-> Note: Currently all of these services run on the DDI nodes and may eventually
+> NOTE: Currently all of these services run on the DDI nodes and may eventually
 > be separated out.
 >
-> Note: The `Ubuntu` based `OVF` template is **NOT** included in this repo. I am
+> NOTE: The `Ubuntu` based `OVF` template is **NOT** included in this repo. I am
 > still evaluating a solution around this. My instinct at the moment is to use
 > `Packer` to build the `OVF` but not 100% sure at this point. This seems like a
 > viable solution as I could include the build template and the scripting. But time
@@ -632,7 +742,7 @@ are synced to the the BDCs. The caveat with this method currently is that if
 any polices or scripts are defined on the BDCs they will disappear on the next
 rsync cron job. This job is scheduled to run every 5 minutes.
 
-> Note: When creating any login scripts or GPO policies to ensure that you have
+> NOTE: When creating any login scripts or GPO policies to ensure that you have
 > selected the PDC as the Domain Controller. This is the default behavior when
 > launching GPO Manager, but please ensure to do this. More information can be
 > found on this [here](https://wiki.samba.org/index.php/Rsync_based_SysVol_replication_workaround).
@@ -679,7 +789,7 @@ vsphere_domain_access:
 
 ## Role Variables
 
-> Note: Update this once more complete. Too many changes to keep accurate.
+> NOTE: Update this once more complete. Too many changes to keep accurate.
 
 [defaults/main.yml](defaults/main.yml)
 

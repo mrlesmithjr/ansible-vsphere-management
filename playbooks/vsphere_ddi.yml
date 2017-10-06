@@ -22,7 +22,7 @@
       with_items: "{{ vsphere_ddi_vms }}"
       when: item['deploy']
 
-- hosts: vsphere_ddi_vms
+- hosts: vsphere_ddi_vms:!vsphere_destroy_vms
   tasks:
     - name: Gathering Info
       setup:
@@ -39,7 +39,7 @@
       tags:
         - vsphere_ddi_vms_info
 
-- hosts: vsphere_ddi_vms
+- hosts: vsphere_ddi_vms:!vsphere_destroy_vms
   roles:
     - role: ansible-config-interfaces
     - role: ansible-change-hostname
@@ -54,7 +54,7 @@
     - role: ansible-phpipam
       become: true
 
-- hosts: vsphere_dhcp_vms
+- hosts: vsphere_dhcp_vms:!vsphere_destroy_vms
   roles:
     - role: ansible-isc-dhcp
       become: true

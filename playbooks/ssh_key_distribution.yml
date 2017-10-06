@@ -1,5 +1,5 @@
 ---
-- hosts: vsphere_samba_vms
+- hosts: vsphere_samba_vms:!vsphere_destroy_vms
   tasks:
     - name: Generating User(s) SSH Key
       user:
@@ -45,7 +45,7 @@
       run_once: true
       delegate_to: localhost
 
-- hosts: vsphere_samba_vms
+- hosts: vsphere_samba_vms:!vsphere_destroy_vms
   vars_files:
     - "{{ ssh_keys_distribution_vars_file_path }}/ssh_keys_distribution.yml"
   tasks:

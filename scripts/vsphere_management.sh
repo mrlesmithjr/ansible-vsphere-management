@@ -27,6 +27,36 @@ TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 ####
 ## Beginning of vSphere functions
 ####
+
+_reboot()
+{
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/reboot.yml "$@"
+}
+
+_vsphere_ddi()
+{
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml "$@"
+}
+
+_vsphere_dnsdist()
+{
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_dnsdist.yml "$@"
+}
+
+_vsphere_lb()
+{
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_lb.yml "$@"
+}
+
+_vsphere_management(){
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml "$@"
+}
+
+_vsphere_samba()
+{
+  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml "$@"
+}
+
 cleanup()
 {
   CLEANUP_FILES=(
@@ -38,6 +68,7 @@ cleanup()
     "vsphere_bootstrap_vms.json" \
     "vsphere_ddi_vms.inv" \
     "vsphere_ddi_vms.json" \
+    "vsphere_destroy_vms.inv" \
     "vsphere_dhcp_vms.inv" \
     "vsphere_dnsdist_vms.inv" \
     "vsphere_dnsdist_vms.json" \
@@ -84,12 +115,13 @@ display_usage() {
   echo -e "\tcleanup\t\t\t\t\tCleans up generated inventory, JSON data, and SSH key data"
   echo -e "\tdeploy_all\t\t\t\tDeploys whole environment"
   echo -e "\tvsphere_ad_domain\t\t\tManages vSphere hosts AD membership"
-  echo -e "\tvsphere_ddi_vms\t\t\t\tManages DDI VMs"
   echo -e "\tvsphere_bootstrap_vms\t\t\tManages Bootstrap VMs"
+  echo -e "\tvsphere_ddi_vms\t\t\t\tManages DDI VMs"
+  echo -e "\tvsphere_destroy_vms\t\t\tDestroys ALL Core VM Service VMs (USE WITH CAUTION)"
   echo -e "\tvsphere_disable_ssh\t\t\tDisables vSphere hosts SSH"
-  echo -e "\tvsphere_enable_ssh\t\t\tEnables vSphere hosts SSH"
   echo -e "\tvsphere_dns\t\t\t\tManages vSphere hosts DNS settings"
   echo -e "\tvsphere_dnsdist_vms\t\t\tManages DNSDist VMs"
+  echo -e "\tvsphere_enable_ssh\t\t\tEnables vSphere hosts SSH"
   echo -e "\tvsphere_lb_vms\t\t\t\tManages Load Balancer VMs"
   echo -e "\tvsphere_maintenance_mode\t\tManages vSphere hosts maintenance mode"
   echo -e "\tvsphere_management\t\t\tManages ALL vSphere host settings"
@@ -102,6 +134,7 @@ display_usage() {
   echo -e "\tvsphere_samba_sysvol_replication\tManages Samba VMs AD SysVol Replication"
   echo -e "\tvsphere_samba_vms\t\t\tManages Samba VMs (Does not perform Phase 1, 2, or SysVol Replication)"
   echo -e "\tvsphere_ssh_key_distribution\t\tDistributes SSH Keys between VMs (Currently only Samba VMs)"
+  echo -e "\tvsphere_udpates\t\t\t\tUpdates vSphere Hosts (Must be in maintenance mode)"
   echo -e "\tvsphere_vms\t\t\t\tManages ALL VMs (Does not perform any post provisioning tasks)"
   echo -e "\tvsphere_vms_info\t\t\tCollects info for ALL VMs and updates inventory and etc."
   echo -e "\n\nAll arguments support additional Ansible command line arguments to be passed. However, only the following"
@@ -139,65 +172,90 @@ logging()
 
 vsphere_ad_domain()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_management --tags vsphere_ad_domain
+  _vsphere_management --tags vsphere_ad_domain "$@"
 }
 
 vsphere_bootstrap_vms()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_bootstrap_vms
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_bootstrap_vms_info
-  # $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml
+  vsphere_destroy_vms_check
+  _vsphere_management --tags vsphere_bootstrap_vms
+  _vsphere_management --tags vsphere_bootstrap_vms_info
 }
 
 vsphere_ddi_vms()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_ddi_vms
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_ddi_vms_info
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml
+  vsphere_destroy_vms_check
+  _vsphere_management --tags vsphere_ddi_vms
+  _vsphere_management --tags vsphere_ddi_vms_info
+  _vsphere_ddi
+}
+
+vsphere_destroy_vms()
+{
+  clear
+  echo -e "\nCAUTION:\tYou are about to DESTROY Core Services VMs!"
+  echo -e "\t\tOnly VMs defined as deploy: false will be affected.....\n"
+  read -p "You are about to DESTROY Core Services VMs!! Continue? (y/n) " -n 1 -r
+  echo    # (optional) move to a new line
+  if [[ ! $REPLY =~ ^[Yy]$ ]]
+  then
+    exit 1
+  fi
+  vsphere_destroy_vms_check
+  # vsphere_ad_domain --extra-vars '{"vsphere_hosts_join_domain": False}'
+  _vsphere_management --tags vsphere_destroy_vms --extra-vars '{"vsphere_destroy_vms": True}'
+  vsphere_vms_info
+}
+
+vsphere_destroy_vms_check()
+{
+  _vsphere_management --tags vsphere_destroy_vms_check
 }
 
 vsphere_dns()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_dns
+  _vsphere_management --tags vsphere_dns
 }
 
 vsphere_dnsdist_vms()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_dnsdist_vms
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_dnsdist_vms_info
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_dnsdist.yml
+  vsphere_destroy_vms_check
+  _vsphere_management --tags vsphere_dnsdist_vms
+  _vsphere_management --tags vsphere_dnsdist_vms_info
+  _vsphere_dnsdist
 }
 
 vsphere_disable_ssh()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_ssh --extra-vars '{"vsphere_hosts_enable_ssh": False}'
+  _vsphere_management --tags vsphere_ssh --extra-vars '{"vsphere_hosts_enable_ssh": False}'
 }
 
 vsphere_enable_ssh()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_ssh --extra-vars '{"vsphere_hosts_enable_ssh": True}'
+  _vsphere_management --tags vsphere_ssh --extra-vars '{"vsphere_hosts_enable_ssh": True}'
 }
 
 vsphere_lb_vms()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_lb_vms
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_lb_vms_info
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_lb.yml
+  vsphere_destroy_vms_check
+  _vsphere_management --tags vsphere_lb_vms
+  _vsphere_management --tags vsphere_lb_vms_info
+  _vsphere_lb
 }
 
 vsphere_maintenance_mode()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_maintenance_mode
+  _vsphere_management --tags vsphere_maintenance_mode
 }
 
 vsphere_management()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_management
+  _vsphere_management --tags vsphere_management
 }
 
 vsphere_network()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_network
+  _vsphere_management --tags vsphere_network
 }
 
 vsphere_pdns()
@@ -207,19 +265,19 @@ vsphere_pdns()
 
 vsphere_post_deployment_reboot()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/reboot.yml --tags post_deployment_reboot "$@"
+  _reboot --tags post_deployment_reboot "$@"
 }
 
 vsphere_post_samba_deployment_reboot()
 {
   # We need to reboot the Samba hosts after building AD to ensure everything is up clean and working
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/reboot.yml --tags post_samba_deployment_reboot "$@"
+  _reboot --tags post_samba_deployment_reboot "$@"
 }
 
 vsphere_samba_phase_1()
 {
   # This phase does not install Samba or build domain...
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml --tags samba_phase_1 "$@"
+  _vsphere_samba --tags samba_phase_1 "$@"
 }
 
 vsphere_samba_phase_2()
@@ -227,18 +285,19 @@ vsphere_samba_phase_2()
   # This phase will actually install Samba and build domain.
   # This needs to occur after reboot to ensure interfaces, dns, and everything
   # else in environment is up and functional.
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml --tags samba_phase_2 "$@"
+  _vsphere_samba --tags samba_phase_2 "$@"
 }
 
 vsphere_samba_sysvol_replication()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml --tags samba_sysvol_replication "$@"
+  _vsphere_samba --tags samba_sysvol_replication "$@"
 }
 
 vsphere_samba_vms()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_samba_vms
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_samba_vms_info
+  vsphere_destroy_vms_check
+  _vsphere_management --tags vsphere_samba_vms
+  _vsphere_management --tags vsphere_samba_vms_info
 }
 
 vsphere_ssh_key_distribution()
@@ -248,21 +307,23 @@ vsphere_ssh_key_distribution()
 
 vsphere_udpates()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_udpates
+  _vsphere_management --tags vsphere_udpates
 }
 
 vsphere_vms()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_vms
+  vsphere_destroy_vms_check
+  _vsphere_management --tags vsphere_vms
 }
 
 vsphere_vms_info()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml --tags vsphere_vms_info
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_dnsdist.yml --tags vsphere_dnsdist_vms_info
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml --tags vsphere_samba_vms_info
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml --tags vsphere_ddi_vms_info
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_lb.yml --tags vsphere_lb_vms_info
+  vsphere_destroy_vms_check
+  _vsphere_management --tags vsphere_vms_info
+  _vsphere_dnsdist --tags vsphere_dnsdist_vms_info
+  _vsphere_samba --tags vsphere_samba_vms_info
+  _vsphere_ddi --tags vsphere_ddi_vms_info
+  _vsphere_lb --tags vsphere_lb_vms_info
 }
 ####
 ## End of vSphere functions ####
