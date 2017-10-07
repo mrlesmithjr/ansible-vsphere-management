@@ -4,25 +4,49 @@
 set -e
 
 ####
+# Beginning of script execution path detection
+####
+# SCRIPT_NAME=$0
+SCRIPT_FULL_PATH=$(dirname "$0")
+####
+# End of script execution path detection
+####
+
+####
 # Beginning of variable definitions
 ####
 # Define the directory to your Ansible inventory
-ANSIBLE_INVENTORY_DIR="inventory"
+ANSIBLE_INVENTORY_DIR="$SCRIPT_FULL_PATH/../inventory"
+
+# Define the number of Ansible forks
+ANSIBLE_NUMBER_OF_FORKS=5
 
 # Define command or path to ansible-playbook command
-ANSIBLE_PLAYBOOK_COMMAND="ansible-playbook"
+ANSIBLE_PLAYBOOK_COMMAND=$(which ansible-playbook)
 
 # Define the directory to your Ansible playbooks
-ANSIBLE_PLAYBOOKS_DIR="playbooks"
+ANSIBLE_PLAYBOOKS_DIR="$SCRIPT_FULL_PATH/../playbooks"
+
+# Define the directory to your Ansible roles
+ANSIBLE_ROLES_DIR="$SCRIPT_FULL_PATH/../roles"
 
 # Define the directory to store logs in
-LOG_DIR="logs"
+LOG_DIR="$SCRIPT_FULL_PATH/../logs"
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+
+# Defines the Vagrant folder for deployment_prep()
+# The Windows 2016 Vagrant environment is included which is what the default
+# deployment host has been for all of the development of this project.
+VAGRANT_FOLDER="$SCRIPT_FULL_PATH/../Vagrant"
 ####
 # End of variable definitions
 ####
 
+export ANSIBLE_FORKS=$ANSIBLE_NUMBER_OF_FORKS
+export ANSIBLE_INVENTORY=$ANSIBLE_INVENTORY_DIR
+export ANSIBLE_LOG_PATH=$LOG_DIR/ansible.log
+export ANSIBLE_ROLES_PATH=$ANSIBLE_ROLES_DIR
 
 ####
 ## Beginning of vSphere functions
@@ -30,31 +54,31 @@ TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 
 _reboot()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/reboot.yml "$@"
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/reboot.yml "$@"
 }
 
 _vsphere_ddi()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml "$@"
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml "$@"
 }
 
 _vsphere_dnsdist()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_dnsdist.yml "$@"
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_dnsdist.yml "$@"
 }
 
 _vsphere_lb()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_lb.yml "$@"
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_lb.yml "$@"
 }
 
 _vsphere_management(){
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml "$@"
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml "$@"
 }
 
 _vsphere_samba()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml "$@"
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml "$@"
 }
 
 cleanup()
@@ -102,6 +126,13 @@ deploy_all()
   exit 0
 }
 
+deployment_prep()
+{
+  cd $VAGRANT_FOLDER
+  vagrant up
+  cd -
+}
+
 display_usage() {
   echo "vSphere Management Script"
   echo -e "\nThis script is for managing your vSphere environment in a holistic fashion.\n"
@@ -114,6 +145,7 @@ display_usage() {
   echo -e "\narguments:"
   echo -e "\tcleanup\t\t\t\t\tCleans up generated inventory, JSON data, and SSH key data"
   echo -e "\tdeploy_all\t\t\t\tDeploys whole environment"
+  echo -e "\tdeployment_prep\t\t\t\tSpins up Vagrant Deployment Host and preps environment"
   echo -e "\tvsphere_ad_domain\t\t\tManages vSphere hosts AD membership"
   echo -e "\tvsphere_bootstrap_vms\t\t\tManages Bootstrap VMs"
   echo -e "\tvsphere_ddi_vms\t\t\t\tManages DDI VMs"
@@ -154,7 +186,7 @@ display_usage() {
 
 generate_inventory()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/generate_inventory.yml
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/generate_inventory.yml
 }
 
 logging()
@@ -260,7 +292,7 @@ vsphere_network()
 
 vsphere_pdns()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/pdns.yml
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/pdns.yml
 }
 
 vsphere_post_deployment_reboot()
@@ -302,7 +334,7 @@ vsphere_samba_vms()
 
 vsphere_ssh_key_distribution()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND -i $ANSIBLE_INVENTORY_DIR/ $ANSIBLE_PLAYBOOKS_DIR/ssh_key_distribution.yml "$@"
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/ssh_key_distribution.yml "$@"
 }
 
 vsphere_udpates()
