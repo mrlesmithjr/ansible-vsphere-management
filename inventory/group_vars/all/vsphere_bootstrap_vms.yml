@@ -4,10 +4,10 @@ vsphere_bootstrap_vms:
     cpus: "{{ vsphere_bootstrap_vms_cpu }}"
     deploy: "{{ vsphere_bootstrap_vms_deploy }}"
     datastore: "{{ vsphere_vm_services_datastore }}"
-    gateway: "{{ vsphere_vm_services_subnet }}.1"
-    ip: "{{ vsphere_vm_services_subnet }}.101"
+    # gateway: "{{ vsphere_vm_services_subnet }}.1"
+    # ip: "{{ vsphere_vm_services_subnet }}.101"
     memory_mb: "{{ vsphere_bootstrap_vms_memory }}"
-    netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
+    # netmask_cidr: "{{ vsphere_vm_services_subnet_mask_cidr }}"
     network_name: "{{ vsphere_vm_services_vswitch }}"
     vapp_source_path: "{{ vsphere_linux_vapp_ovf }}"
   - vm_name: bootstrap-vm-2.{{ vsphere_pri_domain_name }}

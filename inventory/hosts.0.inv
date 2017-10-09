@@ -2,5 +2,5 @@
 node0
 
 [vsphere_hosts]
-esxi-01.etsbv.internal ansible_host=10.0.101.61
-esxi-02.etsbv.internal ansible_host=10.0.101.62
+esxi-01.lab.etsbv.internal ansible_host=10.0.101.61
+esxi-02.lab.etsbv.internal ansible_host=10.0.101.62

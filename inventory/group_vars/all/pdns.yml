@@ -59,6 +59,11 @@ pdns_records:
     domain: "{{ vsphere_pri_domain_name }}"
     ip: "{{ vsphere_lb_vips[0] }}"
     type: CNAME
+  - hostname: "{{ vsphere_vcsa_network_hostname }}"
+    content: "{{ vsphere_vcsa_network_ip }}"
+    domain: "{{ vsphere_pri_domain_name }}"
+    ip: "{{ vsphere_vcsa_network_ip }}"
+    type: A
 
 pdns_webserver_password: changeme
 

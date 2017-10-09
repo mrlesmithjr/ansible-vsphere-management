@@ -282,15 +282,8 @@ vsphere_samba_vms_json_output_file: "{{ vsphere_inventory_directory }}/vsphere_s
 
 vsphere_samba_vms_wait_for_ssh: "{{ vsphere_vms_wait_for_ssh }}"
 
-# Defines core VM service groups
-# Also used for determining which VMs should exist or not
-# Not 100% complete yet
-vsphere_vm_services_groups:
-  - "{{ vsphere_bootstrap_vms }}"
-  - "{{ vsphere_samba_vms }}"
-  - "{{ vsphere_ddi_vms }}"
-  - "{{ vsphere_dnsdist_vms }}"
-  - "{{ vsphere_lb_vms }}"
+# Define site name of location of deployment
+vsphere_site_name: []
 
 vsphere_template_vm: []
   # cpus: 1
@@ -318,6 +311,41 @@ vsphere_updates: []
   #   version: 6.0.0
 
 vsphere_validate_certs: false
+
+vsphere_vcenter_inventory_file: "{{ vsphere_inventory_directory }}/vsphere_vcenter.inv"
+
+# Define VCSA appliance info below for vsphere_vcsa definitions
+# Reference inventory/group_vars/all/vsphere_vcsa.yml
+vsphere_vcsa_appliance_deployment_network: []
+vsphere_vcsa_appliance_deployment_option: small
+vsphere_vcsa_appliance_name: []
+vsphere_vcsa_appliance_thin_disk_mode: true
+vsphere_vcsa_deploy: false
+vsphere_vcsa_esx_datastore: []
+vsphere_vcsa_esx_hostname: []
+vsphere_vcsa_esx_password: []
+vsphere_vcsa_esx_username: []
+vsphere_vcsa_network_gateway: []
+vsphere_vcsa_network_hostname: []
+vsphere_vcsa_network_ip: []
+vsphere_vcsa_network_ip_family: ipv4
+vsphere_vcsa_network_mode: static
+vsphere_vcsa_network_prefix: []
+vsphere_vcsa_os_password: []
+vsphere_vcsa_os_ssh_enabled: false
+vsphere_vcsa_sso_domain_name: vsphere.local
+vsphere_vcsa_sso_password: []
+vsphere_vcsa_sso_site_name: "{{ vsphere_site_name }}"
+
+# Defines core VM service groups
+# Also used for determining which VMs should exist or not
+# Not 100% complete yet
+vsphere_vm_services_groups:
+  - "{{ vsphere_bootstrap_vms }}"
+  - "{{ vsphere_samba_vms }}"
+  - "{{ vsphere_ddi_vms }}"
+  - "{{ vsphere_dnsdist_vms }}"
+  - "{{ vsphere_lb_vms }}"
 
 # Defines whether or not VM inventory files should be generated
 vsphere_vms_generate_inventory: true

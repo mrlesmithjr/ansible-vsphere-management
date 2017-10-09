@@ -1,4 +1,2 @@
 ---
 ansible_primary_interface: ens160
-
-vsphere_linux_vapp_ovf: C:\vagrant\vApps\ubuntu_16.04_template.ovf

@@ -50,6 +50,9 @@ vsphere_lb_vms_deploy: true
 vsphere_lb_vms_group: vsphere_lb_vms
 vsphere_lb_vms_memory: 1024
 
+# Defines the OVF template to deploy VMs from
+vsphere_linux_vapp_ovf: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+
 #vSphere Samba VM info
 vsphere_samba_vms_cpu: 1
 vsphere_samba_vms_deploy: true
@@ -57,6 +60,11 @@ vsphere_samba_vms_deploy: true
 # Do not change this until further refactoring occurs...this comment will be removed at that time
 vsphere_samba_vms_group: vsphere_samba_vms
 vsphere_samba_vms_memory: 512
+
+vsphere_site_name: LAB
+
+# Defines the directory where the VCSA ISO has been extracted to
+vsphere_vcsa_iso_directory: C:\vagrant\vApps\VCSA_ISO
 
 #vSphere VM Services info
 # Defines the vSphere datastore to store vm core services on

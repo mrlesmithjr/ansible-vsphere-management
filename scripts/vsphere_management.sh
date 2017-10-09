@@ -52,33 +52,44 @@ export ANSIBLE_ROLES_PATH=$ANSIBLE_ROLES_DIR
 ## Beginning of vSphere functions
 ####
 
+_ansible_playbook_task()
+{
+  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/$_ANSIBLE_PLAYBOOK "$@"
+}
+
 _reboot()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/reboot.yml "$@"
+  _ANSIBLE_PLAYBOOK="reboot.yml"
+  _ansible_playbook_task "$@"
 }
 
 _vsphere_ddi()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_ddi.yml "$@"
+  _ANSIBLE_PLAYBOOK="vsphere_ddi.yml"
+  _ansible_playbook_task "$@"
 }
 
 _vsphere_dnsdist()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_dnsdist.yml "$@"
+  _ANSIBLE_PLAYBOOK="vsphere_dnsdist.yml"
+  _ansible_playbook_task "$@"
 }
 
 _vsphere_lb()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_lb.yml "$@"
+  _ANSIBLE_PLAYBOOK="vsphere_lb.yml"
+  _ansible_playbook_task "$@"
 }
 
 _vsphere_management(){
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_management.yml "$@"
+  _ANSIBLE_PLAYBOOK="vsphere_management.yml"
+  _ansible_playbook_task "$@"
 }
 
 _vsphere_samba()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/vsphere_samba.yml "$@"
+  _ANSIBLE_PLAYBOOK="vsphere_samba.yml"
+  _ansible_playbook_task "$@"
 }
 
 cleanup()
@@ -99,7 +110,8 @@ cleanup()
     "vsphere_lb_vms.inv" \
     "vsphere_lb_vms.json" \
     "vsphere_samba_vms.inv" \
-    "vsphere_samba_vms.json"
+    "vsphere_samba_vms.json" \
+    "vsphere_vcenter.inv"
   )
   for cleanup in "${CLEANUP_FILES[@]}"
   do
@@ -109,6 +121,7 @@ cleanup()
 
 deploy_all()
 {
+  vsphere_vcenter_check
   vsphere_management
   vsphere_vms
   vsphere_dnsdist_vms
@@ -123,6 +136,7 @@ deploy_all()
   vsphere_post_samba_deployment_reboot
   vsphere_samba_sysvol_replication
   vsphere_ad_domain
+  vsphere_vcsa
   exit 0
 }
 
@@ -167,6 +181,8 @@ display_usage() {
   echo -e "\tvsphere_samba_vms\t\t\tManages Samba VMs (Does not perform Phase 1, 2, or SysVol Replication)"
   echo -e "\tvsphere_ssh_key_distribution\t\tDistributes SSH Keys between VMs (Currently only Samba VMs)"
   echo -e "\tvsphere_udpates\t\t\t\tUpdates vSphere Hosts (Must be in maintenance mode)"
+  echo -e "\tvsphere_vcsa\t\t\t\tManages the vSphere VCSA Appliance"
+  echo -e "\tvsphere_vcenter_check\t\t\tChecks if vCenter exists or not"
   echo -e "\tvsphere_vms\t\t\t\tManages ALL VMs (Does not perform any post provisioning tasks)"
   echo -e "\tvsphere_vms_info\t\t\tCollects info for ALL VMs and updates inventory and etc."
   echo -e "\n\nAll arguments support additional Ansible command line arguments to be passed. However, only the following"
@@ -186,7 +202,8 @@ display_usage() {
 
 generate_inventory()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/generate_inventory.yml
+  _ANSIBLE_PLAYBOOK="generate_inventory.yml"
+  _ansible_playbook_task "$@"
 }
 
 logging()
@@ -292,7 +309,8 @@ vsphere_network()
 
 vsphere_pdns()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/pdns.yml
+  _ANSIBLE_PLAYBOOK="pdns.yml"
+  _ansible_playbook_task "$@"
 }
 
 vsphere_post_deployment_reboot()
@@ -334,12 +352,24 @@ vsphere_samba_vms()
 
 vsphere_ssh_key_distribution()
 {
-  $ANSIBLE_PLAYBOOK_COMMAND $ANSIBLE_PLAYBOOKS_DIR/ssh_key_distribution.yml "$@"
+  _ANSIBLE_PLAYBOOK="ssh_key_distribution.yml"
+  _ansible_playbook_task "$@"
 }
 
 vsphere_udpates()
 {
   _vsphere_management --tags vsphere_udpates
+}
+
+vsphere_vcsa()
+{
+  vsphere_pdns
+  _vsphere_management --tags vsphere_vcsa
+}
+
+vsphere_vcenter_check()
+{
+  _vsphere_management --tags vsphere_vcenter_check
 }
 
 vsphere_vms()
