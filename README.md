@@ -1,38 +1,42 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
--   [ansible-vsphere-management](#ansible-vsphere-management)
-    -   [Requirements](#requirements)
-        -   [inventory/hosts.0.inv](#inventoryhosts0inv)
-        -   [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
-        -   [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-        -   [Software iSCSI](#software-iscsi)
-    -   [Deployment Host](#deployment-host)
-        -   [Spinning It Up](#spinning-it-up)
-    -   [Environment Deployment](#environment-deployment)
-        -   [Deployment Script Functions](#deployment-script-functions)
-    -   [Destroying Core Services VMs](#destroying-core-services-vms)
-    -   [Defining Environmental Variables](#defining-environmental-variables)
-    -   [Bootstrap VMs](#bootstrap-vms)
-    -   [DNSDist VMs](#dnsdist-vms)
-    -   [DDI VMs](#ddi-vms)
-        -   [Autostart DDI VMs](#autostart-ddi-vms)
-        -   [Defining DDI VMs](#defining-ddi-vms)
-        -   [Defining DNS Records](#defining-dns-records)
-        -   [Future DDI Functionality](#future-ddi-functionality)
-    -   [Samba based Active Directory](#samba-based-active-directory)
-        -   [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
-        -   [vSphere Host(s)](#vsphere-hosts)
-            -   [Host Domain Membership](#host-domain-membership)
-            -   [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
-    -   [Role Variables](#role-variables)
-    -   [Dependencies](#dependencies)
-    -   [Example Playbook](#example-playbook)
-    -   [License](#license)
-    -   [Author Information](#author-information)
+- [ansible-vsphere-management](#ansible-vsphere-management)
+  - [Requirements](#requirements)
+    - [inventory/hosts.0.inv](#inventoryhosts0inv)
+    - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
+    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+    - [Software iSCSI](#software-iscsi)
+    - [VCSA ISO](#vcsa-iso)
+  - [Deployment Host](#deployment-host)
+    - [Spinning It Up](#spinning-it-up)
+  - [Environment Deployment](#environment-deployment)
+    - [Deployment Script Functions](#deployment-script-functions)
+  - [Destroying Core Services VMs](#destroying-core-services-vms)
+  - [Defining Environmental Variables](#defining-environmental-variables)
+  - [Bootstrap VMs](#bootstrap-vms)
+  - [DNSDist VMs](#dnsdist-vms)
+  - [DDI VMs](#ddi-vms)
+    - [Autostart DDI VMs](#autostart-ddi-vms)
+    - [Defining DDI VMs](#defining-ddi-vms)
+    - [Defining DNS Records](#defining-dns-records)
+    - [Future DDI Functionality](#future-ddi-functionality)
+  - [Samba based Active Directory](#samba-based-active-directory)
+    - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
+    - [vSphere Host(s)](#vsphere-hosts)
+      - [Host Domain Membership](#host-domain-membership)
+      - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
+  - [VCSA](#vcsa)
+    - [Defining VCSA Specifics](#defining-vcsa-specifics)
+      - [Default definitions](#default-definitions)
+      - [Deployment definitions](#deployment-definitions)
+    - [Sizing](#sizing)
+  - [Role Variables](#role-variables)
+  - [Dependencies](#dependencies)
+  - [Example Playbook](#example-playbook)
+  - [License](#license)
+  - [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -173,6 +177,21 @@ vsphere_enable_software_iscsi: true
 ---
 vsphere_enable_software_iscsi: true
 ```
+
+### VCSA ISO
+
+In order to deploy the `VCSA` you will need to obtain the `ISO` and extract it
+to a folder on the [Deployment Host](deployment-host) and define the following
+variable in `inventory/group_vars/all/environment.yml`:
+
+```yaml
+vsphere_vcsa_iso_directory: C:\vagrant\vApps\VCSA_ISO
+```
+
+> NOTE: Because we are using Vagrant for the deployment host it makes this
+> relatively easy. The Vagrant folder is mounted by default so we can just extract
+> to `Vagrant/vApps`. This folder is added to `.gitignore` so anything in this
+> folder will not be added to the GIT repo.
 
 ## Deployment Host
 
@@ -785,6 +804,185 @@ to the correct host role.
 vsphere_domain_access:
   - name: "{{ vsphere_ad_netbios_name|upper }}\\vSphere-Admins"
     role: Admin
+```
+
+## VCSA
+
+> NOTE: The VCSA ISO nor the VCSA ISO contents are included within this repo.
+
+### Defining VCSA Specifics
+
+#### Default definitions
+
+[defaults](defaults/main.yml)
+
+#### Deployment definitions
+
+[deployment group_vars](inventory/group_vars/all/vsphere_vcsa.yml)
+
+### Sizing
+
+The following information can be used to determine the sizing required for the
+VCSA deployment.
+
+```yaml
+vsphere_vcsa_appliance_deployment_option: tiny
+```
+
+```json
+{
+    "large": {
+        "cpu": 16,
+        "memory": 32768,
+        "host-count": 1000,
+        "vm-count": 10000,
+        "disk-swap": "50GB",
+        "disk-core": "100GB",
+        "disk-log": "25GB",
+        "disk-db": "25GB",
+        "disk-dblog": "10GB",
+        "disk-seat": "100GB",
+        "disk-netdump": "10GB",
+        "disk-autodeploy": "25GB",
+        "disk-invsvc": "100GB",
+        "label": "Large (up to 1000 hosts, 10,000 VMs)",
+        "description": "This will deploy a Large VM configured with 16 vCPUs and 32 GB of memory and requires 450 GB of disk space. This option contains vCenter Server with an embedded Platform Services Controller."
+    },
+    "medium": {
+        "cpu": 8,
+        "memory": 24576,
+        "host-count": 400,
+        "vm-count": 4000,
+        "disk-swap": "50GB",
+        "disk-core": "50GB",
+        "disk-log": "25GB",
+        "disk-db": "25GB",
+        "disk-dblog": "10GB",
+        "disk-seat": "50GB",
+        "disk-netdump": "10GB",
+        "disk-autodeploy": "25GB",
+        "disk-invsvc": "25GB",
+        "label": "Medium (up to 400 hosts, 4,000 VMs)",
+        "description": "This will deploy a Medium VM configured with 8 vCPUs and 24 GB of memory and requires 300 GB of disk space. This option contains vCenter Server with an embedded Platform Services Controller."
+    },
+    "small": {
+        "cpu": 4,
+        "memory": 16384,
+        "host-count": 100,
+        "vm-count": 1000,
+        "disk-swap": "25GB",
+        "disk-core": "50GB",
+        "disk-log": "10GB",
+        "disk-db": "10GB",
+        "disk-dblog": "5GB",
+        "disk-seat": "25GB",
+        "disk-netdump": "1GB",
+        "disk-autodeploy": "10GB",
+        "disk-invsvc": "10GB",
+        "label": "Small (up to 100 hosts, 1,000 VMs)",
+        "description": "This will deploy a Small VM configured with 4 vCPUs and 16 GB of memory and requires 150 GB of disk space. This option contains vCenter Server with an embedded Platform Services Controller."
+    },
+    "tiny": {
+        "cpu": 2,
+        "memory": 8192,
+        "host-count": 10,
+        "vm-count": 100,
+        "disk-swap": "25GB",
+        "disk-core": "25GB",
+        "disk-log": "10GB",
+        "disk-db": "10GB",
+        "disk-dblog": "5GB",
+        "disk-seat": "10GB",
+        "disk-netdump": "1GB",
+        "disk-autodeploy": "10GB",
+        "disk-invsvc": "5GB",
+        "label": "Tiny (up to 10 hosts, 100 VMs)",
+        "description": "This will deploy a Tiny VM configured with 2 vCPUs and 8 GB of memory and requires 120 GB of disk space. This option contains vCenter Server with an embedded Platform Services Controller."
+    },
+    "management-large": {
+        "cpu": 16,
+        "memory": 32768,
+        "host-count": 1000,
+        "vm-count": 10000,
+        "disk-swap": "50GB",
+        "disk-core": "100GB",
+        "disk-log": "25GB",
+        "disk-db": "25GB",
+        "disk-dblog": "10GB",
+        "disk-seat": "100GB",
+        "disk-netdump": "10GB",
+        "disk-autodeploy": "25GB",
+        "disk-invsvc": "100GB",
+        "label": "Large (up to 1000 hosts, 10,000 VMs)",
+        "description": "This will deploy a Large VM configured with 16 vCPUs and 32 GB of memory and requires 450 GB of disk space. These resources will be used by the vCenter Server services."
+    },
+    "management-medium": {
+        "cpu": 8,
+        "memory": 24576,
+        "host-count": 400,
+        "vm-count": 4000,
+        "disk-swap": "50GB",
+        "disk-core": "50GB",
+        "disk-log": "25GB",
+        "disk-db": "25GB",
+        "disk-dblog": "10GB",
+        "disk-seat": "50GB",
+        "disk-netdump": "10GB",
+        "disk-autodeploy": "25GB",
+        "disk-invsvc": "25GB",
+        "label": "Medium (up to 400 hosts, 4,000 VMs)",
+        "description": "This will deploy a Medium VM configured with 8 vCPUs and 24 GB of memory and requires 300 GB of disk space. These resources will be used by the vCenter Server services."
+    },
+    "management-small": {
+        "cpu": 4,
+        "memory": 16384,
+        "host-count": 100,
+        "vm-count": 1000,
+        "disk-swap": "25GB",
+        "disk-core": "50GB",
+        "disk-log": "10GB",
+        "disk-db": "10GB",
+        "disk-dblog": "5GB",
+        "disk-seat": "25GB",
+        "disk-netdump": "1GB",
+        "disk-autodeploy": "10GB",
+        "disk-invsvc": "10GB",
+        "label": "Small (up to 100 hosts, 1,000 VMs)",
+        "description": "This will deploy a Small VM configured with 4 vCPUs and 16 GB of memory and requires 150 GB of disk space. These resources will be used by the vCenter Server services."
+    },
+    "management-tiny": {
+        "cpu": 2,
+        "memory": 8192,
+        "host-count": 10,
+        "vm-count": 100,
+        "disk-swap": "25GB",
+        "disk-core": "25GB",
+        "disk-log": "10GB",
+        "disk-db": "10GB",
+        "disk-dblog": "5GB",
+        "disk-seat": "10GB",
+        "disk-netdump": "1GB",
+        "disk-autodeploy": "10GB",
+        "disk-invsvc": "5GB",
+        "label": "Tiny (up to 10 hosts, 100 VMs)",
+        "description": "This will deploy a Tiny VM configured with 2 vCPUs and 8 GB of memory and requires 120 GB of disk space. These resources will be used by the vCenter Server services."
+    },
+    "infrastructure": {
+        "cpu": 2,
+        "memory": 2048,
+        "disk-swap": "5GB",
+        "disk-core": "5GB",
+        "disk-log": "5GB",
+        "disk-db": "10GB",
+        "disk-dblog": "10MB",
+        "disk-seat": "10MB",
+        "disk-netdump": "10MB",
+        "disk-autodeploy": "10MB",
+        "disk-invsvc": "10MB",
+        "label": "Platform Services Controller",
+        "description": "This will deploy an external Platform Services Controller VM with 2 vCPU and 2GB of memory and requires 30 GB of disk space."
+    }
+}
 ```
 
 ## Role Variables

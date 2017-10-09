@@ -15,3 +15,4 @@ vsphere_lb_vms.inv
 vsphere_lb_vms.json
 vsphere_samba_vms.inv
 vsphere_samba_vms.json
+vsphere_vcenter.inv

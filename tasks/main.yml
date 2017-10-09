@@ -140,3 +140,7 @@
   tags:
     - vsphere_ad_domain
   when: vsphere_hosts_join_domain
+
+- include: vcsa.yml
+  tags:
+    - vsphere_vcsa
