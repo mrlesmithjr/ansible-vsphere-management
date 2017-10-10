@@ -39,6 +39,14 @@ vsphere_dnsdist_vms_cpu: 1
 vsphere_dnsdist_vms_deploy: true
 vsphere_dnsdist_vms_memory: 1024
 
+#vSphere Host Info
+vsphere_host_mgmt_subnet: 10.0.101
+vsphere_host_mgmt_subnetmask: 255.255.255.0
+vsphere_host_mgmt_vlan_id: 101
+vsphere_host_vmotion_subnet: 10.0.127
+vsphere_host_vmotion_subnetmask: 255.255.255.0
+vsphere_host_vmotion_vlan_id: 127
+
 # Defines inventory directory
 vsphere_inventory_directory: ../inventory
 
@@ -61,6 +69,7 @@ vsphere_samba_vms_deploy: true
 vsphere_samba_vms_group: vsphere_samba_vms
 vsphere_samba_vms_memory: 512
 
+# Define Site Name
 vsphere_site_name: LAB
 
 # Defines the directory where the VCSA ISO has been extracted to

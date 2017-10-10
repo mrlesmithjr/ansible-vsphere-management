@@ -6,3 +6,23 @@
 - name: set_facts | Setting Log File
   set_fact:
     vsphere_management_log: c:\tmp\vsphere_management_{{ vsphere_log_timestap }}.log
+
+- name: set_facts | Creating Dynamic Group For vsphere_hosts
+  add_host:
+    groups: vsphere_hosts
+    hostname: "{{ item['hostname'] }}"
+    ansible_host: "{{ item['mgmt_ip'] }}"
+    mgmt_ip: "{{ item['mgmt_ip'] }}"
+    mgmt_subnetmask: "{{ item['mgmt_subnetmask'] }}"
+    mgmt_vlan_id: "{{ vsphere_host_mgmt_vlan_id }}"
+    vmotion_ip: "{{ item['vmotion_ip'] }}"
+    vmotion_subnetmask: "{{ item['vmotion_subnetmask'] }}"
+    vmotion_vlan_id: "{{ vsphere_host_vmotion_vlan_id }}"
+  with_items: "{{ vsphere_hosts }}"
+
+- name: set_facts | Creating Inventory For vsphere_hosts
+  template:
+    src: vsphere_hosts.inv.j2
+    dest: "{{ vsphere_hosts_inventory_file }}"
+  become: false
+  delegate_to: localhost
