@@ -6,16 +6,23 @@
     - vsphere_ad_domain
     - vsphere_bootstrap_vms
     - vsphere_ddi_vms
+    - vsphere_ddi_vms_info
     - vsphere_dhcp_vms
     - vsphere_dns
     - vsphere_dnsdist_vms
+    - vsphere_dnsdist_vms_info
     - vsphere_lb
     - vsphere_lb_vms
+    - vsphere_lb_vms_info
     - vsphere_management
     - vsphere_network
     - vsphere_samba_vms
+    - vsphere_samba_vms_info
     - vsphere_ssh
+    - vsphere_vcenter
+    - vsphere_vcsa
     - vsphere_vms
+    - vsphere_vms_info
 
 - include: invalid_certs.yml
   tags:
@@ -36,6 +43,7 @@
     - vsphere_network
     - vsphere_samba_vms
     - vsphere_ssh
+    - vsphere_vcenter
     - vsphere_vms
 
 - include: network.yml
@@ -144,3 +152,7 @@
 - include: vcsa.yml
   tags:
     - vsphere_vcsa
+
+- include: vcenter.yml
+  tags:
+    - vsphere_vcenter

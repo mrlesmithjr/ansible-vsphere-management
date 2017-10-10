@@ -8,7 +8,7 @@
      Get-VMHostService -Server $vmHost | Where-Object {$_.Key -eq 'TSM-SSH'} | Start-VMHostService -Confirm:$false
     }
     Disconnect-VIServer * -Confirm:$false
-  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  with_items: "{{ groups['vsphere_hosts'] }}"
   when: vsphere_hosts_enable_ssh
 
 - name: ssh | Disabling SSH Service
@@ -20,5 +20,5 @@
      Get-VMHostService -Server $vmHost | Where-Object {$_.Key -eq 'TSM-SSH'} | Stop-VMHostService -Confirm:$false
     }
     Disconnect-VIServer * -Confirm:$false
-  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  with_items: "{{ groups['vsphere_hosts'] }}"
   when: not vsphere_hosts_enable_ssh

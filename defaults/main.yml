@@ -246,13 +246,9 @@ vsphere_lb_vms_json_output_file: "{{ vsphere_inventory_directory }}/vsphere_lb_v
 
 vsphere_lb_vms_wait_for_ssh: "{{ vsphere_vms_wait_for_ssh }}"
 
-# Currently this needs to be defined per host in host_vars because of the way
-# we iterate through the list of hosts in vsphere_management_hosts_group
 vsphere_maintenance_mode: false
 
 vsphere_management_invalid_certs_action: Ignore
-
-vsphere_management_hosts_group: vsphere_hosts
 
 vsphere_ntp_servers: []
   # - "{{ vsphere_ddi_vm_ips[0] }}"

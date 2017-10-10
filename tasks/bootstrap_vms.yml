@@ -1,11 +1,4 @@
 ---
-- name: bootstrap_vms | Setting Bootstrap Host
-  set_fact:
-    vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
-  tags:
-    - vsphere_bootstrap_vms_info
-    - vsphere_vms_info
-
 - name: bootstrap_vms | Creating bootstrap_vms_deploy Dynamic Group
   add_host:
     groups: vsphere_bootstrap_vms_deploy

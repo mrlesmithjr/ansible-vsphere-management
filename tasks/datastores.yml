@@ -13,5 +13,5 @@
     }
     {% endfor %}
     Disconnect-VIServer * -Confirm:$false
-  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  with_items: "{{ groups['vsphere_hosts'] }}"
   when: vsphere_datastores is defined
