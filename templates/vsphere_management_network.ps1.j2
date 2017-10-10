@@ -292,10 +292,10 @@ if ($vmHostNetworkAdapters.Name -contains "{{ vmk['name'] }}") {
 }
 else {
 {%         if vmk['enable_mgmt'] %}
-  $vmServer | New-vmHostNetworkAdapter -PortGroup "{{ vmk['portgroup_name'] }}" -VirtualSwitch "{{ vswitch['name'] }}" -IP {{ hostvars[host]['mgmt_ip'] }} -SubnetMask {{ hostvars[host]['mgmt_subnetmask'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  $vmServer | New-vmHostNetworkAdapter -PortGroup "{{ vmk['portgroup_name'] }}" -VirtualSwitch "{{ vswitch['name'] }}" -IP {{ hostvars[host]['mgmt_ip'] }} -SubnetMask {{ hostvars[host]['mgmt_subnetmask'] }} -ManagementTrafficEnabled -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 {%         endif %}
 {%         if vmk['enable_vmotion'] %}
-  $vmServer | New-vmHostNetworkAdapter -PortGroup "{{ vmk['portgroup_name'] }}" -VirtualSwitch "{{ vswitch['name'] }}" -IP {{ hostvars[host]['vmotion_ip'] }} -SubnetMask {{ hostvars[host]['vmotion_subnetmask'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  $vmServer | New-vmHostNetworkAdapter -PortGroup "{{ vmk['portgroup_name'] }}" -VirtualSwitch "{{ vswitch['name'] }}" -IP {{ hostvars[host]['vmotion_ip'] }} -SubnetMask {{ hostvars[host]['vmotion_subnetmask'] }} -VMotionEnabled -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 {%         endif %}
 }
 {%       endfor %}
