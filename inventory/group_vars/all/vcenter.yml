@@ -1,0 +1,13 @@
+---
+vsphere_vcenter_cluster:
+  enable_drs: true
+  enable_ha: true
+  enable_vsan: false
+  evc_enabled: true
+  evc_mode: intel-penryn
+  name: "{{ vsphere_site_name }}-Cluster"
+  state: present
+
+vsphere_vcenter_datacenter:
+  name: "{{ vsphere_site_name }}"
+  state: present

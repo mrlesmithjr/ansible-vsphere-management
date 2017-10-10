@@ -137,6 +137,7 @@ deploy_all()
   vsphere_samba_sysvol_replication
   vsphere_ad_domain
   vsphere_vcsa
+  vsphere_vcenter
   exit 0
 }
 
@@ -182,6 +183,7 @@ display_usage() {
   echo -e "\tvsphere_ssh_key_distribution\t\tDistributes SSH Keys between VMs (Currently only Samba VMs)"
   echo -e "\tvsphere_udpates\t\t\t\tUpdates vSphere Hosts (Must be in maintenance mode)"
   echo -e "\tvsphere_vcsa\t\t\t\tManages the vSphere VCSA Appliance"
+  echo -e "\tvsphere_vcenter\t\t\t\tManages vCenter"
   echo -e "\tvsphere_vcenter_check\t\t\tChecks if vCenter exists or not"
   echo -e "\tvsphere_vms\t\t\t\tManages ALL VMs (Does not perform any post provisioning tasks)"
   echo -e "\tvsphere_vms_info\t\t\tCollects info for ALL VMs and updates inventory and etc."
@@ -359,6 +361,11 @@ vsphere_ssh_key_distribution()
 vsphere_udpates()
 {
   _vsphere_management --tags vsphere_udpates
+}
+
+vsphere_vcenter()
+{
+  _vsphere_management --tags vsphere_vcenter
 }
 
 vsphere_vcsa()
