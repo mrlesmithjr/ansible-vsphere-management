@@ -68,7 +68,7 @@
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
-    validate_certs: false
+    validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['vm_name'] }}"
     folder: /ha-datacenter/vm
   delegate_to: localhost
@@ -92,7 +92,7 @@
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
-    validate_certs: false
+    validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['vm_name'] }}"
     folder: /ha-datacenter/vm
   delegate_to: localhost
@@ -116,7 +116,7 @@
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
-    validate_certs: false
+    validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['instance']['hw_name'] }}"
     folder: /ha-datacenter/vm
     snapshot_name: post_deploy

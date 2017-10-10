@@ -9,7 +9,7 @@
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
-    validate_certs: false
+    validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ vsphere_vcsa_appliance_name }}"
     folder: /ha-datacenter/vm
   delegate_to: localhost
@@ -74,7 +74,7 @@
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
-    validate_certs: false
+    validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ vsphere_vcsa_appliance_name }}"
     folder: /ha-datacenter/vm
   delegate_to: localhost
