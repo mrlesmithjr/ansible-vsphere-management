@@ -11,17 +11,23 @@ vsphere_vswitches:
       - name: Management Network
         inherit_failover_order: true
         vlan_id: 101
-    # vmkernel_ports:
-    #   - name: vmk0
-    #     enable_ft: false
-    #     enable_mgmt: true
-    #     enable_vmotion: false
-    #     enable_vsan: false
-    #     ip_address: '{{ ansible_host }}'
-    #     portgroup_name: Management Network
-    #     subnet_mask: 255.255.255.0
-    #     vland_id: 101
-    #     vswitch_name: vSwitch0
+      - name: vMotion Network
+        inherit_failover_order: true
+        vlan_id: 127
+    vmkernel_ports:
+        # name may not be able to be dictated
+      - name: vmk0
+        enable_ft: false
+        enable_mgmt: true
+        enable_vmotion: false
+        enable_vsan: false
+        portgroup_name: Management Network
+      - name: vmk1
+        enable_ft: false
+        enable_mgmt: false
+        enable_vmotion: true
+        enable_vsan: false
+        portgroup_name: vMotion Network
   - name: vSwitch1
     active_nics:
       - vmnic2
