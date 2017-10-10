@@ -6,6 +6,7 @@
   - [Requirements](#requirements)
     - [inventory/hosts.0.inv](#inventoryhosts0inv)
     - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
+    - [inventory/group_vars/all/vsphere_hosts.yml](#inventorygroup_varsallvsphere_hostsyml)
     - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
     - [Software iSCSI](#software-iscsi)
     - [VCSA ISO](#vcsa-iso)
@@ -71,16 +72,11 @@ work in progress so do not expect perfection.
 
 ### inventory/hosts.0.inv
 
-Adjust `inventory/hosts.0.inv` to include your Windows `powecli_host` and update
-`vsphere_hosts` to include your ESXi hosts.
+Adjust `inventory/hosts.0.inv` to include your Windows `powecli_host`.
 
 ```yaml
 [powercli_host]
 node0
-
-[vsphere_hosts]
-esxi-01.etsbv.internal ansible_host=10.0.101.61
-esxi-02.etsbv.internal ansible_host=10.0.101.62
 ```
 
 ### inventory/group_vars/all/accounts.yml
@@ -92,6 +88,10 @@ manually and it should look similar to below:
 
 ```yaml
 ---
+powercli_host_user_info:
+  password: vagrant
+  username: vagrant
+
 samba_domain_groups:
   - name: vSphere-Admins
     members:
@@ -117,7 +117,33 @@ vsphere_samba_ad_user: administrator
 vsphere_user_info:
   username: root
   password: VMw@re1
+
+vsphere_vcsa_sso_user_info:
+  username: "Administrator@{{ vsphere_vcsa_sso_domain_name }}"
+  password: VMw@re1!
+
+vsphere_vcsa_user_info:
+  username: root
+  password: VMw@re1!
 ```
+
+### inventory/group_vars/all/vsphere_hosts.yml
+
+> NOTE: `inventory/group_vars/all/vsphere_hosts.yml` is where to add your ESXi
+> hosts. `defaults/main.yml` can also be used but I recommend you don't do it
+> here.
+
+`inventory/group_vars/all/vsphere_hosts.yml` is used to dynamically generate
+an Ansible group `vsphere_hosts` which is used throughout this project.
+`tasks/set_facts.yml` is executed whenever is needed and will by default generate
+`inventory/vsphere_hosts.inv` for Ansible inventory on your ESXi hosts. This
+ensures that the first deployment, the `vsphere_hosts` group is dynamically
+created and available throughout the play and subsequent plays will leverage
+`inventory/vsphere_hosts.inv` for Ansible inventory of your ESXi hosts. This
+alleviates the need to always update your inventory and just let the tasks update
+the inventory as needed.
+
+Make sure to update [inventory/group_vars/all/vsphere_hosts.yml](inventory/group_vars/all/vsphere_hosts.yml)
 
 ### Windows 2012R2/2016 Host
 

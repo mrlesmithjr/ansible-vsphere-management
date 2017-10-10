@@ -170,8 +170,34 @@ vsphere_dnsdist_vms_wait_for_ssh: "{{ vsphere_vms_wait_for_ssh }}"
 # variable the default variable defined here does not apply.
 vsphere_enable_software_iscsi: false
 
+#vSphere Host Info
+# Reference inventory/group_vars/all/vsphere_hosts.yml
+vsphere_host_mgmt_subnet: []
+vsphere_host_mgmt_subnetmask: []
+vsphere_host_mgmt_vlan_id: []
+vsphere_host_vmotion_subnet: []
+vsphere_host_vmotion_subnetmask: []
+vsphere_host_vmotion_vlan_id: []
+
+# Define vSphere hosts and relevant info
+# This information is used to generate a dynamic group vsphere_hosts as well as
+# generate an inventory file for the hosts.
+vsphere_hosts: []
+  # - hostname: "esxi-01.{{ vsphere_pri_domain_name }}"
+  #   mgmt_ip: "{{ vsphere_host_mgmt_subnet }}.61"
+  #   mgmt_subnetmask: "{{ vsphere_host_mgmt_subnetmask }}"
+  #   vmotion_ip: "{{ vsphere_host_vmotion_subnet }}.61"
+  #   vmotion_subnetmask: "{{ vsphere_host_vmotion_subnetmask }}"
+  # - hostname: "esxi-02.{{ vsphere_pri_domain_name }}"
+  #   mgmt_ip: "{{ vsphere_host_mgmt_subnet }}.62"
+  #   mgmt_subnetmask: "{{ vsphere_host_mgmt_subnetmask }}"
+  #   vmotion_ip: "{{ vsphere_host_vmotion_subnet }}.62"
+  #   vmotion_subnetmask: "{{ vsphere_host_vmotion_subnetmask }}"
+
 # Defines if vSphere hosts should have SSH enabled or not
 vsphere_hosts_enable_ssh: false
+
+vsphere_hosts_inventory_file: "{{ vsphere_inventory_directory }}/vsphere_hosts.inv"
 
 # Defines if vSphere hosts should be updated
 vsphere_hosts_update: false
@@ -310,6 +336,7 @@ vsphere_updates: []
   #   path: /vmfs/volumes/Datastore_1/ESXi600-201706001
   #   version: 6.0.0
 
+# Defines if SSL certs should be validated for various tasks.
 vsphere_validate_certs: false
 
 vsphere_vcenter_inventory_file: "{{ vsphere_inventory_directory }}/vsphere_vcenter.inv"
@@ -383,7 +410,7 @@ vsphere_vswitches: []
   #   #     ip_address: '{{ ansible_host }}'
   #   #     portgroup_name: Management Network
   #   #     subnet_mask: 255.255.255.0
-  #   #     vland_id: 101
+  #   #     vlan_id: 101
   #   #     vswitch_name: vSwitch0
   # - name: vSwitch1
   #   active_nics:
