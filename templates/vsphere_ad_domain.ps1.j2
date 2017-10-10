@@ -1,4 +1,4 @@
-{% for host in groups[vsphere_management_hosts_group] %}
+{% for host in groups['vsphere_hosts'] %}
 $vmhost="{{ hostvars[host]['ansible_host'] }}"
 $AdDomain="{{ vsphere_ad_dns_domain_name|upper }}"
 $SecureAdUser="{{ vsphere_ad_user }}"
@@ -43,4 +43,3 @@ if ($vmHostDomain -eq $AdDomain -and $vmHostDomainMemberShipStatus -eq "OK") {
 Disconnect-VIServer * -Confirm:$false
 
 {% endfor %}
-

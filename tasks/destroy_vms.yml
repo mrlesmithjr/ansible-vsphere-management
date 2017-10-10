@@ -1,8 +1,4 @@
 ---
-- name: destroy_vms | Setting Bootstrap Host
-  set_fact:
-    vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
-
 - name: destroy_vms | Creating Dynamic Group vsphere_do_not_destroy_vms
   add_host:
     groups: vsphere_do_not_destroy_vms

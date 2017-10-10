@@ -28,5 +28,5 @@
     dns_servers: "{{ vsphere_dns_nameservers }}"
     validate_certs: "{{ vsphere_validate_certs }}"
   delegate_to: localhost
-  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  with_items: "{{ groups['vsphere_hosts'] }}"
   when: vsphere_dns_nameservers is defined

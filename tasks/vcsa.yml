@@ -1,8 +1,4 @@
 ---
-- name: vcsa | Setting Bootstrap Host
-  set_fact:
-    vsphere_bootstrap_host: "{{ groups[vsphere_management_hosts_group][0] }}"
-
 - name: vcsa | Checking For Existing VCSA
   vmware_guest_facts:
     hostname: "{{ hostvars[item]['ansible_host'] }}"
@@ -17,7 +13,7 @@
   failed_when: false
   tags:
     - vsphere_vcenter_check
-  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  with_items: "{{ groups['vsphere_hosts'] }}"
 
 - name: vcsa | Setting VCSA Appliance Deployment Status
   set_fact:
@@ -83,7 +79,7 @@
   tags:
     - vsphere_vcenter_check
     - vsphere_vms_info
-  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  with_items: "{{ groups['vsphere_hosts'] }}"
 
 - name: vcsa | Waiting for SSH
   wait_for:

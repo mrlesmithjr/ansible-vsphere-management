@@ -1,4 +1,4 @@
-{% for host in groups[vsphere_management_hosts_group] %}
+{% for host in groups['vsphere_hosts'] %}
 $vmHost="{{ hostvars[host]['ansible_host'] }}"
 Connect-VIServer -Server $vmHost
 $vmServer=(Get-VMHost -Server $vmHost)

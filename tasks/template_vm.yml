@@ -1,7 +1,7 @@
 ---
 - name: template_vm
   win_shell: |
-    $vmHost="{{ hostvars[item]['ansible_host'] }}"
+    $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
     $vmName="{{ vsphere_template_vm['vm_name'] }}"
     $DataStore="{{ vsphere_template_vm['datastore'] }}"
     $NetworkName="{{ vsphere_template_vm['network_name'] }}"
@@ -17,4 +17,3 @@
       $StartVM=($VM | Start-VM -Confirm:$false)
     }
     Disconnect-VIServer * -Confirm:$false
-  with_items: "{{ groups[vsphere_management_hosts_group][0] }}"

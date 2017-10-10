@@ -44,7 +44,7 @@
     }
     {% endif %}
     Disconnect-VIServer * -Confirm:$false
-  with_items: "{{ groups[vsphere_management_hosts_group] }}"
+  with_items: "{{ groups['vsphere_hosts'] }}"
   when: >
         (hostvars[item]['vsphere_maintenance_mode'] is defined and
         hostvars[item]['vsphere_maintenance_mode']) and
