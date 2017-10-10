@@ -44,7 +44,7 @@
     name: "{{ hostvars[item[0]]['inventory_hostname'] }}"
     uuid: "{{ hostvars[item[0]]['hw_product_uuid'] }}"
     state: poweredoff
-    validate_certs: false
+    validate_certs: "{{ vsphere_validate_certs }}"
   delegate_to: localhost
   register: _vsphere_destroy_vms_state_check
   # We allow failed here because the VM may not reside on the host being checked
@@ -64,7 +64,7 @@
     name: "{{ hostvars[item[0]]['inventory_hostname'] }}"
     uuid: "{{ hostvars[item[0]]['hw_product_uuid'] }}"
     state: absent
-    validate_certs: false
+    validate_certs: "{{ vsphere_validate_certs }}"
   delegate_to: localhost
   register: _vsphere_destroy_vms
   failed_when: >
