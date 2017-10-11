@@ -123,3 +123,13 @@
   win_shell: c:\tmp\vsphere_vcenter_folder_management.ps1
   failed_when: _vsphere_vcenter_folder_management_script_execution['stderr_lines'] != []
   register: _vsphere_vcenter_folder_management_script_execution
+
+- name: vcenter | Generating vCenter Resource Pool Management Script
+  win_template:
+    src: vsphere_vcenter_resource_pool_management.ps1.j2
+    dest: c:\tmp\vsphere_vcenter_resource_pool_management.ps1
+
+- name: vcenter | Executing vCenter Resource Pool Management Script
+  win_shell: c:\tmp\vsphere_vcenter_resource_pool_management.ps1
+  failed_when: _vsphere_vcenter_resource_pool_management_script_execution['stderr_lines'] != []
+  register: _vsphere_vcenter_resource_pool_management_script_execution

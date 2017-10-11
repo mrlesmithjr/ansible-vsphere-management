@@ -32,7 +32,7 @@ vsphere_vcenter_drs_rules:
     keep_together: false
     vms: "{{ groups['vsphere_ddi_vms'] }}"
   - name: Separate DNSDist VMs
-    enabled: false
+    enabled: true
     keep_together: false
     vms: "{{ groups['vsphere_dnsdist_vms'] }}"
   - name: Separate LB VMs
@@ -55,3 +55,23 @@ vsphere_vcenter_folders:
       - name: vCenter
         vms:
           - "{{ vsphere_vcsa_appliance_name }}"
+
+vsphere_vcenter_resource_pools:
+  - name: Development
+    cpu_expandable_reservation: true
+    cpu_shares_level: low
+    mem_expandable_reservation: true
+    mem_shares_level: low
+    state: absent
+  - name: Production
+    cpu_expandable_reservation: true
+    cpu_shares_level: high
+    mem_expandable_reservation: true
+    mem_shares_level: high
+    state: absent
+  - name: QA
+    cpu_expandable_reservation: true
+    cpu_shares_level: normal
+    mem_expandable_reservation: true
+    mem_shares_level: normal
+    state: absent

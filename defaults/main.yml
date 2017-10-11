@@ -398,6 +398,27 @@ vsphere_vcenter_folders: []
 
 vsphere_vcenter_inventory_file: "{{ vsphere_inventory_directory }}/vsphere_vcenter.inv"
 
+# Define Parent Resource Pools
+vsphere_vcenter_resource_pools: []
+  # - name: Development
+  #   cpu_expandable_reservation: true
+  #   cpu_shares_level: low
+  #   mem_expandable_reservation: true
+  #   mem_shares_level: low
+  #   state: absent
+  # - name: Production
+  #   cpu_expandable_reservation: true
+  #   cpu_shares_level: high
+  #   mem_expandable_reservation: true
+  #   mem_shares_level: high
+  #   state: absent
+  # - name: QA
+  #   cpu_expandable_reservation: true
+  #   cpu_shares_level: normal
+  #   mem_expandable_reservation: true
+  #   mem_shares_level: normal
+  #   state: absent
+
 # Define VCSA appliance info below for vsphere_vcsa definitions
 # Reference inventory/group_vars/all/vsphere_vcsa.yml
 vsphere_vcsa_appliance_deployment_network: []
