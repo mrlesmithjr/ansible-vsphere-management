@@ -1,13 +1,39 @@
 ---
 vsphere_vcenter_cluster:
+  # FullyAutomated, Manual, and PartiallyAutomated
+  drs_automation_level: FullyAutomated
   enable_drs: true
   enable_ha: true
   enable_vsan: false
   evc_enabled: true
+  # intel-merom, intel-penryn, intel-nehalem, intel-westmere, intel-sandybridge, intel-ivybridge
+  # iamd-rev-e, amd-rev-f, amd-greyhound-no3dnow, amd-greyhound, amd-bulldozer, amd-piledriver
   evc_mode: intel-penryn
+  ha_admission_control: true
+  ha_failover_level: "{{ groups['vsphere_hosts']|length -1 }}"
+  # PowerOff or DoNothing
+  ha_isolation_response: DoNothing
+  # Disabled, Low, Medium, and High
+  ha_restart_priority: Medium
   name: "{{ vsphere_site_name }}-Cluster"
   state: present
 
 vsphere_vcenter_datacenter:
   name: "{{ vsphere_site_name }}"
   state: present
+
+vsphere_vcenter_folders:
+  - name: Core Services
+    type: vm
+    sub_folders:
+      - name: DDI
+        vms: "{{ groups['vsphere_ddi_vms'] }}"
+      - name: DNSDist
+        vms: "{{ groups['vsphere_dnsdist_vms'] }}"
+      - name: Load Balancers
+        vms: "{{ groups['vsphere_lb_vms'] }}"
+      - name: Samba DCs
+        vms: "{{ groups['vsphere_samba_vms'] }}"
+      - name: vCenter
+        vms:
+          - "{{ vsphere_vcsa_appliance_name }}"

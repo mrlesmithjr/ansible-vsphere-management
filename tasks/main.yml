@@ -28,6 +28,7 @@
   tags:
     - vsphere_management
     - vsphere_ssh
+    - vsphere_vcenter
 
 - include: creds.yml
   tags:
