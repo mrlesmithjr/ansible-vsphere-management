@@ -22,6 +22,24 @@ vsphere_vcenter_datacenter:
   name: "{{ vsphere_site_name }}"
   state: present
 
+vsphere_vcenter_drs_rules:
+  - name: Separate Samba VMs
+    enabled: false
+    keep_together: false
+    vms: "{{ groups['vsphere_samba_vms'] }}"
+  - name: Separate DDI VMs
+    enabled: false
+    keep_together: false
+    vms: "{{ groups['vsphere_ddi_vms'] }}"
+  - name: Separate DNSDist VMs
+    enabled: false
+    keep_together: false
+    vms: "{{ groups['vsphere_dnsdist_vms'] }}"
+  - name: Separate LB VMs
+    enabled: true
+    keep_together: false
+    vms: "{{ groups['vsphere_lb_vms'] }}"
+
 vsphere_vcenter_folders:
   - name: Core Services
     type: vm
