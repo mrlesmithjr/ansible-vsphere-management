@@ -26,35 +26,47 @@ vsphere_vcenter_drs_rules:
   - name: Separate Samba VMs
     enabled: false
     keep_together: false
-    vms: "{{ groups['vsphere_samba_vms'] }}"
+    state: present
+    vms:
+      - "{{ groups['vsphere_samba_vms'] }}"
   - name: Separate DDI VMs
     enabled: false
     keep_together: false
-    vms: "{{ groups['vsphere_ddi_vms'] }}"
+    state: present
+    vms:
+      - "{{ groups['vsphere_ddi_vms'] }}"
   - name: Separate DNSDist VMs
     enabled: true
     keep_together: false
-    vms: "{{ groups['vsphere_dnsdist_vms'] }}"
+    state: present
+    vms:
+      - "{{ groups['vsphere_dnsdist_vms'] }}"
   - name: Separate LB VMs
     enabled: true
     keep_together: false
-    vms: "{{ groups['vsphere_lb_vms'] }}"
+    state: present
+    vms:
+      - "{{ groups['vsphere_lb_vms'] }}"
 
 vsphere_vcenter_folders:
   - name: Core Services
     type: vm
     sub_folders:
       - name: DDI
-        vms: "{{ groups['vsphere_ddi_vms'] }}"
+        vms:
+          - "{{ groups['vsphere_ddi_vms'] }}"
       - name: DNSDist
-        vms: "{{ groups['vsphere_dnsdist_vms'] }}"
+        vms:
+          - "{{ groups['vsphere_dnsdist_vms'] }}"
       - name: Load Balancers
-        vms: "{{ groups['vsphere_lb_vms'] }}"
+        vms:
+          - "{{ groups['vsphere_lb_vms'] }}"
       - name: Samba DCs
-        vms: "{{ groups['vsphere_samba_vms'] }}"
+        vms:
+          - "{{ groups['vsphere_samba_vms'] }}"
       - name: vCenter
         vms:
-          - "{{ vsphere_vcsa_appliance_name }}"
+          - "{{ groups['vsphere_vcenter'] }}"
 
 vsphere_vcenter_resource_pools:
   - name: Development
@@ -69,6 +81,9 @@ vsphere_vcenter_resource_pools:
     mem_expandable_reservation: true
     mem_shares_level: high
     state: absent
+    vms:
+      - "{{ groups['vsphere_samba_vms'] }}"
+      - "{{ groups['vsphere_ddi_vms'] }}"
   - name: QA
     cpu_expandable_reservation: true
     cpu_shares_level: normal

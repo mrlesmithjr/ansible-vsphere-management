@@ -1,7 +1,9 @@
 $vCenterHost = "{{ vsphere_vcsa_network_fqdn }}"
 Connect-VIServer $vCenterHost
+
 $vCenter = Get-VC $vCenterHost
 $DataCenter = Get-Datacenter -Name "{{ vsphere_vcenter_datacenter['name'] }}"
+$Cluster = $DataCenter | Get-Cluster -Name "{{ vsphere_vcenter_cluster['name'] }}"
 {% if vsphere_vcenter_resource_pools is defined %}
 {%   for parent in vsphere_vcenter_resource_pools %}
 $RootResourcePool = $Cluster | Get-ResourcePool -Name "Resources"
@@ -19,6 +21,17 @@ else {
     $Cluster | Get-ResourcePool -Name "{{ parent['name'] }}" | Set-ResourcePool -MemSharesLevel {{ parent['mem_shares_level'] }} -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
   }
 }
+{%       if parent['vms'] is defined %}
+{%         for vms in parent['vms'] %}
+$vms = @("{{ vms|join('", "')}}")
+foreach ($vm in $vms) {
+  $vm = $Cluster | Get-VM $vm
+  if ($vm.ResourcePool -ne "{{ parent['name'] }}") {
+    Move-VM -VM $vm.Name -Location ($Cluster | Get-ResourcePool "{{ parent['name'] }}") -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  }
+}
+{%         endfor %}
+{%       endif %}
 {%     elif parent['state']|lower == "absent" %}
 if ($ResourcePools.Name -contains "{{ parent['name'] }}") {
   $Cluster | Get-ResourcePool -Name "{{ parent['name'] }}" | Remove-ResourcePool -Confirm:$false | Out-File -Append {{ vsphere_management_log }}

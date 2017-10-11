@@ -24,11 +24,17 @@ if ($ClusterHARestartPriority -ne "{{ vsphere_vcenter_cluster['ha_restart_priori
 {%   for rule in vsphere_vcenter_drs_rules %}
 $DRSRules = $Cluster | Get-DrsRule
 if ($DRSRules.Name -notcontains "{{ rule['name'] }}") {
-  $vms = @("{{ rule['vms']|join('", "') }}")
+  $vms = @()
+{%     for vms in rule['vms'] %}
+  $vms += "{{ vms|join('", "')}}"
+{%     endfor %}
   $Cluster | New-DrsRule -Name "{{ rule['name'] }}" -Enabled ${{ rule['enabled']|lower }} -KeepTogether ${{ rule['keep_together']|lower }} -VM $vms
 }
 else {
-  $vms = @("{{ rule['vms']|join('", "') }}")
+  $vms = @()
+{%     for vms in rule['vms'] %}
+  $vms += "{{ vms|join('", "')}}"
+{%     endfor %}
   $Cluster | Get-DrsRule -Name "{{ rule['name'] }}" | Select Cluster,Name,KeepTogether,Enabled, @{N="VMnames";E={ $_.Vmids|%{(get-view -id $_).name}}}
   $Cluster | Get-DrsRule -Name "{{ rule['name'] }}" | Set-DrsRule -Enabled ${{ rule['enabled']|lower }} -VM $vms
 }

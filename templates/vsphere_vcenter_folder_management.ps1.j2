@@ -15,12 +15,15 @@ if ($DataCenterFolders.Name -notcontains "{{ sub['name'] }}") {
   $DataCenter | Get-Folder -Name "{{ parent['name'] }}" | New-Folder -Name "{{ sub['name'] }}" -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 }
 {%         if sub['vms'] is defined %}
-{%           for vm in sub['vms'] %}
-$vms = Get-VM -Location ($DataCenter | Get-Folder -Name "{{ sub['name'] }}")
-if ($vms.Name -notcontains "{{ hostvars[vm]['inventory_hostname'] }}") {
-  Move-VM -VM "{{ hostvars[vm]['inventory_hostname'] }}" -Location ($DataCenter | Get-Folder -Name "{{ sub['name'] }}") -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
-}
+{%           for vms in sub['vms'] %}
+$vms = @("{{ vms|join('", "')}}")
 {%           endfor %}
+$FolderVMs = Get-VM -Location ($DataCenter | Get-Folder -Name "{{ sub['name'] }}")
+foreach ($vm in $vms) {
+  if ($FolderVMs.Name -notcontains $vm) {
+    Move-VM -VM $vm -Location ($DataCenter | Get-Folder -Name "{{ sub['name'] }}") -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
+  }
+}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
