@@ -54,7 +54,7 @@
 
 - name: vCenter | Generating vCenter vsphere_bootstrap_host {{ vsphere_bootstrap_host }} Script
   win_template:
-    src: vsphere_vcenter_management.ps1
+    src: vsphere_vcenter_management.ps1.j2
     dest: c:\tmp\vsphere_vcenter_management.ps1
 
 - name: vCenter | Executing vCenter vsphere_bootstrap_host {{ vsphere_bootstrap_host }} Script
