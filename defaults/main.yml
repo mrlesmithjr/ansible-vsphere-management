@@ -364,6 +364,22 @@ vsphere_vcenter_cluster: []
 # be required to do an import of the OVF post vCenter deployment.
 vsphere_vcenter_create_template_from_ovf: false
 
+# Define any OS customization specs
+vsphere_vcenter_customization_specs: []
+  # - name: BasicLinuxSpec-DNS
+  #   description: Basic Linux spec with DNS servers
+  #   dns_server: "{{ vsphere_dns_servers }}"
+  #   dns_suffix: "{{ vsphere_pri_domain_name }}"
+  #   domain: "{{ vsphere_pri_domain_name }}"
+  #   os_type: Linux
+  #   state: present
+  # - name: BasicLinuxSpec-No-DNS
+  #   description: Basic Linux spec without DNS servers
+  #   dns_suffix: "{{ vsphere_pri_domain_name }}"
+  #   domain: "{{ vsphere_pri_domain_name }}"
+  #   os_type: Linux
+  #   state: present
+
 # Defines vCenter DataCenter
 vsphere_vcenter_datacenter: []
   # name: "{{ vsphere_site_name }}"
