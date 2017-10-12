@@ -246,6 +246,10 @@ vsphere_lb_vms_json_output_file: "{{ vsphere_inventory_directory }}/vsphere_lb_v
 
 vsphere_lb_vms_wait_for_ssh: "{{ vsphere_vms_wait_for_ssh }}"
 
+# Defines the OVF template to deploy VMs from
+vsphere_linux_vapp_ovf: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+vsphere_linux_vapp_template_name: ubuntu-16.04-template
+
 vsphere_maintenance_mode: false
 
 vsphere_management_invalid_certs_action: Ignore
@@ -354,6 +358,11 @@ vsphere_vcenter_cluster: []
   # ha_restart_priority: Medium
   # name: "{{ vsphere_site_name }}-Cluster"
   # state: present
+
+# Defines if a VM template should be created from the OVF which was used during
+# initial provisioning of the environment. This is beneficial as it will no longer
+# be required to do an import of the OVF post vCenter deployment.
+vsphere_vcenter_create_template_from_ovf: false
 
 # Defines vCenter DataCenter
 vsphere_vcenter_datacenter: []

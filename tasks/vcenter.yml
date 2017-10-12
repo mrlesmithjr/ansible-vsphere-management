@@ -133,3 +133,15 @@
   win_shell: c:\tmp\vsphere_vcenter_resource_pool_management.ps1
   failed_when: _vsphere_vcenter_resource_pool_management_script_execution['stderr_lines'] != []
   register: _vsphere_vcenter_resource_pool_management_script_execution
+
+- name: vcenter | Generating Template Management Script
+  win_template:
+    src: vsphere_vcenter_template_management.ps1.j2
+    dest: c:\tmp\vsphere_vcenter_template_management.ps1
+  when: vsphere_vcenter_create_template_from_ovf
+
+- name: vcenter | Executing Template Management Script
+  win_shell: c:\tmp\vsphere_vcenter_template_management.ps1
+  failed_when: _vsphere_vcenter_template_management_script_execution['stderr_lines'] != []
+  register: _vsphere_vcenter_template_management_script_execution
+  when: vsphere_vcenter_create_template_from_ovf

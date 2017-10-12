@@ -60,6 +60,7 @@ vsphere_lb_vms_memory: 1024
 
 # Defines the OVF template to deploy VMs from
 vsphere_linux_vapp_ovf: C:\vagrant\vApps\ubuntu_16.04_template.ovf
+vsphere_linux_vapp_template_name: ubuntu-16.04-template
 
 #vSphere Samba VM info
 vsphere_samba_vms_cpu: 1
