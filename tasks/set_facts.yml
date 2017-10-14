@@ -31,3 +31,21 @@
     dest: "{{ vsphere_hosts_inventory_file }}"
   become: false
   delegate_to: localhost
+
+- name: set_facts | Checking If vCenter Is Available
+  win_shell: |
+    $vCenterHost = "{{ vsphere_vcsa_network_ip }}"
+    $vc = Connect-VIServer $vCenterHost
+    $vc.IsConnected
+    Disconnect-VIServer * -Confirm:$false
+  register: _vsphere_vcenter_check
+
+- name: set_facts | Setting vCenter Availability
+  set_fact:
+    _vsphere_vcenter_available: true
+  when: ('True' in _vsphere_vcenter_check['stdout_lines'])
+
+- name: set_facts | Setting vCenter Availability
+  set_fact:
+    _vsphere_vcenter_available: false
+  when: ('True' not in _vsphere_vcenter_check['stdout_lines'])

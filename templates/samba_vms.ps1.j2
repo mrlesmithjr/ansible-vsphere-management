@@ -8,13 +8,19 @@ $NetworkName="{{ hostvars[vm]['network_name'] }}"
 $vAppSourcePath="{{ hostvars[vm]['vapp_source_path'] }}"
 $vmName="{{ hostvars[vm]['inventory_hostname'] }}"
 $vmNameShort="{{ hostvars[vm]['inventory_hostname_short'] }}"
+$vmServer = Get-VMHost -Server $vmHost
 
-$vmServer=Get-VMHost -Server $vmHost
-$vms=($vmServer | Get-VM).Name
-
+{%     if _vsphere_vcenter_available %}
+$vCenterServerHost = "{{ vsphere_vcsa_network_fqdn }}"
+Connect-VIServer $vCenterServerHost | Out-Null
+$vCenter = Get-VMHost -Server $vCenterServerHost
+$vms = $vCenter | Get-VM
+{%     elif not _vsphere_vcenter_available %}
+$vms = $vmServer | Get-VM
+{%     endif %}
 {%     if hostvars[vm]['hw_product_uuid'] is defined %}
   $vmInventoryUuid="{{ hostvars[vm]['hw_product_uuid'] }}"
-if ($vms -notcontains $vmName) {
+if ($vms.Name -notcontains $vmName) {
   foreach ($vm in $vms) {
     $vm=$vmServer | Get-VM $vm
     $vmView=$vm | Get-View
@@ -24,10 +30,18 @@ if ($vms -notcontains $vmName) {
     }
   }
 }
-$vms=($vmServer | Get-VM).Name
+{%       if _vsphere_vcenter_available %}
+$vCenterServerHost = "{{ vsphere_vcsa_network_fqdn }}"
+Connect-VIServer $vCenterServerHost | Out-Null
+$vCenter = Get-VMHost -Server $vCenterServerHost
+$vms = $vCenter | Get-VM
+{%       elif not _vsphere_vcenter_available %}
+$vmServer = Get-VMHost -Server $vmHost
+$vms = $vmServer | Get-VM
+{%       endif %}
 {%     endif %}
 
-if ($vms -contains $vmName) {
+if ($vms.Name -contains $vmName) {
   $vm=$vmServer | Get-VM $vmName
   $vmView=$vm | Get-View
   $vmUuid=$vmView.Config.Uuid
@@ -188,6 +202,12 @@ if ($vmGuestFamily -eq 'linuxGuest') {
   if ($vmIPs -notcontains $vmIP) {
     $vm | Invoke-VMScript -GuestCredential $SecureCreds -ScriptType Bash "sudo ip addr flush dev $vmInt && sudo ip addr add $vmIP/$vmIPNetmaskCidr dev $vmInt && sudo ip route add default via $vmGateway dev $vmInt && sudo sh -c 'echo nameserver 8.8.8.8 > /etc/resolv.conf'" | Out-File -Append {{ vsphere_management_log }}
   }
+  do {
+    $vm=$vmServer | Get-VM $vmName
+    $vmIPs=$vm.Guest.IPAddress
+    sleep 3
+  }
+  until ($vmIPs -contains $vmIP)
 {%     endif %}
 }
 {%   endfor %}
