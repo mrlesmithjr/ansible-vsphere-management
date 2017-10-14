@@ -13,9 +13,6 @@
     network_name: "{{ item['network_name'] }}"
     vapp_source_path: "{{ item['vapp_source_path'] }}"
   changed_when: false
-  tags:
-    - vsphere_lb_vms_info
-    - vsphere_vms_info
   with_items: "{{ vsphere_lb_vms }}"
   when: item['deploy']
 
@@ -36,127 +33,272 @@
 
 - debug: var=_lb_vms_script_execution
 
-- name: lb_vms | Capturing JSON Formatted Info
-  win_shell: |
-    $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
-    Connect-VIServer -Server $vmHost | Out-Null
-    $vmServer=(Get-VMHost -Server $vmHost)
-    (($vmServer | Get-VM {{ hostvars[item]['inventory_hostname'] }} | Get-View).Config) | ConvertTo-Json
-    Disconnect-VIServer * -Confirm:$false | Out-Null
-  register: _vsphere_lb_vm_configs
-  with_items: "{{ groups['vsphere_lb_vms_deploy'] }}"
-  when: groups['vsphere_lb_vms_deploy'] is defined
+# - name: lb_vms | Capturing JSON Formatted Info
+#   win_shell: |
+#     $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+#     Connect-VIServer -Server $vmHost | Out-Null
+#     $vmServer=(Get-VMHost -Server $vmHost)
+#     (($vmServer | Get-VM {{ hostvars[item]['inventory_hostname'] }} | Get-View).Config) | ConvertTo-Json
+#     Disconnect-VIServer * -Confirm:$false | Out-Null
+#   register: _vsphere_lb_vm_configs
+#   with_items: "{{ groups['vsphere_lb_vms_deploy'] }}"
+#   when: groups['vsphere_lb_vms_deploy'] is defined
+#
+# - name: lb_vms | Generating Nicely Formatted JSON Info
+#   template:
+#     src: lb_vms.json.j2
+#     dest: "{{ vsphere_lb_vms_json_output_file }}"
+#   delegate_to: localhost
+#   become: false
+#   when: _vsphere_lb_vm_configs['changed']
 
-- name: lb_vms | Generating Nicely Formatted JSON Info
-  template:
-    src: lb_vms.json.j2
-    dest: "{{ vsphere_lb_vms_json_output_file }}"
-  delegate_to: localhost
-  become: false
-  when: _vsphere_lb_vm_configs['changed']
-
-- name: lb_vms | Waiting For All IP Addresses To Be Captured
-  vmware_guest_facts:
+- name: lb_vms | Finding lb VMs (Non-vCenter)
+  vmware_guest_find:
     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
     validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['vm_name'] }}"
-    folder: /ha-datacenter/vm
   delegate_to: localhost
-  register: _vsphere_lb_vm_facts
-  until: >
-         (_vsphere_lb_vm_facts['instance']['ipv4'] != None)
-  retries: 30
-  delay: 2
-  failed_when: false
+  register: _vsphere_lb_vms
   with_items: "{{ vsphere_lb_vms }}"
   tags:
     - vsphere_lb_vms_info
     - vsphere_vms_info
-  when: >
-        item['deploy'] and
-        item['ip'] is not defined
+  when: not _vsphere_vcenter_available
 
-- name: lb_vms | Waiting For All IP Addresses To Be Captured
+- name: lb_vms | Finding lb VMs (vCenter)
+  vmware_guest_find:
+    hostname: "{{ vsphere_vcsa_network_fqdn }}"
+    username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
+    password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
+    datacenter: "{{ vsphere_vcenter_datacenter['name'] }}"
+    validate_certs: "{{ vsphere_validate_certs }}"
+    name: "{{ item['vm_name'] }}"
+  delegate_to: localhost
+  register: _vsphere_lb_vms
+  with_items: "{{ vsphere_lb_vms }}"
+  tags:
+    - vsphere_lb_vms_info
+    - vsphere_vms_info
+  when: _vsphere_vcenter_available
+
+- name: lb_vms | Waiting For DHCP IP Address (Non-vCenter)
   vmware_guest_facts:
     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
     validate_certs: "{{ vsphere_validate_certs }}"
-    name: "{{ item['vm_name'] }}"
-    folder: /ha-datacenter/vm
+    name: "{{ item['item']['vm_name'] }}"
+    folder: "ha-datacenter{{ item['folders'][0] }}"
   delegate_to: localhost
-  register: _vsphere_lb_vm_facts
+  register: _vsphere_lb_vm_facts_dhcp
   until: >
-         (item['ip'] in _vsphere_lb_vm_facts['instance']['hw_eth0']['ipaddresses'])
+         (_vsphere_lb_vm_facts_dhcp['instance']['ipv4'] != None)
   retries: 30
   delay: 2
   failed_when: false
+  with_items: "{{ _vsphere_lb_vms['results'] }}"
   tags:
     - vsphere_lb_vms_info
     - vsphere_vms_info
-  with_items: "{{ vsphere_lb_vms }}"
   when: >
-        item['deploy'] and
-        item['ip'] is defined
+        not _vsphere_vcenter_available and
+        item['item']['deploy'] and
+        item['item']['ip'] is not defined
 
-- name: lb_vms | Creating Initial VM Snapshot
-  vmware_guest_snapshot:
+- name: lb_vms | Waiting For DHCP IP Address (vCenter)
+  vmware_guest_facts:
+    hostname: "{{ vsphere_vcsa_network_fqdn }}"
+    username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
+    password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
+    datacenter: "{{ vsphere_vcenter_datacenter['name'] }}"
+    validate_certs: "{{ vsphere_validate_certs }}"
+    name: "{{ item['item']['vm_name'] }}"
+    folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['folders'][0] }}"
+  delegate_to: localhost
+  register: _vsphere_lb_vm_facts_dhcp
+  until: >
+         (_vsphere_lb_vm_facts_dhcp['instance']['ipv4'] != None)
+  retries: 30
+  delay: 2
+  failed_when: false
+  with_items: "{{ _vsphere_lb_vms['results'] }}"
+  tags:
+    - vsphere_lb_vms_info
+    - vsphere_vms_info
+  when: >
+        _vsphere_vcenter_available and
+        item['item']['deploy'] and
+        item['item']['ip'] is not defined
+
+- name: lb_vms | Waiting For Static IP Address (Non-vCenter)
+  vmware_guest_facts:
     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
     validate_certs: "{{ vsphere_validate_certs }}"
-    name: "{{ item['instance']['hw_name'] }}"
-    folder: /ha-datacenter/vm
-    snapshot_name: post_deploy
-    state: present
-    uuid: "{{ item['instance']['hw_product_uuid'] }}"
+    name: "{{ item['item']['vm_name'] }}"
+    folder: "ha-datacenter{{ item['folders'][0] }}"
   delegate_to: localhost
+  register: _vsphere_lb_vm_facts_static
+  until: >
+         (item['item']['ip'] in _vsphere_lb_vm_facts_static['instance']['hw_eth0']['ipaddresses'])
+  retries: 30
+  delay: 2
+  failed_when: false
+  with_items: "{{ _vsphere_lb_vms['results'] }}"
   tags:
     - vsphere_lb_vms_info
     - vsphere_vms_info
-  with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
-  when: item['instance']['snapshots'] == []
+  when: >
+        not _vsphere_vcenter_available and
+        item['item']['deploy'] and
+        item['item']['ip'] is defined
+
+- name: lb_vms | Waiting For Static IP Address (vCenter)
+  vmware_guest_facts:
+    hostname: "{{ vsphere_vcsa_network_fqdn }}"
+    username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
+    password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
+    datacenter: "{{ vsphere_vcenter_datacenter['name'] }}"
+    validate_certs: "{{ vsphere_validate_certs }}"
+    name: "{{ item['item']['vm_name'] }}"
+    folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['folders'][0] }}"
+  delegate_to: localhost
+  register: _vsphere_lb_vm_facts_static
+  until: >
+         (item['item']['ip'] in _vsphere_lb_vm_facts_static['instance']['hw_eth0']['ipaddresses'])
+  retries: 30
+  delay: 2
+  failed_when: false
+  with_items: "{{ _vsphere_lb_vms['results'] }}"
+  tags:
+    - vsphere_lb_vms_info
+    - vsphere_vms_info
+  when: >
+        _vsphere_vcenter_available and
+        item['item']['deploy'] and
+        item['item']['ip'] is defined
+
+- name: lb_vms | Capturing VM Info (Non-vCenter)
+  vmware_guest_facts:
+    hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+    username: "{{ vsphere_user_info['username'] }}"
+    password: "{{ vsphere_user_info['password'] }}"
+    datacenter: ha-datacenter
+    validate_certs: "{{ vsphere_validate_certs }}"
+    name: "{{ item['item']['vm_name'] }}"
+    folder: "ha-datacenter{{ item['folders'][0] }}"
+  delegate_to: localhost
+  register: _vsphere_lb_vm_facts
+  with_items: "{{ _vsphere_lb_vms['results'] }}"
+  tags:
+    - vsphere_lb_vms_info
+    - vsphere_vms_info
+  when: >
+        not _vsphere_vcenter_available and
+        item['item']['deploy']
+
+- name: lb_vms | Capturing VM Info (vCenter)
+  vmware_guest_facts:
+    hostname: "{{ vsphere_vcsa_network_fqdn }}"
+    username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
+    password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
+    datacenter: "{{ vsphere_vcenter_datacenter['name'] }}"
+    validate_certs: "{{ vsphere_validate_certs }}"
+    name: "{{ item['item']['vm_name'] }}"
+    folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['folders'][0] }}"
+  delegate_to: localhost
+  register: _vsphere_lb_vm_facts
+  with_items: "{{ _vsphere_lb_vms['results'] }}"
+  tags:
+    - vsphere_lb_vms_info
+    - vsphere_vms_info
+  when: >
+        _vsphere_vcenter_available and
+        item['item']['deploy']
+
+# - name: lb_vms | Creating Initial VM Snapshot (Non-vCenter)
+#   vmware_guest_snapshot:
+#     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
+#     username: "{{ vsphere_user_info['username'] }}"
+#     password: "{{ vsphere_user_info['password'] }}"
+#     datacenter: ha-datacenter
+#     validate_certs: "{{ vsphere_validate_certs }}"
+#     name: "{{ item['instance']['hw_name'] }}"
+#     folder: "ha-datacenter{{ item['invocation']['module_args']['folder'] }}"
+#     snapshot_name: post_deploy
+#     state: present
+#     uuid: "{{ item['instance']['hw_product_uuid'] }}"
+#   delegate_to: localhost
+#   with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
+#   when: >
+#         not _vsphere_vcenter_available and
+#         item['instance']['snapshots'] == []
+#
+# - name: lb_vms | Creating Initial VM Snapshot (vCenter)
+#   vmware_guest_snapshot:
+#     hostname: "{{ vsphere_vcsa_network_fqdn }}"
+#     username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
+#     password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
+#     datacenter: "{{ vsphere_vcenter_datacenter['name'] }}"
+#     validate_certs: "{{ vsphere_validate_certs }}"
+#     folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['invocation']['module_args']['folder'] }}"
+#     name: "{{ item['instance']['hw_name'] }}"
+#     snapshot_name: post_deploy
+#     state: present
+#     uuid: "{{ item['instance']['hw_product_uuid'] }}"
+#   delegate_to: localhost
+#   with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
+#   when: >
+#         _vsphere_vcenter_available and
+#         item['instance']['snapshots'] == []
 
 - name: lb_vms | Creating Dynamic Inventory For vsphere_lb_vms
+### Detecting the IP address for ansible_host right now below for the dynamic
+# group is a complete hack for now. Until I figure out a better more reliable
+# method to ensure that the VM is configured with the correct IP and not detecting
+# the load balancer IP. The issue is that the VM Facts returns something similar
+# to below:
+                # "instance": {
+                #     "hw_eth0": {
+                #         "addresstype": "generated",
+                #         "ipaddresses": [
+                #             "10.0.102.20",
+                #             "10.0.102.100",
+                #             "fe80::20c:29ff:fef7:3aa7"
+                #         ],
+                #         "label": "Network adapter 1",
+                #         "macaddress": "00:0c:29:f7:3a:a7",
+                #         "macaddress_dash": "00-0c-29-f7-3a-a7",
+                #         "summary": "VSS-VLAN-102"
+                #     },
+                #     "hw_interfaces": [
+                #         "eth0"
+                #     ],
+                #     "ipv4": "10.0.102.100",
   add_host:
     hostname: "{{ item['instance']['hw_name'] }}"
-    ansible_host: "{{ item['instance']['ipv4'] }}"
+    ansible_host: "{% for ip in item['instance']['hw_eth0']['ipaddresses'] %}{% if ip not in vsphere_lb_vips and ip != item['instance']['ipv6'] %}{{ ip }}{% endif %}{% endfor %}"
     groups: vsphere_lb_vms
     hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
   changed_when: false
   tags:
     - vsphere_lb_vms_info
     - vsphere_vms_info
-  with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
+  with_items:
+    - "{{ _vsphere_lb_vm_facts_dhcp['results'] }}"
+    - "{{ _vsphere_lb_vm_facts_static['results'] }}"
   when: >
-        (item['failed'] is defined and
+        item is defined and
+        item['instance'] is defined and
+        ((item['failed'] is defined and
         not item['failed']) or
-        item['failed'] is not defined and
-        item['instance']['ipv4'] not in vsphere_lb_vips
-
-- name: lb_vms | Creating Dynamic Inventory For vsphere_lb_vms
-  add_host:
-    hostname: "{{ item['instance']['hw_name'] }}"
-    ansible_host: "{{ item['item']['ip'] }}"
-    groups: vsphere_lb_vms
-    hw_product_uuid: "{{ item['instance']['hw_product_uuid'] }}"
-  changed_when: false
-  tags:
-    - vsphere_lb_vms_info
-    - vsphere_vms_info
-  with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
-  when: >
-        (item['failed'] is defined and
-        not item['failed']) or
-        item['failed'] is not defined and
-        (item['instance']['ipv4'] in vsphere_lb_vips and
-        (item['instance']['hw_eth0'] is defined and
-        item['item']['ip'] in item['instance']['hw_eth0']['ipaddresses']))
+        item['failed'] is not defined)
 
 - name: lb_vms | Creating Dynamic Inventory For vsphere_lb_vms_failed
   add_host:
@@ -168,10 +310,14 @@
   tags:
     - vsphere_lb_vms_info
     - vsphere_vms_info
-  with_items: "{{ _vsphere_lb_vm_facts['results'] }}"
+  with_items:
+    - "{{ _vsphere_lb_vm_facts_dhcp['results'] }}"
+    - "{{ _vsphere_lb_vm_facts_static['results'] }}"
   when: >
-        item['failed'] is defined and
-        item['failed']
+        item is defined and
+        item['instance'] is defined and
+        (item['failed'] is defined and
+        item['failed'])
 
 - name: lb_vms | Displaying IP Addresses For Each VM
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"
