@@ -1,6 +1,5 @@
 {% if groups['vsphere_bootstrap_vms_deploy'] is defined %}
 $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
-$vmBootstrapHost = $vmHost
 Connect-VIServer -Server $vmHost | Out-Null
 
 {%   for vm in groups['vsphere_bootstrap_vms_deploy'] %}
@@ -139,7 +138,8 @@ if ($vms.Name -contains $vmName) {
   }
 }
 else {
-  $deployBootstrapVM=($vmBootstrapHost | Import-VApp -Datastore $DataStore -Source $vAppSourcePath -Name $vmName -DiskStorageFormat Thin -Confirm:$false) | Out-File -Append {{ vsphere_management_log }}
+  $vmBootstrapHost = Get-VMHost -Server $vmHost
+  $vmBootstrapHost | Import-VApp -Datastore $DataStore -Source $vAppSourcePath -Name $vmName -DiskStorageFormat Thin -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 {%       if _vsphere_vcenter_available %}
   $vm = $vCenter | Get-VM $vmName
 {%       elif not _vsphere_vcenter_available %}
