@@ -61,6 +61,7 @@
     validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['vm_name'] }}"
   delegate_to: localhost
+  failed_when: false
   register: _vsphere_lb_vms
   with_items: "{{ vsphere_lb_vms }}"
   tags:
@@ -77,12 +78,25 @@
     validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['vm_name'] }}"
   delegate_to: localhost
+  failed_when: false
   register: _vsphere_lb_vms
   with_items: "{{ vsphere_lb_vms }}"
   tags:
     - vsphere_lb_vms_info
     - vsphere_vms_info
   when: _vsphere_vcenter_available
+
+- name: lb_vms | Creating lb_vms_not_deployed Dynamic Group
+  add_host:
+    groups: lb_vms_not_deployed
+    hostname: "{{ item['item']['vm_name'] }}"
+  tags:
+    - vsphere_lb_vms_info
+    - vsphere_vms_info
+  with_items: "{{ _vsphere_lb_vms['results'] }}"
+  when: >
+        item['msg'] is defined and
+        "Unable to find folders for VM" in item['msg']
 
 - name: lb_vms | Waiting For DHCP IP Address (Non-vCenter)
   vmware_guest_facts:
@@ -107,7 +121,10 @@
   when: >
         not _vsphere_vcenter_available and
         item['item']['deploy'] and
-        item['item']['ip'] is not defined
+        item['item']['ip'] is not defined and
+        ((groups['lb_vms_not_deployed'] is defined and
+        item['item']['vm_name'] not in groups['lb_vms_not_deployed']) or
+        groups['lb_vms_not_deployed'] is not defined)
 
 - name: lb_vms | Waiting For DHCP IP Address (vCenter)
   vmware_guest_facts:
@@ -132,7 +149,10 @@
   when: >
         _vsphere_vcenter_available and
         item['item']['deploy'] and
-        item['item']['ip'] is not defined
+        item['item']['ip'] is not defined and
+        ((groups['lb_vms_not_deployed'] is defined and
+        item['item']['vm_name'] not in groups['lb_vms_not_deployed']) or
+        groups['lb_vms_not_deployed'] is not defined)
 
 - name: lb_vms | Waiting For Static IP Address (Non-vCenter)
   vmware_guest_facts:
@@ -157,7 +177,10 @@
   when: >
         not _vsphere_vcenter_available and
         item['item']['deploy'] and
-        item['item']['ip'] is defined
+        item['item']['ip'] is defined and
+        ((groups['lb_vms_not_deployed'] is defined and
+        item['item']['vm_name'] not in groups['lb_vms_not_deployed']) or
+        group['lb_vms_not_deployed'] is not defined)
 
 - name: lb_vms | Waiting For Static IP Address (vCenter)
   vmware_guest_facts:
@@ -182,7 +205,10 @@
   when: >
         _vsphere_vcenter_available and
         item['item']['deploy'] and
-        item['item']['ip'] is defined
+        item['item']['ip'] is defined and
+        ((groups['lb_vms_not_deployed'] is defined and
+        item['item']['vm_name'] not in groups['lb_vms_not_deployed']) or
+        groups['lb_vms_not_deployed'] is not defined)
 
 - name: lb_vms | Capturing VM Info (Non-vCenter)
   vmware_guest_facts:
@@ -201,7 +227,10 @@
     - vsphere_vms_info
   when: >
         not _vsphere_vcenter_available and
-        item['item']['deploy']
+        item['item']['deploy'] and
+        ((groups['lb_vms_not_deployed'] is defined and
+        item['item']['vm_name'] not in groups['lb_vms_not_deployed']) or
+        groups['lb_vms_not_deployed'] is not defined)
 
 - name: lb_vms | Capturing VM Info (vCenter)
   vmware_guest_facts:
@@ -220,7 +249,10 @@
     - vsphere_vms_info
   when: >
         _vsphere_vcenter_available and
-        item['item']['deploy']
+        item['item']['deploy'] and
+        ((groups['lb_vms_not_deployed'] is defined and
+        item['item']['vm_name'] not in groups['lb_vms_not_deployed']) or
+        groups['lb_vms_not_deployed'] is not defined)
 
 # - name: lb_vms | Creating Initial VM Snapshot (Non-vCenter)
 #   vmware_guest_snapshot:
