@@ -5,6 +5,7 @@
   tags:
     - vsphere_ad_domain
     - vsphere_bootstrap_vms
+    - vsphere_bootstrap_vms_info
     - vsphere_ddi_vms
     - vsphere_ddi_vms_info
     - vsphere_dhcp_vms
@@ -20,6 +21,7 @@
     - vsphere_samba_vms_info
     - vsphere_ssh
     - vsphere_vcenter
+    - vsphere_vcenter_check
     - vsphere_vcsa
     - vsphere_vms
     - vsphere_vms_info
@@ -28,6 +30,7 @@
   tags:
     - vsphere_management
     - vsphere_ssh
+    - vsphere_vcenter
 
 - include: creds.yml
   tags:

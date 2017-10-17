@@ -4,6 +4,7 @@ vsphere_hosts:
     mgmt_ip: "{{ vsphere_host_mgmt_subnet }}.61"
     mgmt_subnetmask: "{{ vsphere_host_mgmt_subnetmask }}"
     mgmt_vlan_id: "{{ vsphere_host_mgmt_vlan_id }}"
+    vcenter_state: present
     vmotion_ip: "{{ vsphere_host_vmotion_subnet }}.61"
     vmotion_subnetmask: "{{ vsphere_host_vmotion_subnetmask }}"
     vmotion_vlan_id: "{{ vsphere_host_vmotion_vlan_id }}"
@@ -11,6 +12,7 @@ vsphere_hosts:
     mgmt_ip: "{{ vsphere_host_mgmt_subnet }}.62"
     mgmt_subnetmask: "{{ vsphere_host_mgmt_subnetmask }}"
     mgmt_vlan_id: "{{ vsphere_host_mgmt_vlan_id }}"
+    vcenter_state: present
     vmotion_ip: "{{ vsphere_host_vmotion_subnet }}.62"
     vmotion_subnetmask: "{{ vsphere_host_vmotion_subnetmask }}"
     vmotion_vlan_id: "{{ vsphere_host_vmotion_vlan_id }}"

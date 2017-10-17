@@ -17,8 +17,8 @@
         network_name: "{{ item['network_name'] }}"
         vapp_source_path: "{{ item['vapp_source_path'] }}"
       changed_when: false
-      tags:
-        - vsphere_dnsdist_vms_info
+      # tags:
+      #   - vsphere_dnsdist_vms_info
       with_items: "{{ vsphere_dnsdist_vms }}"
       when: item['deploy']
 
@@ -27,8 +27,8 @@
     - name: Gathering Info
       setup:
       register: _vsphere_dnsdist_vms_info
-      tags:
-        - vsphere_dnsdist_vms_info
+      # tags:
+      #   - vsphere_dnsdist_vms_info
 
     - name: Updating Inventory For vsphere_dnsdist_vms
       template:
@@ -36,8 +36,8 @@
         dest: "{{ vsphere_dnsdist_vms_inventory_file }}"
       become: false
       delegate_to: localhost
-      tags:
-        - vsphere_dnsdist_vms_info
+      # tags:
+      #   - vsphere_dnsdist_vms_info
 
 - hosts: vsphere_dnsdist_vms:!vsphere_destroy_vms
   roles:

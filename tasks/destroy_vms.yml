@@ -50,7 +50,28 @@
     - "{{ groups['vsphere_hosts'] }}"
   when: >
         vsphere_destroy_vms and
-        groups['vsphere_destroy_vms'] is defined
+        groups['vsphere_destroy_vms'] is defined and
+        not _vsphere_vcenter_available
+
+- name: destroy_vms | Checking State Of VMs And Powering Off If Currently Powered On
+  vmware_guest:
+    hostname: "{{ vsphere_vcsa_network_fqdn }}"
+    username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
+    password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
+    name: "{{ hostvars[item]['inventory_hostname'] }}"
+    uuid: "{{ hostvars[item]['hw_product_uuid'] }}"
+    state: poweredoff
+    validate_certs: "{{ vsphere_validate_certs }}"
+  delegate_to: localhost
+  register: _vsphere_destroy_vms_state_check
+  failed_when: >
+               _vsphere_destroy_vms_state_check['msg'] is defined and
+               ('current state (Powered on)' in _vsphere_destroy_vms_state_check['msg'])
+  with_items: "{{ groups['vsphere_destroy_vms'] }}"
+  when: >
+        vsphere_destroy_vms and
+        groups['vsphere_destroy_vms'] is defined and
+        _vsphere_vcenter_available
 
 - name: destroy_vms | Destroy All VMs
   vmware_guest:
@@ -71,7 +92,28 @@
     - "{{ groups['vsphere_hosts'] }}"
   when: >
         vsphere_destroy_vms and
-        groups['vsphere_destroy_vms'] is defined
+        groups['vsphere_destroy_vms'] is defined and
+        not _vsphere_vcenter_available
+
+- name: destroy_vms | Destroy All VMs
+  vmware_guest:
+    hostname: "{{ vsphere_vcsa_network_fqdn }}"
+    username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
+    password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
+    name: "{{ hostvars[item]['inventory_hostname'] }}"
+    uuid: "{{ hostvars[item]['hw_product_uuid'] }}"
+    state: absent
+    validate_certs: "{{ vsphere_validate_certs }}"
+  delegate_to: localhost
+  register: _vsphere_destroy_vms
+  failed_when: >
+               _vsphere_destroy_vms['msg'] is defined and
+               ('current state (Powered on)' in _vsphere_destroy_vms['msg'])
+  with_items: "{{ groups['vsphere_destroy_vms'] }}"
+  when: >
+        vsphere_destroy_vms and
+        groups['vsphere_destroy_vms'] is defined and
+        _vsphere_vcenter_available
 
 - name: destroy_vms | Creating Inventory For vsphere_destroy_vms
   template:

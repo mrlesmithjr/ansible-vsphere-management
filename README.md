@@ -1,43 +1,45 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [ansible-vsphere-management](#ansible-vsphere-management)
-  - [Requirements](#requirements)
-    - [inventory/hosts.0.inv](#inventoryhosts0inv)
-    - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
-    - [inventory/group_vars/all/vsphere_hosts.yml](#inventorygroup_varsallvsphere_hostsyml)
-    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-    - [Software iSCSI](#software-iscsi)
-    - [VCSA ISO](#vcsa-iso)
-  - [Deployment Host](#deployment-host)
-    - [Spinning It Up](#spinning-it-up)
-  - [Environment Deployment](#environment-deployment)
-    - [Deployment Script Functions](#deployment-script-functions)
-  - [Destroying Core Services VMs](#destroying-core-services-vms)
-  - [Defining Environmental Variables](#defining-environmental-variables)
-  - [Bootstrap VMs](#bootstrap-vms)
-  - [DNSDist VMs](#dnsdist-vms)
-  - [DDI VMs](#ddi-vms)
-    - [Autostart DDI VMs](#autostart-ddi-vms)
-    - [Defining DDI VMs](#defining-ddi-vms)
-    - [Defining DNS Records](#defining-dns-records)
-    - [Future DDI Functionality](#future-ddi-functionality)
-  - [Samba based Active Directory](#samba-based-active-directory)
-    - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
-    - [vSphere Host(s)](#vsphere-hosts)
-      - [Host Domain Membership](#host-domain-membership)
-      - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
-  - [VCSA](#vcsa)
-    - [Defining VCSA Specifics](#defining-vcsa-specifics)
-      - [Default definitions](#default-definitions)
-      - [Deployment definitions](#deployment-definitions)
-    - [Sizing](#sizing)
-  - [Role Variables](#role-variables)
-  - [Dependencies](#dependencies)
-  - [Example Playbook](#example-playbook)
-  - [License](#license)
-  - [Author Information](#author-information)
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+-   [ansible-vsphere-management](#ansible-vsphere-management)
+    -   [Requirements](#requirements)
+        -   [inventory/hosts.0.inv](#inventoryhosts0inv)
+        -   [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
+        -   [inventory/group_vars/all/vsphere_hosts.yml](#inventorygroup_varsallvsphere_hostsyml)
+        -   [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+        -   [Software iSCSI](#software-iscsi)
+        -   [VCSA ISO](#vcsa-iso)
+    -   [Deployment Host](#deployment-host)
+        -   [Spinning It Up](#spinning-it-up)
+    -   [Environment Deployment](#environment-deployment)
+        -   [Deployment Script Functions](#deployment-script-functions)
+    -   [Destroying Core Services VMs](#destroying-core-services-vms)
+    -   [Defining Environmental Variables](#defining-environmental-variables)
+    -   [Bootstrap VMs](#bootstrap-vms)
+    -   [DNSDist VMs](#dnsdist-vms)
+    -   [DDI VMs](#ddi-vms)
+        -   [Autostart DDI VMs](#autostart-ddi-vms)
+        -   [Defining DDI VMs](#defining-ddi-vms)
+        -   [Defining DNS Records](#defining-dns-records)
+        -   [Future DDI Functionality](#future-ddi-functionality)
+    -   [Samba based Active Directory](#samba-based-active-directory)
+        -   [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
+        -   [vSphere Host(s)](#vsphere-hosts)
+            -   [Host Domain Membership](#host-domain-membership)
+            -   [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
+    -   [VCSA](#vcsa)
+        -   [Defining VCSA Specifics](#defining-vcsa-specifics)
+            -   [Default definitions](#default-definitions)
+            -   [Deployment definitions](#deployment-definitions)
+        -   [Sizing](#sizing)
+    -   [Role Variables](#role-variables)
+    -   [Dependencies](#dependencies)
+    -   [Example Playbook](#example-playbook)
+    -   [License](#license)
+    -   [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -69,6 +71,10 @@ work in progress so do not expect perfection.
 > grow allowing for more flexibility.
 
 ## Requirements
+
+### Ansible Version >= 2.4.x.x
+
+Because of the discovery required for VMs, Ansible version must be at least 2.4.x.x
 
 ### inventory/hosts.0.inv
 
@@ -182,7 +188,7 @@ roles to properly prep this host to get up and running quickly as well as a play
 
 ### Software iSCSI
 
-Because we iterate over `groups[vsphere_management_hosts_group]` to capture
+Because we iterate over `groups['vsphere_hosts']` to capture
 `hostvars` variables. The following variable `vsphere_enable_software_iscsi`
 needs to be defined as one of the examples below.
 

@@ -20,7 +20,7 @@
       tags:
         - samba_phase_1
         - samba_phase_2
-        - vsphere_samba_vms_info
+        # - vsphere_samba_vms_info
       with_items: "{{ vsphere_samba_vms }}"
       when: item['deploy']
 
@@ -32,7 +32,7 @@
       tags:
         - samba_phase_1
         - samba_phase_2
-        - vsphere_samba_vms_info
+        # - vsphere_samba_vms_info
 
     - name: Updating Inventory For vsphere_samba_vms
       template:
@@ -43,7 +43,7 @@
       tags:
         - samba_phase_1
         - samba_phase_2
-        - vsphere_samba_vms_info
+        # - vsphere_samba_vms_info
 
 - hosts: vsphere_samba_vms:!vsphere_destroy_vms
   roles:
