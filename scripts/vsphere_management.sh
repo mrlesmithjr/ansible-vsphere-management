@@ -35,7 +35,7 @@ LOG_DIR="$SCRIPT_FULL_PATH/../logs"
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 
-# Defines the Vagrant folder for deployment_prep()
+# Defines the Vagrant folder for deployment_host_spinup()
 # The Windows 2016 Vagrant environment is included which is what the default
 # deployment host has been for all of the development of this project.
 VAGRANT_FOLDER="$SCRIPT_FULL_PATH/../Vagrant"
@@ -107,6 +107,7 @@ cleanup()
     "vsphere_dhcp_vms.inv" \
     "vsphere_dnsdist_vms.inv" \
     "vsphere_dnsdist_vms.json" \
+    "vsphere_hosts.inv" \
     "vsphere_lb_vms.inv" \
     "vsphere_lb_vms.json" \
     "vsphere_samba_vms.inv" \
@@ -138,13 +139,28 @@ deploy_all()
   vsphere_ad_domain
   vsphere_vcsa
   vsphere_vcenter
+  vsphere_vcsa_ad
   exit 0
 }
 
-deployment_prep()
+deployment_host_halt()
+{
+  cd $VAGRANT_FOLDER
+  vagrant halt
+  cd -
+}
+
+deployment_host_spinup()
 {
   cd $VAGRANT_FOLDER
   vagrant up
+  cd -
+}
+
+deployment_host_teardown()
+{
+  cd $VAGRANT_FOLDER
+  scripts/cleanup.sh
   cd -
 }
 
@@ -160,7 +176,9 @@ display_usage() {
   echo -e "\narguments:"
   echo -e "\tcleanup\t\t\t\t\tCleans up generated inventory, JSON data, and SSH key data"
   echo -e "\tdeploy_all\t\t\t\tDeploys whole environment"
-  echo -e "\tdeployment_prep\t\t\t\tSpins up Vagrant Deployment Host and preps environment"
+  echo -e "\tdeployment_host_halt\t\t\tHalts Vagrant Deployment Host"
+  echo -e "\tdeployment_host_spinup\t\t\tSpins up Vagrant Deployment Host and preps environment"
+  echo -e "\tdeployment_host_teardown\t\tTears down Vagrant Deployment Host"
   echo -e "\tvsphere_ad_domain\t\t\tManages vSphere hosts AD membership"
   echo -e "\tvsphere_bootstrap_vms\t\t\tManages Bootstrap VMs"
   echo -e "\tvsphere_ddi_vms\t\t\t\tManages DDI VMs"
@@ -183,6 +201,7 @@ display_usage() {
   echo -e "\tvsphere_ssh_key_distribution\t\tDistributes SSH Keys between VMs (Currently only Samba VMs)"
   echo -e "\tvsphere_udpates\t\t\t\tUpdates vSphere Hosts (Must be in maintenance mode)"
   echo -e "\tvsphere_vcsa\t\t\t\tManages the vSphere VCSA Appliance"
+  echo -e "\tvsphere_vcsa_ad\t\t\t\tManages VCSA Domain Membership"
   echo -e "\tvsphere_vcenter\t\t\t\tManages vCenter"
   echo -e "\tvsphere_vcenter_check\t\t\tChecks if vCenter exists or not"
   echo -e "\tvsphere_vms\t\t\t\tManages ALL VMs (Does not perform any post provisioning tasks)"
@@ -230,14 +249,14 @@ vsphere_bootstrap_vms()
 {
   vsphere_destroy_vms_check
   _vsphere_management --tags vsphere_bootstrap_vms
-  _vsphere_management --tags vsphere_bootstrap_vms_info
+  # _vsphere_management --tags vsphere_bootstrap_vms_info
 }
 
 vsphere_ddi_vms()
 {
   vsphere_destroy_vms_check
   _vsphere_management --tags vsphere_ddi_vms
-  _vsphere_management --tags vsphere_ddi_vms_info
+  # _vsphere_management --tags vsphere_ddi_vms_info
   _vsphere_ddi
 }
 
@@ -272,7 +291,7 @@ vsphere_dnsdist_vms()
 {
   vsphere_destroy_vms_check
   _vsphere_management --tags vsphere_dnsdist_vms
-  _vsphere_management --tags vsphere_dnsdist_vms_info
+  # _vsphere_management --tags vsphere_dnsdist_vms_info
   _vsphere_dnsdist
 }
 
@@ -290,7 +309,7 @@ vsphere_lb_vms()
 {
   vsphere_destroy_vms_check
   _vsphere_management --tags vsphere_lb_vms
-  _vsphere_management --tags vsphere_lb_vms_info
+  # _vsphere_management --tags vsphere_lb_vms_info
   _vsphere_lb
 }
 
@@ -349,7 +368,7 @@ vsphere_samba_vms()
 {
   vsphere_destroy_vms_check
   _vsphere_management --tags vsphere_samba_vms
-  _vsphere_management --tags vsphere_samba_vms_info
+  # _vsphere_management --tags vsphere_samba_vms_info
 }
 
 vsphere_ssh_key_distribution()
@@ -374,6 +393,12 @@ vsphere_vcsa()
   _vsphere_management --tags vsphere_vcsa
 }
 
+vsphere_vcsa_ad()
+{
+  _ANSIBLE_PLAYBOOK="vcsa.yml"
+  _ansible_playbook_task "$@"
+}
+
 vsphere_vcenter_check()
 {
   _vsphere_management --tags vsphere_vcenter_check
@@ -381,7 +406,7 @@ vsphere_vcenter_check()
 
 vsphere_vms()
 {
-  vsphere_destroy_vms_check
+  # vsphere_vms_info
   _vsphere_management --tags vsphere_vms
 }
 
@@ -389,10 +414,10 @@ vsphere_vms_info()
 {
   vsphere_destroy_vms_check
   _vsphere_management --tags vsphere_vms_info
-  _vsphere_dnsdist --tags vsphere_dnsdist_vms_info
-  _vsphere_samba --tags vsphere_samba_vms_info
-  _vsphere_ddi --tags vsphere_ddi_vms_info
-  _vsphere_lb --tags vsphere_lb_vms_info
+  # _vsphere_dnsdist --tags vsphere_dnsdist_vms_info
+  # _vsphere_samba --tags vsphere_samba_vms_info
+  # _vsphere_ddi --tags vsphere_ddi_vms_info
+  # _vsphere_lb --tags vsphere_lb_vms_info
 }
 ####
 ## End of vSphere functions ####

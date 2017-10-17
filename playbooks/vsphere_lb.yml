@@ -25,8 +25,8 @@
     - name: Gathering Info
       setup:
       register: _vsphere_lb_vms_info
-      tags:
-        - vsphere_lb_vms_info
+      # tags:
+      #   - vsphere_lb_vms_info
 
     - name: Updating Inventory For vsphere_lb_vms
       template:
@@ -34,8 +34,8 @@
         dest: "{{ vsphere_lb_vms_inventory_file }}"
       become: false
       delegate_to: localhost
-      tags:
-        - vsphere_lb_vms_info
+      # tags:
+      #   - vsphere_lb_vms_info
 
 - hosts: vsphere_ddi_vms:vsphere_lb_vms:!vsphere_destroy_vms
   roles:

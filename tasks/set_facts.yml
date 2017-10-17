@@ -39,6 +39,9 @@
     $vc.IsConnected
     Disconnect-VIServer * -Confirm:$false
   register: _vsphere_vcenter_check
+  failed_when: false
+
+- debug: var=_vsphere_vcenter_check
 
 - name: set_facts | Setting vCenter Availability
   set_fact:
@@ -49,3 +52,5 @@
   set_fact:
     _vsphere_vcenter_available: false
   when: ('True' not in _vsphere_vcenter_check['stdout_lines'])
+
+- debug: var=_vsphere_vcenter_available

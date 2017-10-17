@@ -169,12 +169,6 @@ if ($vmServerAutoStartPolicy.Enabled -eq $false) {
   $vmServerAutoStartPolicy | Set-VMHostStartPolicy -Enabled $true
 }
 
-{%   if groups['vsphere_dnsdist_vms'] is defined %}
-  $loopCount={{ groups['vsphere_dnsdist_vms'] | length }}
-{%   elif groups['vsphere_dnsdist_vms'] is not defined defined %}
-  $loopCount=0
-{%   endif %}
-
 {%   for vm in groups['vsphere_dnsdist_vms_deploy'] %}
 $SecureBootStrapUser = "{{ vsphere_bootstrap_user_info['username'] }}"
 $SecureBootStrapPassword = Get-Content {{ vsphere_bootstrap_vms_secure_password_file }} | ConvertTo-SecureString
@@ -192,7 +186,7 @@ if ($vmAutoStart.StartAction -ne 'PowerOn') {
   $vmAutoStart | Set-VMStartPolicy -StartAction PowerOn -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 }
 {%       if not _vsphere_vcenter_available %}
-$vmStartOrder = {{ loop.index }} + $loopCount
+$vmStartOrder = {{ loop.index }}
 if ($vmAutoStart.StartOrder -ne $vmStartOrder) {
   $vmAutoStart | Set-VMStartPolicy -StartOrder $vmStartOrder -WaitForHeartBeat $false -Confirm:$false | Out-File -Append {{ vsphere_management_log }}
 }

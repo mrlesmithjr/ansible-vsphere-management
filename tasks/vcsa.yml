@@ -11,15 +11,11 @@
   delegate_to: localhost
   register: _vsphere_vcsa_appliance_facts
   failed_when: false
-  tags:
-    - vsphere_vcenter_check
   with_items: "{{ groups['vsphere_hosts'] }}"
 
 - name: vcsa | Setting VCSA Appliance Deployment Status
   set_fact:
     _vcsa_appliance_exists: true
-  tags:
-    - vsphere_vcenter_check
   with_items: "{{ _vsphere_vcsa_appliance_facts['results'] }}"
   when: >
         item['instance'] is defined and
@@ -29,8 +25,6 @@
 - name: vcsa | Setting VCSA Appliance Deployment Status
   set_fact:
     _vcsa_appliance_exists: false
-  tags:
-    - vsphere_vcenter_check
   when: >
         _vcsa_appliance_exists is not defined
 
@@ -77,7 +71,6 @@
   register: _vsphere_vcsa_appliance_info
   failed_when: false
   tags:
-    - vsphere_vcenter_check
     - vsphere_vms_info
   with_items: "{{ groups['vsphere_hosts'] }}"
 
@@ -90,8 +83,6 @@
     timeout: 600
   vars:
     ansible_connection: local
-  tags:
-    - vsphere_vcenter_check
   when: vsphere_vcsa_os_ssh_enabled
 
 - name: vcsa | Creating Inventory For vsphere_vcenter
@@ -101,11 +92,8 @@
   become: false
   delegate_to: localhost
   tags:
-    - vsphere_vcenter_check
     - vsphere_vms_info
   when: vsphere_vms_generate_inventory
 
 - name: vcsa | Results Of vCenter Check
   debug: var=_vcsa_appliance_exists
-  tags:
-    - vsphere_vcenter_check

@@ -33,43 +33,26 @@
 
 - debug: var=_ddi_vms_script_execution
 
-# - name: ddi_vms | Capturing JSON Formatted Info
-#   win_shell: |
-#     $vmHost="{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
-#     Connect-VIServer -Server $vmHost | Out-Null
-#     $vmServer=(Get-VMHost -Server $vmHost)
-#     (($vmServer | Get-VM {{ hostvars[item]['inventory_hostname'] }} | Get-View).Config) | ConvertTo-Json
-#     Disconnect-VIServer * -Confirm:$false | Out-Null
-#   register: _vsphere_ddi_vm_configs
-#   with_items: "{{ groups['vsphere_ddi_vms_deploy'] }}"
-#   when: groups['vsphere_ddi_vms_deploy'] is defined
-#
-# - name: ddi_vms | Generating Nicely Formatted JSON Info
-#   template:
-#     src: ddi_vms.json.j2
-#     dest: "{{ vsphere_ddi_vms_json_output_file }}"
-#   delegate_to: localhost
-#   become: false
-#   when: _vsphere_ddi_vm_configs['changed']
-
-- name: ddi_vms | Finding DDI VMs (Non-vCenter)
-  vmware_guest_find:
+- name: ddi_vms | Capturing Guest Facts (Non-vCenter)
+  vmware_guest_facts:
     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
     username: "{{ vsphere_user_info['username'] }}"
     password: "{{ vsphere_user_info['password'] }}"
     datacenter: ha-datacenter
     validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['vm_name'] }}"
+    folder: ha-datacenter/vm
   delegate_to: localhost
   failed_when: false
-  register: _vsphere_ddi_vms
+  register: _vsphere_ddi_vms_non_vcenter
   with_items: "{{ vsphere_ddi_vms }}"
   tags:
     - vsphere_ddi_vms_info
     - vsphere_vms_info
-  when: not _vsphere_vcenter_available
+  when: >
+        not _vsphere_vcenter_available
 
-- name: ddi_vms | Finding DDI VMs (vCenter)
+- name: ddi_vms | Finding ddi VMs (vCenter)
   vmware_guest_find:
     hostname: "{{ vsphere_vcsa_network_fqdn }}"
     username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
@@ -79,7 +62,7 @@
     name: "{{ item['vm_name'] }}"
   delegate_to: localhost
   failed_when: false
-  register: _vsphere_ddi_vms
+  register: _vsphere_ddi_vms_vcenter
   with_items: "{{ vsphere_ddi_vms }}"
   tags:
     - vsphere_ddi_vms_info
@@ -93,10 +76,13 @@
   tags:
     - vsphere_ddi_vms_info
     - vsphere_vms_info
-  with_items: "{{ _vsphere_ddi_vms['results'] }}"
+  with_items:
+    - "{{ _vsphere_ddi_vms_non_vcenter['results'] }}"
+    - "{{ _vsphere_ddi_vms_vcenter['results'] }}"
   when: >
         item['msg'] is defined and
-        "Unable to find folders for VM" in item['msg']
+        ("Unable to find folders for VM" in item['msg'] or
+        "Unable to gather facts for non-existing VM" in item['msg'])
 
 - name: ddi_vms | Waiting For DHCP IP Address (Non-vCenter)
   vmware_guest_facts:
@@ -106,15 +92,15 @@
     datacenter: ha-datacenter
     validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['item']['vm_name'] }}"
-    folder: "ha-datacenter{{ item['folders'][0] }}"
+    folder: ha-datacenter/vm
   delegate_to: localhost
-  register: _vsphere_ddi_vm_facts_dhcp
+  register: _vsphere_ddi_vm_facts_dhcp_non_vcenter
   until: >
-         (_vsphere_ddi_vm_facts_dhcp['instance']['ipv4'] != None)
+         (_vsphere_ddi_vm_facts_dhcp_non_vcenter['instance']['ipv4'] != None)
   retries: 30
   delay: 2
   failed_when: false
-  with_items: "{{ _vsphere_ddi_vms['results'] }}"
+  with_items: "{{ _vsphere_ddi_vms_non_vcenter['results'] }}"
   tags:
     - vsphere_ddi_vms_info
     - vsphere_vms_info
@@ -136,13 +122,13 @@
     name: "{{ item['item']['vm_name'] }}"
     folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['folders'][0] }}"
   delegate_to: localhost
-  register: _vsphere_ddi_vm_facts_dhcp
+  register: _vsphere_ddi_vm_facts_dhcp_vcenter
   until: >
-         (_vsphere_ddi_vm_facts_dhcp['instance']['ipv4'] != None)
+         (_vsphere_ddi_vm_facts_dhcp_vcenter['instance']['ipv4'] != None)
   retries: 30
   delay: 2
   failed_when: false
-  with_items: "{{ _vsphere_ddi_vms['results'] }}"
+  with_items: "{{ _vsphere_ddi_vms_vcenter['results'] }}"
   tags:
     - vsphere_ddi_vms_info
     - vsphere_vms_info
@@ -162,15 +148,15 @@
     datacenter: ha-datacenter
     validate_certs: "{{ vsphere_validate_certs }}"
     name: "{{ item['item']['vm_name'] }}"
-    folder: "ha-datacenter{{ item['folders'][0] }}"
+    folder: ha-datacenter/vm
   delegate_to: localhost
-  register: _vsphere_ddi_vm_facts_static
+  register: _vsphere_ddi_vm_facts_static_non_vcenter
   until: >
-         (_vsphere_ddi_vm_facts_static['instance']['ipv4'] == item['item']['ip'])
+         (_vsphere_ddi_vm_facts_static_non_vcenter['instance']['ipv4'] == item['item']['ip'])
   retries: 30
   delay: 2
   failed_when: false
-  with_items: "{{ _vsphere_ddi_vms['results'] }}"
+  with_items: "{{ _vsphere_ddi_vms_non_vcenter['results'] }}"
   tags:
     - vsphere_ddi_vms_info
     - vsphere_vms_info
@@ -180,7 +166,7 @@
         item['item']['ip'] is defined and
         ((groups['ddi_vms_not_deployed'] is defined and
         item['item']['vm_name'] not in groups['ddi_vms_not_deployed']) or
-        group['ddi_vms_not_deployed'] is not defined)
+        groups['ddi_vms_not_deployed'] is not defined)
 
 - name: ddi_vms | Waiting For Static IP Address (vCenter)
   vmware_guest_facts:
@@ -192,13 +178,13 @@
     name: "{{ item['item']['vm_name'] }}"
     folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['folders'][0] }}"
   delegate_to: localhost
-  register: _vsphere_ddi_vm_facts_static
+  register: _vsphere_ddi_vm_facts_static_vcenter
   until: >
-         (_vsphere_ddi_vm_facts_static['instance']['ipv4'] == item['item']['ip'])
+         (_vsphere_ddi_vm_facts_static_vcenter['instance']['ipv4'] == item['item']['ip'])
   retries: 30
   delay: 2
   failed_when: false
-  with_items: "{{ _vsphere_ddi_vms['results'] }}"
+  with_items: "{{ _vsphere_ddi_vms_vcenter['results'] }}"
   tags:
     - vsphere_ddi_vms_info
     - vsphere_vms_info
@@ -209,86 +195,6 @@
         ((groups['ddi_vms_not_deployed'] is defined and
         item['item']['vm_name'] not in groups['ddi_vms_not_deployed']) or
         groups['ddi_vms_not_deployed'] is not defined)
-
-- name: ddi_vms | Capturing VM Info (Non-vCenter)
-  vmware_guest_facts:
-    hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
-    username: "{{ vsphere_user_info['username'] }}"
-    password: "{{ vsphere_user_info['password'] }}"
-    datacenter: ha-datacenter
-    validate_certs: "{{ vsphere_validate_certs }}"
-    name: "{{ item['item']['vm_name'] }}"
-    folder: "ha-datacenter{{ item['folders'][0] }}"
-  delegate_to: localhost
-  register: _vsphere_ddi_vm_facts
-  with_items: "{{ _vsphere_ddi_vms['results'] }}"
-  tags:
-    - vsphere_ddi_vms_info
-    - vsphere_vms_info
-  when: >
-        not _vsphere_vcenter_available and
-        item['item']['deploy'] and
-        ((groups['ddi_vms_not_deployed'] is defined and
-        item['item']['vm_name'] not in groups['ddi_vms_not_deployed']) or
-        groups['ddi_vms_not_deployed'] is not defined)
-
-- name: ddi_vms | Capturing VM Info (vCenter)
-  vmware_guest_facts:
-    hostname: "{{ vsphere_vcsa_network_fqdn }}"
-    username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
-    password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
-    datacenter: "{{ vsphere_vcenter_datacenter['name'] }}"
-    validate_certs: "{{ vsphere_validate_certs }}"
-    name: "{{ item['item']['vm_name'] }}"
-    folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['folders'][0] }}"
-  delegate_to: localhost
-  register: _vsphere_ddi_vm_facts
-  with_items: "{{ _vsphere_ddi_vms['results'] }}"
-  tags:
-    - vsphere_ddi_vms_info
-    - vsphere_vms_info
-  when: >
-        _vsphere_vcenter_available and
-        item['item']['deploy'] and
-        ((groups['ddi_vms_not_deployed'] is defined and
-        item['item']['vm_name'] not in groups['ddi_vms_not_deployed']) or
-        groups['ddi_vms_not_deployed'] is not defined)
-
-# - name: ddi_vms | Creating Initial VM Snapshot (Non-vCenter)
-#   vmware_guest_snapshot:
-#     hostname: "{{ hostvars[vsphere_bootstrap_host]['ansible_host'] }}"
-#     username: "{{ vsphere_user_info['username'] }}"
-#     password: "{{ vsphere_user_info['password'] }}"
-#     datacenter: ha-datacenter
-#     validate_certs: "{{ vsphere_validate_certs }}"
-#     name: "{{ item['instance']['hw_name'] }}"
-#     folder: "ha-datacenter{{ item['invocation']['module_args']['folder'] }}"
-#     snapshot_name: post_deploy
-#     state: present
-#     uuid: "{{ item['instance']['hw_product_uuid'] }}"
-#   delegate_to: localhost
-#   with_items: "{{ _vsphere_ddi_vm_facts['results'] }}"
-#   when: >
-#         not _vsphere_vcenter_available and
-#         item['instance']['snapshots'] == []
-#
-# - name: ddi_vms | Creating Initial VM Snapshot (vCenter)
-#   vmware_guest_snapshot:
-#     hostname: "{{ vsphere_vcsa_network_fqdn }}"
-#     username: "{{ vsphere_vcsa_sso_user_info['username'] }}"
-#     password: "{{ vsphere_vcsa_sso_user_info['password'] }}"
-#     datacenter: "{{ vsphere_vcenter_datacenter['name'] }}"
-#     validate_certs: "{{ vsphere_validate_certs }}"
-#     folder: "{{ vsphere_vcenter_datacenter['name'] }}{{ item['invocation']['module_args']['folder'] }}"
-#     name: "{{ item['instance']['hw_name'] }}"
-#     snapshot_name: post_deploy
-#     state: present
-#     uuid: "{{ item['instance']['hw_product_uuid'] }}"
-#   delegate_to: localhost
-#   with_items: "{{ _vsphere_ddi_vm_facts['results'] }}"
-#   when: >
-#         _vsphere_vcenter_available and
-#         item['instance']['snapshots'] == []
 
 - name: ddi_vms | Creating Dynamic Inventory For vsphere_ddi_vms
   add_host:
@@ -301,14 +207,13 @@
     - vsphere_ddi_vms_info
     - vsphere_vms_info
   with_items:
-    - "{{ _vsphere_ddi_vm_facts_dhcp['results'] }}"
-    - "{{ _vsphere_ddi_vm_facts_static['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_dhcp_non_vcenter['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_dhcp_vcenter['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_static_non_vcenter['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_static_vcenter['results'] }}"
   when: >
-        item is defined and
         item['instance'] is defined and
-        ((item['failed'] is defined and
-        not item['failed']) or
-        item['failed'] is not defined)
+        not item['failed']
 
 - name: ddi_vms | Creating Dynamic Inventory For vsphere_ddi_vms_failed
   add_host:
@@ -321,13 +226,13 @@
     - vsphere_ddi_vms_info
     - vsphere_vms_info
   with_items:
-    - "{{ _vsphere_ddi_vm_facts_dhcp['results'] }}"
-    - "{{ _vsphere_ddi_vm_facts_static['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_dhcp_non_vcenter['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_dhcp_vcenter['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_static_non_vcenter['results'] }}"
+    - "{{ _vsphere_ddi_vm_facts_static_vcenter['results'] }}"
   when: >
-        item is defined and
         item['instance'] is defined and
-        (item['failed'] is defined and
-        item['failed'])
+        item['failed']
 
 - name: ddi_vms | Displaying IP Addresses For Each VM
   debug: msg="{{ hostvars[item]['inventory_hostname'] }} has IP{{':'}} {{ hostvars[item]['ansible_host'] }}"

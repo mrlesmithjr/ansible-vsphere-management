@@ -169,9 +169,9 @@ if ($vmServerAutoStartPolicy.Enabled -eq $false) {
   $vmServerAutoStartPolicy | Set-VMHostStartPolicy -Enabled $true
 }
 
-{%   if groups['vsphere_ddi_vms'] is defined %}
-  $loopCount={{ groups['vsphere_ddi_vms'] | length }}
-{%   elif groups['vsphere_ddi_vms'] is not defined defined %}
+{%   if groups['vsphere_dnsdist_vms'] is defined %}
+  $loopCount={{ groups['vsphere_dnsdist_vms'] | length }}
+{%   elif groups['vsphere_dnsdist_vms'] is not defined defined %}
   $loopCount=0
 {%   endif %}
 

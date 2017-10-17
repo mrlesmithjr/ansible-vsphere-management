@@ -27,7 +27,7 @@ vsphere_ddi_vms_group: vsphere_ddi_vms
 # reference vsphere_vm_services_groups as well
 # Good for keeping environment in a defined state
 # references tasks/destroy_vms.yml
-vsphere_destroy_vms: false
+vsphere_destroy_vms: true
 
 #vSphere DHCP VM info
 # Define Ansible group which contains your DHCP VMs
@@ -62,6 +62,9 @@ vsphere_lb_vms_memory: 1024
 vsphere_linux_vapp_ovf: C:\vagrant\vApps\ubuntu_16.04_template.ovf
 vsphere_linux_vapp_template_name: ubuntu-16.04-template
 
+vsphere_networking_use_dvs: true
+vsphere_networking_use_vss: true
+
 #vSphere Samba VM info
 vsphere_samba_vms_cpu: 1
 vsphere_samba_vms_deploy: true
@@ -84,3 +87,5 @@ vsphere_vm_services_subnet: 10.0.102
 vsphere_vm_services_subnet_mask: 255.255.255.0
 vsphere_vm_services_subnet_mask_cidr: 24
 vsphere_vm_services_vswitch: VSS-VLAN-102
+
+vsphere_vswitches_remove_unmanaged_vswitches: true

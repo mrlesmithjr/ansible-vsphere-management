@@ -73,6 +73,17 @@
     ansible_connection: local
   when: vsphere_vcsa_os_ssh_enabled
 
+- name: vCenter | Checking If vCenter Is Available
+  win_shell: |
+    $vCenterHost = "{{ vsphere_vcsa_network_ip }}"
+    $vc = Connect-VIServer $vCenterHost
+    $vc.IsConnected
+    Disconnect-VIServer * -Confirm:$false
+  register: _vsphere_vcenter_check_1
+  delay: 30
+  retries: 20
+  until: ('True' in _vsphere_vcenter_check_1['stdout_lines'])
+
 - name: vCenter | Managing vCenter Hosts
   vmware_host:
     cluster_name: "{{ vsphere_vcenter_cluster['name'] }}"
