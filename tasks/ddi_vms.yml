@@ -13,8 +13,36 @@
     network_name: "{{ item['network_name'] }}"
     vapp_source_path: "{{ item['vapp_source_path'] }}"
   changed_when: false
+  tags:
+    - vsphere_generate_host_vars
   with_items: "{{ vsphere_ddi_vms }}"
   when: item['deploy']
+
+- name: ddi_vms | Ensuring host_vars Directory Exists For Each Host
+  file:
+    path: "{{ vsphere_inventory_directory }}/host_vars/{{ hostvars[item]['inventory_hostname'] }}"
+    state: directory
+  become: false
+  delegate_to: localhost
+  tags:
+    - vsphere_generate_host_vars
+  with_items: "{{ groups['vsphere_ddi_vms_deploy'] }}"
+  when: >
+        groups['vsphere_ddi_vms_deploy'] is defined and
+        vsphere_generate_host_vars
+
+- name: ddi_vms | Generating host_vars
+  template:
+    src: generated_host_vars.yml.j2
+    dest: "{{ vsphere_inventory_directory }}/host_vars/{{ hostvars[item]['inventory_hostname'] }}/generated_details.yml"
+  become: false
+  delegate_to: localhost
+  tags:
+    - vsphere_generate_host_vars
+  with_items: "{{ groups['vsphere_ddi_vms_deploy'] }}"
+  when: >
+        groups['vsphere_ddi_vms_deploy'] is defined and
+        vsphere_generate_host_vars
 
 - name: ddi_vms | Generating Secure Password
   win_shell: $Password=ConvertTo-SecureString -String "{{ vsphere_bootstrap_user_info['password'] }}" -AsPlainText -Force | ConvertFrom-SecureString | Out-File {{ vsphere_bootstrap_vms_secure_password_file }}

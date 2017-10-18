@@ -82,7 +82,7 @@ Adjust `inventory/hosts.0.inv` to include your Windows `powecli_host`.
 
 ```yaml
 [powercli_host]
-node0
+node0 ansible_ssh_host=192.168.250.10
 ```
 
 ### inventory/group_vars/all/accounts.yml
@@ -185,6 +185,17 @@ roles to properly prep this host to get up and running quickly as well as a play
         name: vmwarevsphereclient
         state: present
 ```
+
+### inventory/host_vars
+
+> NOTE: As of current, `inventory/host_vars/*/generated_details.yml` is excluded
+> in `.gitignore` to ensure that they do not cause issues for anyone. Keep this
+> in mind if you decide to use `host_vars`.
+
+Currently the only `host_vars` which are generated are for the Core Services
+VMs. We are doing this to have them available to subsequent tasks and etc. which
+may require them. They will be accounted for and kept current throughout the
+management tasks.
 
 ### Software iSCSI
 
