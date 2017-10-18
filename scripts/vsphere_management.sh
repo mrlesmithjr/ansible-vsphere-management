@@ -116,8 +116,10 @@ cleanup()
   )
   for cleanup in "${CLEANUP_FILES[@]}"
   do
-    find $ANSIBLE_INVENTORY_DIR -type f -name $cleanup -exec rm -f {} \;
+    find $SCRIPT_FULL_PATH/.. -type f -name $cleanup -exec rm -f {} \;
   done
+  # Cleanup host_vars generated
+  find $ANSIBLE_INVENTORY_DIR/host_vars/ -type f -name generated_details.yml -exec rm -f {} \;
 }
 
 deploy_all()
@@ -187,6 +189,7 @@ display_usage() {
   echo -e "\tvsphere_dns\t\t\t\tManages vSphere hosts DNS settings"
   echo -e "\tvsphere_dnsdist_vms\t\t\tManages DNSDist VMs"
   echo -e "\tvsphere_enable_ssh\t\t\tEnables vSphere hosts SSH"
+  echo -e "\tvsphere_generate_host_vars\t\tGenerates host_vars for Core VMs"
   echo -e "\tvsphere_lb_vms\t\t\t\tManages Load Balancer VMs"
   echo -e "\tvsphere_maintenance_mode\t\tManages vSphere hosts maintenance mode"
   echo -e "\tvsphere_management\t\t\tManages ALL vSphere host settings"
@@ -303,6 +306,11 @@ vsphere_disable_ssh()
 vsphere_enable_ssh()
 {
   _vsphere_management --tags vsphere_ssh --extra-vars '{"vsphere_hosts_enable_ssh": True}'
+}
+
+vsphere_generate_host_vars()
+{
+  _vsphere_management --tags vsphere_generate_host_vars
 }
 
 vsphere_lb_vms()

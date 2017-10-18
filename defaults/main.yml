@@ -170,6 +170,9 @@ vsphere_dnsdist_vms_wait_for_ssh: "{{ vsphere_vms_wait_for_ssh }}"
 # variable the default variable defined here does not apply.
 vsphere_enable_software_iscsi: false
 
+# Defines whether host_vars should be generated
+vsphere_generate_host_vars: false
+
 #vSphere Host Info
 # Reference inventory/group_vars/all/vsphere_hosts.yml
 vsphere_host_mgmt_subnet: []

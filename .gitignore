@@ -1,6 +1,7 @@
 .galaxy_install_info
 *.retry
 inventory/group_vars/all/accounts.yml
+inventory/host_vars/*/generated_details.yml
 ssh_keys_distribution.yml
 logs/
 vsphere_bootstrap_vms.inv
