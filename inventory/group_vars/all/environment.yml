@@ -79,12 +79,14 @@ vsphere_samba_vms_memory: 512
 # Define Site Name
 vsphere_site_name: LAB
 
+vsphere_validate_certs: false
+
 # Defines the directory where the VCSA ISO has been extracted to
 vsphere_vcsa_iso_directory: C:\vagrant\vApps\VCSA_ISO
 
 #vSphere VM Services info
 # Defines the vSphere datastore to store vm core services on
-vsphere_vm_services_datastore: Datastore_1
+vsphere_vm_services_datastore: vSphere_iSCSI_Datastore_1
 # vSphere core services for vms
 vsphere_vm_services_subnet: 10.0.102
 vsphere_vm_services_subnet_mask: 255.255.255.0
