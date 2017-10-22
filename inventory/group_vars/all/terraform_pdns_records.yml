@@ -1,0 +1,5 @@
+---
+terraform_pdns_records:
+  - name: rancher
+    type: A
+    records: "{{ rancher_lb_vip }}"
