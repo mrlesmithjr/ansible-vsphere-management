@@ -1,15 +1,12 @@
 ---
-- name: iscsi | Manage Software iSCSI Adapter
-  win_shell: |
-    $vmHost="{{ hostvars[item]['ansible_host'] }}"
-    Connect-VIServer -Server $vmHost
-    $vmHostStorage=(Get-VMHostStorage -Server $vmHost)
-    $SoftwareIScsiStatus="$($vmHostStorage | Select-Object -ExpandProperty SoftwareIScsiEnabled)"
-    $vmHostIScsiEnabled="{{ hostvars[item]['vsphere_enable_software_iscsi'] }}"
-    If ($SoftwareIScsiStatus -ne $vmHostIScsiEnabled) {
-      $vmHostStorage | Set-VMHostStorage -SoftwareIScsiEnabled ${{ hostvars[item]['vsphere_enable_software_iscsi'] }}
-      Start-Sleep -Seconds 30
-    }
-    Disconnect-VIServer * -Confirm:$false
-  with_items: "{{ groups['vsphere_hosts'] }}"
-  when: hostvars[item]['vsphere_enable_software_iscsi'] is defined
+- name: iscsi | Generating iSCSI Management Powershell Script
+  win_template:
+    src: vsphere_iscsi_management.ps1.j2
+    dest: c:\tmp\vsphere_iscsi_management.ps1
+
+- name: iscsi | Executing iSCSI Management Powershell Script
+  win_shell: c:\tmp\vsphere_iscsi_management.ps1
+  failed_when: _vsphere_iscsi_management_script_execution['stderr_lines'] != []
+  register: _vsphere_iscsi_management_script_execution
+
+- debug: var=_vsphere_iscsi_management_script_execution

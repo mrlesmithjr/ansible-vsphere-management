@@ -141,7 +141,8 @@ deploy_all()
   vsphere_ad_domain
   vsphere_vcsa
   vsphere_vcenter
-  vsphere_vcsa_ad
+  # vsphere_vcsa_ad
+  vsphere_management
   exit 0
 }
 
