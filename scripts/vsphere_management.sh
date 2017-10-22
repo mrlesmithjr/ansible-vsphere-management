@@ -33,6 +33,12 @@ ANSIBLE_ROLES_DIR="$SCRIPT_FULL_PATH/../roles"
 # Define the directory to store logs in
 LOG_DIR="$SCRIPT_FULL_PATH/../logs"
 
+# Define command or path to terraform command
+TERRAFORM_COMMAND=$(which terraform)
+
+# Define the directory to Terraform
+TERRAFORM_DIR="$SCRIPT_FULL_PATH/../../terraform"
+
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 
 # Defines the Vagrant folder for deployment_host_spinup()
@@ -203,6 +209,12 @@ display_usage() {
   echo -e "\tvsphere_samba_sysvol_replication\tManages Samba VMs AD SysVol Replication"
   echo -e "\tvsphere_samba_vms\t\t\tManages Samba VMs (Does not perform Phase 1, 2, or SysVol Replication)"
   echo -e "\tvsphere_ssh_key_distribution\t\tDistributes SSH Keys between VMs (Currently only Samba VMs)"
+  echo -e "\tvsphere_terraform_apply\t\t\tApplies the defined Terraform plan to reach the desired state of the configuration"
+  echo -e "\tvsphere_terraform_deploy\t\tAll-in-one (init, plan, and apply)"
+  echo -e "\tvsphere_terraform_destroy\t\tDestroys the Terraform infrastructure"
+  echo -e "\tvsphere_terraform_init\t\t\tInitializes the Terraform working directory"
+  echo -e "\tvsphere_terraform_inventory\t\tManages VMs Inventory Provisioned Using Terraform And Updates PDNS"
+  echo -e "\tvsphere_terraform_plan\t\t\tShows the Terraform plan and shows what changes will be made"
   echo -e "\tvsphere_udpates\t\t\t\tUpdates vSphere Hosts (Must be in maintenance mode)"
   echo -e "\tvsphere_vcsa\t\t\t\tManages the vSphere VCSA Appliance"
   echo -e "\tvsphere_vcsa_ad\t\t\t\tManages VCSA Domain Membership"
@@ -384,6 +396,47 @@ vsphere_ssh_key_distribution()
 {
   _ANSIBLE_PLAYBOOK="ssh_key_distribution.yml"
   _ansible_playbook_task "$@"
+}
+
+vsphere_terraform_apply()
+{
+  _ANSIBLE_PLAYBOOK="terraform.yml"
+  _ansible_playbook_task "$@" --extra-vars="terraform_apply=True" --tags terraform_apply
+  vsphere_pdns
+}
+
+vsphere_terraform_deploy()
+{
+  vsphere_terraform_init
+  vsphere_terraform_plan
+  vsphere_terraform_apply
+  vsphere_pdns
+}
+
+vsphere_terraform_destroy()
+{
+  _ANSIBLE_PLAYBOOK="terraform.yml"
+  _ansible_playbook_task "$@" --extra-vars="terraform_destroy=True" --tags terraform_destroy
+  vsphere_pdns
+}
+
+vsphere_terraform_init()
+{
+  _ANSIBLE_PLAYBOOK="terraform.yml"
+  _ansible_playbook_task "$@" --tags terraform_init
+}
+
+vsphere_terraform_inventory()
+{
+  _ANSIBLE_PLAYBOOK="terraform.yml"
+  _ansible_playbook_task "$@" --tags terraform_inventory
+  vsphere_pdns
+}
+
+vsphere_terraform_plan()
+{
+  _ANSIBLE_PLAYBOOK="terraform.yml"
+  _ansible_playbook_task "$@" --tags terraform_plan
 }
 
 vsphere_udpates()

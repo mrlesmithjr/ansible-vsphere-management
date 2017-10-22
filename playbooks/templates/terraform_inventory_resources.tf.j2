@@ -1,0 +1,27 @@
+resource "vsphere_folder" "terraform_deployed" {
+  path = "Terraform Deployed"
+  type = "vm"
+  datacenter_id = "${data.vsphere_datacenter.dc.id}"
+}
+
+{% set _folders = [] %}
+{% for folder in terraform_vms %}
+{%   set _folders = _folders.append(folder['inventory_parent_folder']) %}
+{% endfor %}
+{% set folders = _folders|unique|list %}
+{% for folder in folders %}
+resource "vsphere_folder" "{{ folder }}" {
+  path = "${vsphere_folder.terraform_deployed.path}/{{ folder }}"
+  type = "vm"
+  datacenter_id = "${data.vsphere_datacenter.dc.id}"
+}
+
+{% endfor %}
+{% for folder in terraform_vms %}
+resource "vsphere_folder" "{{ folder['group'] }}" {
+  path = "${vsphere_folder.{{ folder['inventory_parent_folder'] }}.path}/{{ folder['group'] }}"
+  type = "vm"
+  datacenter_id = "${data.vsphere_datacenter.dc.id}"
+}
+
+{% endfor %}

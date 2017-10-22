@@ -1,45 +1,49 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
--   [ansible-vsphere-management](#ansible-vsphere-management)
-    -   [Requirements](#requirements)
-        -   [inventory/hosts.0.inv](#inventoryhosts0inv)
-        -   [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
-        -   [inventory/group_vars/all/vsphere_hosts.yml](#inventorygroup_varsallvsphere_hostsyml)
-        -   [Windows 2012R2/2016 Host](#windows-2012r22016-host)
-        -   [Software iSCSI](#software-iscsi)
-        -   [VCSA ISO](#vcsa-iso)
-    -   [Deployment Host](#deployment-host)
-        -   [Spinning It Up](#spinning-it-up)
-    -   [Environment Deployment](#environment-deployment)
-        -   [Deployment Script Functions](#deployment-script-functions)
-    -   [Destroying Core Services VMs](#destroying-core-services-vms)
-    -   [Defining Environmental Variables](#defining-environmental-variables)
-    -   [Bootstrap VMs](#bootstrap-vms)
-    -   [DNSDist VMs](#dnsdist-vms)
-    -   [DDI VMs](#ddi-vms)
-        -   [Autostart DDI VMs](#autostart-ddi-vms)
-        -   [Defining DDI VMs](#defining-ddi-vms)
-        -   [Defining DNS Records](#defining-dns-records)
-        -   [Future DDI Functionality](#future-ddi-functionality)
-    -   [Samba based Active Directory](#samba-based-active-directory)
-        -   [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
-        -   [vSphere Host(s)](#vsphere-hosts)
-            -   [Host Domain Membership](#host-domain-membership)
-            -   [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
-    -   [VCSA](#vcsa)
-        -   [Defining VCSA Specifics](#defining-vcsa-specifics)
-            -   [Default definitions](#default-definitions)
-            -   [Deployment definitions](#deployment-definitions)
-        -   [Sizing](#sizing)
-    -   [Role Variables](#role-variables)
-    -   [Dependencies](#dependencies)
-    -   [Example Playbook](#example-playbook)
-    -   [License](#license)
-    -   [Author Information](#author-information)
+- [ansible-vsphere-management](#ansible-vsphere-management)
+  - [Requirements](#requirements)
+    - [Ansible Version >= 2.4.x.x](#ansible-version--24xx)
+    - [inventory/hosts.0.inv](#inventoryhosts0inv)
+    - [inventory/group_vars/all/accounts.yml](#inventorygroup_varsallaccountsyml)
+    - [inventory/group_vars/all/vsphere_hosts.yml](#inventorygroup_varsallvsphere_hostsyml)
+    - [Windows 2012R2/2016 Host](#windows-2012r22016-host)
+    - [inventory/host_vars](#inventoryhost_vars)
+    - [Software iSCSI](#software-iscsi)
+      - [Managing Software iSCSI Adapter](#managing-software-iscsi-adapter)
+    - [VCSA ISO](#vcsa-iso)
+  - [Deployment Host](#deployment-host)
+    - [Spinning It Up](#spinning-it-up)
+  - [Environment Deployment](#environment-deployment)
+    - [Deployment Script Functions](#deployment-script-functions)
+  - [Destroying Core Services VMs](#destroying-core-services-vms)
+  - [Defining Environmental Variables](#defining-environmental-variables)
+  - [Bootstrap VMs](#bootstrap-vms)
+  - [DNSDist VMs](#dnsdist-vms)
+  - [DDI VMs](#ddi-vms)
+    - [Autostart DDI VMs](#autostart-ddi-vms)
+    - [Defining DDI VMs](#defining-ddi-vms)
+    - [Defining DNS Records](#defining-dns-records)
+    - [Future DDI Functionality](#future-ddi-functionality)
+  - [Samba based Active Directory](#samba-based-active-directory)
+    - [Creating Samba AD Users and Groups](#creating-samba-ad-users-and-groups)
+    - [vSphere Host(s)](#vsphere-hosts)
+      - [Host Domain Membership](#host-domain-membership)
+      - [Host User Roles Domain Permissions](#host-user-roles-domain-permissions)
+  - [VCSA](#vcsa)
+    - [Defining VCSA Specifics](#defining-vcsa-specifics)
+      - [Default definitions](#default-definitions)
+      - [Deployment definitions](#deployment-definitions)
+    - [Sizing](#sizing)
+  - [Terraform Infrastructure Deployment](#terraform-infrastructure-deployment)
+    - [Defining Terraform Infrastructure](#defining-terraform-infrastructure)
+    - [Deploying Terraform Infrastructure](#deploying-terraform-infrastructure)
+  - [Role Variables](#role-variables)
+  - [Dependencies](#dependencies)
+  - [Example Playbook](#example-playbook)
+  - [License](#license)
+  - [Author Information](#author-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -221,6 +225,13 @@ vsphere_enable_software_iscsi: true
 vsphere_enable_software_iscsi: true
 ```
 
+#### Managing Software iSCSI Adapter
+
+We currently have the ability to:
+
+-   enable/disable adapter
+-   configure target portal IP addresses
+
 ### VCSA ISO
 
 In order to deploy the `VCSA` you will need to obtain the `ISO` and extract it
@@ -298,6 +309,9 @@ vsphere_management.sh [arguments]
 arguments:
 	cleanup					Cleans up generated inventory, JSON data, and SSH key data
 	deploy_all				Deploys whole environment
+	deployment_host_halt			Halts Vagrant Deployment Host
+	deployment_host_spinup			Spins up Vagrant Deployment Host and preps environment
+	deployment_host_teardown		Tears down Vagrant Deployment Host
 	vsphere_ad_domain			Manages vSphere hosts AD membership
 	vsphere_bootstrap_vms			Manages Bootstrap VMs
 	vsphere_ddi_vms				Manages DDI VMs
@@ -306,6 +320,7 @@ arguments:
 	vsphere_dns				Manages vSphere hosts DNS settings
 	vsphere_dnsdist_vms			Manages DNSDist VMs
 	vsphere_enable_ssh			Enables vSphere hosts SSH
+	vsphere_generate_host_vars		Generates host_vars for Core VMs
 	vsphere_lb_vms				Manages Load Balancer VMs
 	vsphere_maintenance_mode		Manages vSphere hosts maintenance mode
 	vsphere_management			Manages ALL vSphere host settings
@@ -318,7 +333,17 @@ arguments:
 	vsphere_samba_sysvol_replication	Manages Samba VMs AD SysVol Replication
 	vsphere_samba_vms			Manages Samba VMs (Does not perform Phase 1, 2, or SysVol Replication)
 	vsphere_ssh_key_distribution		Distributes SSH Keys between VMs (Currently only Samba VMs)
+	vsphere_terraform_apply			Applies the defined Terraform plan to reach the desired state of the configuration
+	vsphere_terraform_deploy		All-in-one (init, plan, and apply)
+	vsphere_terraform_destroy		Destroys the Terraform infrastructure
+	vsphere_terraform_init			Initializes the Terraform working directory
+	vsphere_terraform_inventory		Manages VMs Inventory Provisioned Using Terraform And Updates PDNS
+	vsphere_terraform_plan			Shows the Terraform plan and shows what changes will be made
 	vsphere_udpates				Updates vSphere Hosts (Must be in maintenance mode)
+	vsphere_vcsa				Manages the vSphere VCSA Appliance
+	vsphere_vcsa_ad				Manages VCSA Domain Membership
+	vsphere_vcenter				Manages vCenter
+	vsphere_vcenter_check			Checks if vCenter exists or not
 	vsphere_vms				Manages ALL VMs (Does not perform any post provisioning tasks)
 	vsphere_vms_info			Collects info for ALL VMs and updates inventory and etc.
 
@@ -1027,6 +1052,80 @@ vsphere_vcsa_appliance_deployment_option: tiny
     }
 }
 ```
+
+## Terraform Infrastructure Deployment
+
+We have included [Terraform](https://www.terraform.io/) as a deployment mechanism
+to manage VMs, PDNS, and etc. as a post Core Services deployment. We feel this
+is a very efficient way to handle especially the spin up and tear down of VMs.
+Terraform performs much better than handing VM management using either PowerCLI or
+Ansible in this environment. However this type of deployment will be post Core
+Services deployment. And at this time is a manual kick off of the provisioning.
+Coming soon will be a deployment option to provision a highly available container
+platform.
+
+### Defining Terraform Infrastructure
+
+Because this is all about Infrastructure As Code. We have even implemented the
+majority of the Terraform setup to be driven by Ansible. This means that we only
+need to define in some variable files what we would like. For now this is only
+based on VM provisioning. We use many of the already defined variables which are
+part of this project to auto generate most of the Terraform configuration files.
+Some examples of the variables to define our Terraform deployment include:
+
+-   [terraform_vms.yml](inventory/group_vars/all/terraform_vms.yml)
+-   [terraform_pdns_records.yml](inventory/group_vars/all/terraform_pdns_records.yml)
+
+You will also find in the `playbooks` and `playbooks/templates` directories the
+playbook and templates used to drive the auto generated Terraform configurations.
+
+-   [terraform.yml](playbooks/terraform.yml)
+
+As part of all of this we also auto generate an Ansible inventory file which
+includes the important information for our provisioning. This file will be
+created as `inventory/terraform.inv` and it will look like something like:
+
+```raw
+[rancher_lbs]
+rancher-lb-02.lab.etsbv.internal
+rancher-lb-01.lab.etsbv.internal
+
+[rancher_db_cluster]
+rancher-db-03.lab.etsbv.internal
+rancher-db-01.lab.etsbv.internal
+rancher-db-02.lab.etsbv.internal
+
+[rancher_hosts]
+rancher-04.lab.etsbv.internal
+rancher-03.lab.etsbv.internal
+rancher-02.lab.etsbv.internal
+rancher-01.lab.etsbv.internal
+rancher-06.lab.etsbv.internal
+rancher-05.lab.etsbv.internal
+
+[terraform_vms]
+rancher-lb-02.lab.etsbv.internal ansible_host=10.0.102.155 mac_address=00:50:56:aa:27:44 uuid=422ac0c8-f6fc-d69c-bccf-0513d01a00af
+rancher-lb-01.lab.etsbv.internal ansible_host=10.0.102.180 mac_address=00:50:56:aa:57:79 uuid=422acbbc-0ff5-d221-be27-1e7114ff9f18
+rancher-db-03.lab.etsbv.internal ansible_host=10.0.102.170 mac_address=00:50:56:aa:10:65 uuid=422a9c18-aca4-747a-1613-f0a6f207576d
+rancher-db-01.lab.etsbv.internal ansible_host=10.0.102.172 mac_address=00:50:56:aa:5f:49 uuid=422a7547-e367-a8b6-228e-70f85bf9eb93
+rancher-db-02.lab.etsbv.internal ansible_host=10.0.102.158 mac_address=00:50:56:aa:e2:3d uuid=422a569e-65d1-52d2-ad19-d12e8886d716
+rancher-04.lab.etsbv.internal ansible_host=10.0.102.175 mac_address=00:50:56:aa:bf:b2 uuid=422a22b1-0ba9-de70-cd88-abbd84ce3a39
+rancher-03.lab.etsbv.internal ansible_host=10.0.102.156 mac_address=00:50:56:aa:b5:cc uuid=422a58f4-2d53-fbbe-9376-7be257a183ae
+rancher-02.lab.etsbv.internal ansible_host=10.0.102.173 mac_address=00:50:56:aa:9f:c5 uuid=422ae37c-97ff-89ec-b955-9c1e965c0716
+rancher-01.lab.etsbv.internal ansible_host=10.0.102.154 mac_address=00:50:56:aa:ea:c0 uuid=422a5c7d-3f8b-d34e-5b0c-952e1d35b2c2
+rancher-06.lab.etsbv.internal ansible_host=10.0.102.157 mac_address=00:50:56:aa:f5:f4 uuid=422ac850-c612-7d8e-70b9-b3dd3d2e97cd
+rancher-05.lab.etsbv.internal ansible_host=10.0.102.174 mac_address=00:50:56:aa:d3:d3 uuid=422ada91-826c-db95-9dbf-1bd79bddf805
+```
+
+The above inventory is created by parsing the information collected from
+`terraform state pull` and then parsed using the [terraform.inv.j2](playbooks/templates/terraform.inv.j2)
+Jinja2 template.
+
+### Deploying Terraform Infrastructure
+
+We have added to the [vsphere_management.sh](scripts/vsphere_management.sh) script
+the ability to automate the Terraform deployments and teardowns. Reference the
+[Deployment Script Functions](#deployment_script_functions) to learn more about this.
 
 ## Role Variables
 
