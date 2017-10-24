@@ -40,3 +40,7 @@ terraform/inventory_resources.tf
 terraform/pdns_resources.tf
 terraform/variables.tf
 terraform/vm_resources.tf
+
+
+inventory/group_vars/all/rancher_api_key.yml
+rancher/powerdns-external-dns/docker-compose.yml

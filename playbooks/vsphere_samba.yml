@@ -63,6 +63,10 @@
     - role: ansible-ntp
       tags:
         - samba_phase_1
+    - role: ansible-rsyslog
+      become: true
+      tags:
+        - samba_phase_1
 
 - hosts: vsphere_samba_vms:!vsphere_destroy_vms
   serial: 1

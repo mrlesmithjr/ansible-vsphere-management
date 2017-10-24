@@ -2,6 +2,8 @@
 - src: https://github.com/mrlesmithjr/ansible-apache2.git
 - src: https://github.com/mrlesmithjr/ansible-change-hostname.git
 - src: https://github.com/mrlesmithjr/ansible-config-interfaces.git
+- src: https://github.com/mrlesmithjr/ansible-docker.git
+- src: https://github.com/mrlesmithjr/ansible-docker-swarm.git
 - src: https://github.com/mrlesmithjr/ansible-etc-hosts.git
 - src: https://github.com/mrlesmithjr/ansible-haproxy.git
 - src: https://github.com/mrlesmithjr/ansible-isc-dhcp.git
@@ -12,6 +14,7 @@
 - src: https://github.com/mrlesmithjr/ansible-powerdns-authoritative.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-dnsdist.git
 - src: https://github.com/mrlesmithjr/ansible-powerdns-recursor.git
+- src: https://github.com/mrlesmithjr/ansible-rsyslog.git
 - src: https://github.com/mrlesmithjr/ansible-samba.git
 - src: https://github.com/mrlesmithjr/ansible-sshd.git
 - src: https://github.com/mrlesmithjr/ansible-windows-powercli.git

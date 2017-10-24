@@ -47,5 +47,7 @@
     - role: ansible-sshd
       become: true
     - role: ansible-ntp
+    - role: ansible-rsyslog
+      become: true
     - role: ansible-powerdns-dnsdist
       become: true

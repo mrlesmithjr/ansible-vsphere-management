@@ -3,3 +3,4 @@
 
 vsphere_lb_vips:
   - "{{ vsphere_vm_services_subnet }}.100"
+  - "{{ vsphere_vm_services_subnet }}.101"
