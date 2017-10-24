@@ -1,5 +1,5 @@
 ---
-pri_domain_name: lab.etsbv.internal
+pri_domain_name: "{{ vsphere_pri_domain_name }}"
 
 #vSphere AD Info
 # Define Ansible group which contains your Samba domain controllers
@@ -67,6 +67,8 @@ vsphere_linux_vapp_template_name: ubuntu-16.04-template
 
 vsphere_networking_use_dvs: true
 vsphere_networking_use_vss: true
+
+vsphere_pri_domain_name: lab.etsbv.internal
 
 #vSphere Samba VM info
 vsphere_samba_vms_cpu: 1
