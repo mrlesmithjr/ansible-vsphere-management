@@ -83,4 +83,4 @@ isc_dhcp_scopes:
     range: "{{ vsphere_vm_services_subnet }}.128 {{ vsphere_vm_services_subnet }}.224"
 
 # Defines primary domain name for environment
-isc_dhcp_pri_domain_name: "{{ pri_domain_name }}"
+isc_dhcp_pri_domain_name: "{{ vsphere_pri_domain_name }}"
