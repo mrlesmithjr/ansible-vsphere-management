@@ -1,5 +1,11 @@
 ---
 terraform_pdns_records:
-  - name: rancher
+  - name: kibana
     type: A
-    records: "{{ rancher_lb_vip }}"
+    records: "{{ vsphere_lb_vips[2] }}"
+  - name: portainer
+    type: A
+    records: "{{ vsphere_lb_vips[2] }}"
+  - name: syslog
+    type: A
+    records: "{{ vsphere_lb_vips[2] }}"

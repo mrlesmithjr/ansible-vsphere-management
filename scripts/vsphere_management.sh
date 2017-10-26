@@ -191,6 +191,8 @@ display_usage() {
   echo -e "\tvsphere_ad_domain\t\t\tManages vSphere hosts AD membership"
   echo -e "\tvsphere_bootstrap_vms\t\t\tManages Bootstrap VMs"
   echo -e "\tvsphere_ddi_vms\t\t\t\tManages DDI VMs"
+  echo -e "\tvsphere_deploy_rancher\t\t\tDeploys Rancher HA Environment (Uses Terraform)"
+  echo -e "\tvsphere_deploy_rancher_stacks\t\tDeploys Rancher Stacks (PDNS, ELK, and Prometheus)"
   echo -e "\tvsphere_destroy_vms\t\t\tDestroys ALL Core VM Service VMs (USE WITH CAUTION)"
   echo -e "\tvsphere_disable_ssh\t\t\tDisables vSphere hosts SSH"
   echo -e "\tvsphere_dns\t\t\t\tManages vSphere hosts DNS settings"
@@ -274,6 +276,19 @@ vsphere_ddi_vms()
   _vsphere_management --tags vsphere_ddi_vms
   # _vsphere_management --tags vsphere_ddi_vms_info
   _vsphere_ddi
+}
+
+vsphere_deploy_rancher()
+{
+  vsphere_terraform_deploy
+  _ANSIBLE_PLAYBOOK="rancher.yml"
+  _ansible_playbook_task "$@"
+}
+
+vsphere_deploy_rancher_stacks()
+{
+  _ANSIBLE_PLAYBOOK="rancher_stacks.yml"
+  _ansible_playbook_task "$@"
 }
 
 vsphere_destroy_vms()

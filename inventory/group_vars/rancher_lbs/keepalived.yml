@@ -9,7 +9,7 @@ keepalived_router_info:
         weight: 2
     # Define inventory_hostname of node to be considered Master
     master_node: "{{ groups['rancher_lbs'][0] }}"
-    router_id: 50
+    router_id: "{{ vsphere_lb_router_ids[1] }}"
     router_pri_backup: 100
     router_pri_master: 150
     vip_int: "{{ ansible_primary_interface }}"
