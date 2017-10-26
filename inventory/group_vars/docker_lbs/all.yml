@@ -1,0 +1,4 @@
+---
+ansible_user: "{{ vsphere_bootstrap_user_info['username'] }}"
+ansible_password: "{{ vsphere_bootstrap_user_info['password'] }}"
+docker_lb_vip: "{{ vsphere_lb_vips[2] }}"

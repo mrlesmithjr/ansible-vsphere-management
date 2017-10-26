@@ -1,0 +1,105 @@
+---
+# Defines is HAProxy should be configured
+haproxy_config: true
+
+haproxy_configs:
+#   - name: elasticsearch-9200
+#     # Defines if backend server checks are to be performed
+#     # (true|false)
+#     backend_checks: true
+#     backend_name: elasticsearch-nodes
+#     backend_servers_bind_port: 9200
+#     backend_servers: "{{ groups['docker_swarm_workers'] }}"
+#     balance: roundrobin
+#     default_server_options:
+#       - name: maxconn
+#         value: 256
+#       - name: maxqueue
+#         value: 128
+#       - name: weight
+#         value: 100
+#     enabled: true
+#     frontend_bind_address: "{{ haproxy_lb_vip }}"
+#     frontend_bind_port: 9200
+#     frontend_name: elasticsearch-in
+#     mode: tcp
+#     # options:  #Defines options to add to backend group (not the same as default_server_options)
+#       # - httplog
+#       # - httpchk
+# #      - httpchk HEAD / HTTP/1.1\r\nHost:localhost  #Works for default NGINX health checks
+  - name: kibana-5601
+    backend_checks: true
+    backend_name: kibana-nodes
+    backend_servers_bind_port: 5601
+    backend_servers: "{{ groups['docker_swarm_workers'] }}"
+    balance: roundrobin
+    default_server_options:
+      - name: maxconn
+        value: 256
+      - name: maxqueue
+        value: 128
+      - name: weight
+        value: 100
+    enabled: true
+    frontend_bind_address: "{{ haproxy_lb_vip }}"
+    frontend_bind_port: 5601
+    frontend_name: kibana-in
+    mode: tcp
+    # options:  #Defines options to add to backend group (not the same as default_server_options)
+      # - httplog
+      # - httpchk
+#      - httpchk HEAD / HTTP/1.1\r\nHost:localhost  #Works for default NGINX health checks
+#   - name: portainer-9000
+#     backend_checks: true
+#     backend_name: portainer-nodes
+#     backend_servers_bind_port: 9000
+#     backend_servers: "{{ groups['docker_swarm_workers'] }}"
+#     balance: roundrobin
+#     default_server_options:
+#       - name: maxconn
+#         value: 256
+#       - name: maxqueue
+#         value: 128
+#       - name: weight
+#         value: 100
+#     enabled: true
+#     frontend_bind_address: "{{ haproxy_lb_vip }}"
+#     frontend_bind_port: 9000
+#     frontend_name: portainer-in
+#     mode: http
+#     # options:  #Defines options to add to backend group (not the same as default_server_options)
+#       # - httplog
+#       # - httpchk
+# #      - httpchk HEAD / HTTP/1.1\r\nHost:localhost  #Works for default NGINX health checks
+  - name: syslog-10514
+    backend_checks: true
+    backend_name: syslog-nodes
+    backend_servers_bind_port: 10514
+    backend_servers: "{{ groups['docker_swarm_workers'] }}"
+    balance: roundrobin
+    default_server_options:
+      - name: maxconn
+        value: 256
+      - name: maxqueue
+        value: 128
+      - name: weight
+        value: 100
+    enabled: true
+    frontend_bind_address: "{{ haproxy_lb_vip }}"
+    frontend_bind_port: 10514
+    frontend_name: syslog-in
+    mode: tcp
+    # options:  #Defines options to add to backend group (not the same as default_server_options)
+      # - httplog
+      # - httpchk
+#      - httpchk HEAD / HTTP/1.1\r\nHost:localhost  #Works for default NGINX health checks
+
+haproxy_lb_vip: "{{ docker_lb_vip }}"
+
+haproxy_pri_domain_name: "{{ vsphere_pri_domain_name }}"
+
+# Defines if using a highly available setup. i.e. multiple haproxy load balancers
+haproxy_load_balancer_ha: true
+
+# Defines the primary host when in HA mode
+haproxy_load_balancer_ha_primary: "{{ groups['docker_lbs'][0] }}"
