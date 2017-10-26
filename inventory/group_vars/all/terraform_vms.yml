@@ -15,6 +15,6 @@ terraform_vms:
   - group: rancher_hosts
     count: 6
     inventory_parent_folder: Rancher
-    memory_mb: 2048
+    memory_mb: 4096
     naming: rancher
-    vcpu: 1
+    vcpu: 4

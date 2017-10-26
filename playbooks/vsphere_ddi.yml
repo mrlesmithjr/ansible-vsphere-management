@@ -47,6 +47,8 @@
     - role: ansible-sshd
       become: true
     - role: ansible-ntp
+    - role: ansible-rsyslog
+      become: true
     - role: ansible-mariadb-galera-cluster
     - role: ansible-powerdns-authoritative
     - role: ansible-powerdns-recursor

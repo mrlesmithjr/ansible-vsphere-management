@@ -50,3 +50,5 @@
     - role: ansible-keepalived
     - role: ansible-haproxy
     - role: ansible-ntp
+    - role: ansible-rsyslog
+      become: true
