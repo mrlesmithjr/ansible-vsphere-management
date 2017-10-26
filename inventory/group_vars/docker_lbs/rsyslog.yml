@@ -1,0 +1,8 @@
+---
+configure_rsyslog: true
+rsyslog_allow_tcp: true
+rsyslog_allow_udp: true
+syslog_servers:
+  - name: "{{ docker_lb_vip }}"
+    proto: tcp
+    port: 10514

@@ -1,0 +1,6 @@
+---
+etc_hosts_add_all_hosts: true
+
+# Defines if node has static IP.
+etc_hosts_static_ip: false
+etc_hosts_use_ansible_ssh_host: true
