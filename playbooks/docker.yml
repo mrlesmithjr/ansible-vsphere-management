@@ -1,0 +1,81 @@
+---
+- hosts: docker_swarm_managers:docker_swarm_workers:docker_lbs:docker_storage
+  roles:
+    - role: ansible-change-hostname
+    - role: ansible-etc-hosts
+    - role: ansible-timezone
+      become: true
+    - role: ansible-ntp
+    - role: ansible-rsyslog
+      become: true
+
+- hosts: docker_storage
+  roles:
+    - role: ansible-drbd
+
+- hosts: docker_storage
+  roles:
+    - role: ansible-nfs-server
+
+- hosts: docker_swarm_managers:docker_swarm_workers
+  roles:
+    - role: ansible-nfs-client
+
+- hosts: docker_swarm_managers:docker_swarm_workers
+  roles:
+    - role: ansible-docker
+    - role: ansible-docker-swarm
+
+- hosts: docker_lbs
+  roles:
+    - role: ansible-keepalived
+    - role: ansible-haproxy
+
+- hosts: docker_swarm_managers
+  tasks:
+    - name: Creating ELK Deployment Script
+      template:
+        src: templates/elk-docker-swarm-mode.sh.j2
+        dest: $HOME/elk-docker-swarm-mode.sh
+        mode: "u=rwx,g=rwx,o=r"
+      become: true
+      tags:
+        - docker-elk-deployment
+
+    - name: Executing ELK Deployment Script
+      shell: $HOME/elk-docker-swarm-mode.sh
+      become: true
+      register: _elk_deployment_script
+      run_once: true
+      failed_when: false
+      tags:
+        - docker-elk-deployment
+
+    - name: Displaying ELK Deployment Script Output
+      debug: var=_elk_deployment_script
+      when: _elk_deployment_script['changed']
+      tags:
+        - docker-elk-deployment
+
+    # - name: Creating Portainer Deployment Script
+    #   template:
+    #     src: templates/portainer-docker-swarm-mode.sh.j2
+    #     dest: $HOME/portainer-docker-swarm-mode.sh
+    #     mode: "u=rwx,g=rwx,o=r"
+    #   become: true
+    #   tags:
+    #     - docker-portainer-deployment
+    #
+    # - name: Executing Portainer Deployment Script
+    #   shell: $HOME/portainer-docker-swarm-mode.sh
+    #   become: true
+    #   register: _portainer_deployment_script
+    #   run_once: true
+    #   tags:
+    #     - docker-portainer-deployment
+    #
+    # - name: Displaying Portainer Deployment Script Output
+    #   debug: var=_portainer_deployment_script
+    #   when: _portainer_deployment_script['changed']
+    #   tags:
+    #     - docker-portainer-deployment
