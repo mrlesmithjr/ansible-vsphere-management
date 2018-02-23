@@ -1,0 +1,73 @@
+---
+- name: debian | updating apt-cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 86400
+  become: true
+
+- name: debian | installing pre-reqs
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items:
+    - apt-transport-https
+  when: ansible_distribution == "Debian"
+
+- name: debian | adding docker apt-key
+  apt_key:
+    keyserver: "{{ docker_ubuntu_repo_info.keyserver }}"
+    id: "{{ docker_ubuntu_repo_info.id }}"
+  become: true
+
+- name: debian | adding docker repo
+  apt_repository:
+    repo: "{{ docker_ubuntu_repo_info.repo }}"
+    state: present
+  become: true
+
+- name: debian | uninstalling old docker package (if exists)
+  apt:
+    name: lxc-docker
+    state: absent
+    purge: yes
+  become: true
+
+- name: debian | installing docker pre-reqs
+  apt:
+    name: "linux-image-extra-{{ ansible_kernel }}"
+    state: present
+  become: true
+  when: >
+        ansible_distribution == "Ubuntu" and
+        (ansible_distribution_version >= '14.04')
+
+- name: debian | installing docker
+  apt:
+    name: "docker-engine={{ docker_version_debian }}"
+    state: "present"
+  become: true
+
+- name: debian | setting grub memory limit (if set)
+  lineinfile:
+    dest: /etc/default/grub
+    regexp: "^GRUB_CMDLINE_LINUX_DEFAULT"
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1"'
+  register: grub_updated
+  become: true
+  when: >
+        docker_set_grub_memory_limit is defined and
+        docker_set_grub_memory_limit
+
+- name: debian | updating grub (if updated)
+  command: update-grub
+  become: true
+  when: grub_updated.changed
+
+- name: debian | installing additonal packages
+  apt:
+    name: "{{ item }}"
+    state: "present"
+  become: true
+  with_items:
+    - bridge-utils

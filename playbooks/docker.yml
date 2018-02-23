@@ -1,5 +1,5 @@
 ---
-- hosts: docker_swarm_managers:docker_swarm_workers:docker_lbs
+- hosts: docker_swarm_managers:docker_swarm_workers:docker_lbs:docker_storage
   roles:
     - role: ansible-change-hostname
     - role: ansible-etc-hosts
@@ -8,6 +8,18 @@
     - role: ansible-ntp
     - role: ansible-rsyslog
       become: true
+
+- hosts: docker_storage
+  roles:
+    - role: ansible-drbd
+
+- hosts: docker_storage
+  roles:
+    - role: ansible-nfs-server
+
+- hosts: docker_swarm_managers:docker_swarm_workers
+  roles:
+    - role: ansible-nfs-client
 
 - hosts: docker_swarm_managers:docker_swarm_workers
   roles:

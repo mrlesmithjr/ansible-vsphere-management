@@ -1,0 +1,29 @@
+---
+- name: redhat | Installing Fedora Pre-Reqs
+  dnf:
+    name: "{{ item }}"
+    state: "present"
+  become: true
+  with_items:
+    - 'libselinux-python'
+  when: ansible_distribution == "Fedora"
+
+- name: redhat | adding Docker repo
+  template:
+    src: "etc/yum.repos.d/docker.repo.j2"
+    dest: "/etc/yum.repos.d/docker.repo"
+  become: true
+
+- name: redhat | installing Docker
+  yum:
+    name: "docker-engine-{{ docker_version_redhat }}"
+    state: present
+  become: true
+  when: ansible_distribution != "Fedora"
+
+- name: redhat | installing Docker
+  dnf:
+    name: "docker-engine-{{ docker_version_redhat }}"
+    state: present
+  become: true
+  when: ansible_distribution == "Fedora"
