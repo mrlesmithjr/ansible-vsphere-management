@@ -8,6 +8,16 @@ resource "vsphere_virtual_machine" "{{ vms['group'] }}" {
     template = "${var.linux_vm_template}"
     type = "thin"
   }
+{%   if vms['add_disks'] is defined %}
+{%     for disk in vms['add_disks'] %}
+  disk {
+    datastore = "${var.vsphere_default_vm_datastore}"
+    name = "${var.vms_{{ vms['group'] }}[count.index]}_{{ disk }}.vmdk"
+    size = {{ vms['add_disks'][disk]['size'] }}
+    type = "thin"
+  }
+{%     endfor %}
+{%   endif %}
   dns_servers = "${var.dns_servers}"
   domain = "${var.pri_domain_name}"
   folder = "${vsphere_folder.{{ vms['group'] }}.path}"

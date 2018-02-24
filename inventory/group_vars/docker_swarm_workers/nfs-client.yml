@@ -1,0 +1,11 @@
+---
+nfs_client_mounts:
+  - mount:
+    fstype: nfs
+    opts:
+      - "rsize=8192"
+      - "wsize=8192"
+      - intr
+    path: "{{ docker_nfs_client_mount }}"
+    src: "{{ docker_nfs_vip }}:{{ docker_nfs_server_mount }}"
+    state: mounted

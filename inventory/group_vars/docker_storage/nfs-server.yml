@@ -1,0 +1,12 @@
+---
+nfs_server_exports:
+  - export:
+    access:
+      - hostname: "{{ vsphere_vm_services_subnet }}.0/24"
+        options:
+          - rw
+          - sync
+          - no_subtree_check
+          - no_root_squash
+    mode: "u=rwx,g=rx,o=rx"
+    path: "{{ docker_nfs_server_mount }}"

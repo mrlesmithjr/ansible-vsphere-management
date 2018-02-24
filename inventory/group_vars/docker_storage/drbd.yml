@@ -1,0 +1,18 @@
+---
+drbd_disks:
+  - device: /dev/drbd0
+    disk: /dev/sdb
+    filesystem: ext4
+    partitions: 1
+    mountpoint: "{{ docker_nfs_server_mount }}"
+    resource: r0
+    state: present
+    use_partition: /dev/sdb1
+
+drbd_group: docker_storage
+
+drbd_interface: "{{ ansible_primary_interface }}"
+
+drbd_network_shared_secret: wXE8MqVa
+
+drbd_vip: "{{ docker_nfs_vip }}"

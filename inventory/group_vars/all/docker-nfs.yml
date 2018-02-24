@@ -1,0 +1,4 @@
+---
+docker_nfs_client_mount: /mnt/docker
+docker_nfs_server_mount: /opt/nfs/docker
+docker_nfs_vip: "{{ vsphere_lb_vips[3] }}"

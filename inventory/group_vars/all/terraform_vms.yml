@@ -18,6 +18,15 @@ terraform_vms:
     memory_mb: 512
     naming: docker-lb
     vcpu: 1
+  - group: docker_storage
+    count: 2
+    add_disks:
+      disk0:
+        size: 20
+    inventory_parent_folder: Docker
+    memory_mb: 512
+    naming: docker-storage
+    vcpu: 1
   # - group: rancher_lbs
   #   count: 2
   #   inventory_parent_folder: Rancher
